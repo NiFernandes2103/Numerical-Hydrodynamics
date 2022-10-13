@@ -27,11 +27,13 @@ def main():
     xlin = np.linspace(0.5*dx, boxsize-0.5*dx, N)
     Y, X = np.meshgrid( xlin, xlin )
     
-    # Generate Initial Conditions 
+    # Generate Initial Conditions  
+    
     w0 = 0.1
-    sigma = 0.05/np.sqrt(2.)
-    rho = np.random.uniform(0.1,0.5, (X).shape)
-    vx = w0*np.sin(4*np.pi*X) * ( np.exp(-(X-0.25)**2/(2 * sigma**2)) + np.exp(-(X-0.75)**2/(2*sigma**2)))
+    rho = np.sqrt((X-(boxsize-0.5*dx)*0.5)**2 + (Y-(boxsize-0.5*dx)*0.5)**2) < 0.5-0.5*dx
+    v1 = w0*np.exp(-(X-(boxsize-0.5*dx)*0.5)**2) 
+    v2 = w0*np.exp(-(Y-(boxsize-0.5*dx)*0.5)**2) 
+    vx = np.sqrt(v1**2 + v2**2)
     P = 2.5 * np.ones(X.shape)
     Pi = np.zeros(X.shape)
     Pi_vx = Pi*vx
