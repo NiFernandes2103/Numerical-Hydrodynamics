@@ -4,36 +4,51 @@ from scipy.interpolate import CubicSpline, interp1d
 from KTalgorithm import *
 from EoS import *
 
+def plot_density(x,y,z):
+
+    h = plt.contourf(x, y, z)
+    plt.axis('scaled')
+    plt.colorbar()
+    plt.show()
+
 
 def main():
     """ Finite Volume simulation """
     
     # Simulation parameters
     N                      = 128 # resolution
-    boxsize                = 1.
-    gamma                  = 5/3 # ideal gas gamma
-    zeta                   = 1   # bulk viscosity coefficient
+    boxsize                = 1.  # in some unit system l
+    gamma                  = 5/3 # adiabatic index
+    zeta                   = 0.2 # bulk viscosity coefficient
     tau_nu                 = 1
     courant_fac            = 0.4
-    cs                     = 1/3
-    t                      = 0
+    cs                     = 1   # l/s
+    t                      = 0   # s 
     tEnd                   = 2
     tOut                   = 0.02
     plotRealTime = True # switch on for plotting as the simulation goes along
+
+    a = 0  #count
     
     # Mesh
     dx = boxsize / N
     vol = dx**2
-    xlin = np.linspace(0.5*dx, boxsize-0.5*dx, N)
-    Y, X = np.meshgrid( xlin, xlin )
+    xlin = np.linspace(0.5*dx, boxsize-0.5*dx, N, dtype=np.float64 )
+    Y, X = np.meshgrid( xlin, xlin)
     
     # Generate Initial Conditions  
-    
+
     w0 = 0.1
-    rho = np.sqrt((X-(boxsize-0.5*dx)*0.5)**2 + (Y-(boxsize-0.5*dx)*0.5)**2) < 0.5-0.5*dx
-    v1 = w0*np.exp(-(X-(boxsize-0.5*dx)*0.5)**2) 
-    v2 = w0*np.exp(-(Y-(boxsize-0.5*dx)*0.5)**2) 
-    vx = np.sqrt(v1**2 + v2**2)
+    sigma = 5/np.sqrt(2.)
+    rho = np.exp(-(X-(boxsize-0.5*dx)*0.5)**2  / 2*(sigma**2) - (Y-(boxsize-0.5*dx)*0.5)**2 / 2*(sigma**2)) 
+    # put Cubic spline in place of Gaussian
+    plot_density(X,Y,rho)
+
+
+    v1 = -w0*np.exp(-(X-(boxsize-0.5*dx)*0.5)**2 / 2*(sigma**2)) 
+    v2 = -w0*np.exp(-(Y-(boxsize-0.5*dx)*0.5)**2 / 2*(sigma**2)) 
+    vx =  np.sin( np.sqrt(v1**2 + v2**2))
+    plot_density(X,Y,vx)
     P = 2.5 * np.ones(X.shape)
     Pi = np.zeros(X.shape)
     Pi_vx = Pi*vx
@@ -47,14 +62,16 @@ def main():
 
     # Simulation Main Loop
     while t < tEnd:
-        
+
         # get Primitive variables
         rho, vx, P = getPrimitive( Mass, Momx, Energy, gamma, vol )
+
+        #print(a,rho)
+        #a +=1
         
         # get time step (CFL) = dx / max signal speed
-        dt = courant_fac * np.min( np.divide(dx , (np.sqrt( np.divide( gamma*P, rho, out=np.zeros_like(gamma*P), where=rho!=0)) + np.sqrt(vx**2)),
-		  out=np.zeros_like((np.sqrt( np.divide( gamma*P, rho, out=np.zeros_like(gamma*P), where=rho!=0)) + np.sqrt(vx**2))),
-		   where=(np.sqrt( np.divide( gamma*P, rho, out=np.zeros_like(gamma*P), where=rho!=0)) + np.sqrt(vx**2))!=0) )
+        dt = courant_fac*np.min( np.divide(dx , (np.abs(vx)) , out=np.zeros_like(vx) , where=(np.abs(vx))!=0 ))
+      
         plotThisTurn = False
         if t + dt > outputCount*tOut:
             dt = outputCount*tOut - t
@@ -67,13 +84,14 @@ def main():
         Pi_dx = getGradient(Pi,   dx)
         
         # extrapolate half-step in time
+    
         rho_prime = rho - 0.5*dt * ( vx * rho_dx + rho * vx_dx)
-        vx_prime  = vx  - 0.5*dt * ( vx * vx_dx + np.divide(1 , rho, out=np.zeros_like(rho), where=rho!=0) * P_dx )
+
+        vx_prime  = vx  - 0.5*dt * np.divide(( vx * vx_dx * rho + P_dx ), rho , out=np.zeros_like(vx * vx_dx * rho + P_dx), where=rho!=0)
         P_prime   = P   - 0.5*dt * ( gamma*P * (vx_dx)  + vx * P_dx  )
         Pi_prime  = Pi  - 0.5*dt * (Pi_dx)
         
         # extrapolate in space to face centers
-        # qM_XL, qP_XL, qM_XR, qP_XR
 
         rhoM_XL, rhoP_XL, rhoM_XR, rhoP_XR = extrapolateInSpaceToFace(rho_prime, rho_dx, dx)
         vxM_XL,  vxP_XL,  vxM_XR,  vxP_XR  = extrapolateInSpaceToFace(vx_prime,  vx_dx,  dx)
@@ -81,23 +99,36 @@ def main():
         PiM_XL,  PiP_XL,  PiM_XR,  PiP_XR  = extrapolateInSpaceToFace(Pi_prime,  Pi_dx,  dx)
         
         # compute fluxes (local Kurganov-Tadmor)
-        # getFlux(rho_L, rho_R, vx_L, vx_R, Pi_L, Pi_R, P_L, P_R, gamma) inputs
-        # flux_Mass, flux_Momx, flux_Energy, flux_Pi_v outputs 
 
         flux_Mass_XR, flux_Momx_XR, flux_Energy_XR, flux_Pi_vxR = getFlux(rhoP_XR, rhoM_XR, vxP_XR, vxM_XR, PiM_XR, PiP_XR, PP_XR, PM_XR, gamma, cs)
         flux_Mass_XL, flux_Momx_XL, flux_Energy_XL, flux_Pi_vxL = getFlux(rhoP_XL, rhoM_XL, vxP_XL, vxM_XL, PiM_XL, PiP_XL, PP_XL, PM_XL, gamma, cs)
-
         
         # update solution
-        # applyFluxes(H, flux_H_X, dx)
 
         J = Pi*vx_dx - (zeta / tau_nu * vx_dx + Pi / tau_nu)
 
-        Mass   = applyFluxes(Mass,   flux_Mass_XR,   dx) - applyFluxes(Mass, flux_Mass_XL, dx)
-        Momx   = applyFluxes(Momx,   flux_Momx_XR,   dx) - applyFluxes(Momx, flux_Momx_XL, dx)
-        Energy = applyFluxes(Energy, flux_Energy_XR, dx) - applyFluxes(Energy, flux_Energy_XL, dx)
-        Pi_vx  = applyFluxes(Pi_vx,  flux_Pi_vxR,  dx, J) - applyFluxes(Pi_vx,  flux_Pi_vxL,  dx, J)
+        Mass   = applyFluxes(Mass,   flux_Mass_XR,   flux_Mass_XL,   dx)
+        # print('Mass',Mass)
+        Momx   = applyFluxes(Momx,   flux_Momx_XR,   flux_Momx_XL,   dx) 
+        # print('Momentum',Momx)
+        Energy = applyFluxes(Energy, flux_Energy_XR, flux_Energy_XL, dx)
+        # print('Energy',Energy)
+        Pi_vx  = applyFluxes(Pi_vx,  flux_Pi_vxR,    flux_Pi_vxL,    dx, J)
+        # print('Pi v',Pi_vx)
         
+
+        # Boundary conditions
+        ''' 
+        rho[0][:] = rho[3][:]
+        rho[1][:] = rho[3][:]        
+        rho[N-1][:] = rho[N-4][:]
+        rho[N-3][:] = rho[N-4][:]
+        rho[:][0] = rho[:][3]
+        rho[:][1] = rho[:][3]        
+        rho[:][N-1] = rho[:][N-4]
+        rho[:][N-2] = rho[:][N-4]
+        '''
+
         # update time
         t += dt
         
@@ -113,6 +144,8 @@ def main():
             ax.set_aspect('equal')  
             plt.pause(0.001)
             outputCount += 1
+            
+          
   
     
     # Save figure
@@ -122,7 +155,7 @@ def main():
 
     return 0
 
-
+  
 
 if __name__== "__main__":
   main()

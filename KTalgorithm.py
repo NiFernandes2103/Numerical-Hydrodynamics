@@ -1,7 +1,9 @@
+
 import numpy as np
 
 def minmod2(x,y):
-  return (sign(x) + sign(y))*np.min(abs(x)*abs(y))
+  return (sign(x) + sign(y))*np.minimum(np.abs(x), np.abs(y))
+  
 
 def minmod3(x,y,z):
   return minmod2(x,minmod2(y,z))
@@ -9,8 +11,6 @@ def minmod3(x,y,z):
 def sign(x):
   return np.sign(x)
 
-def q_r(q,i,dr,theta):
-  return minmod3(theta*(q(i) - q(i-1))/dr,theta*(q(i+1) - q(i-1))/dr,theta*(q(i) - q(i-1))/(2*dr),theta*(q(i+1) - q(i))/dr)
 
 def getGradient(f, dx, theta=1):
 	"""
@@ -24,7 +24,7 @@ def getGradient(f, dx, theta=1):
 	R = -1   # right
 	L = 1    # left
 	
-	df_dx = minmod3( theta * ( f - np.roll(f,L,axis=0) )/dx, theta * (np.roll(f,R,axis=0) - np.roll(f,L,axis=0) ) / (2*dx),theta * ( f - np.roll(f,L,axis=0) ) / dx)
+	df_dx = minmod3( theta * ( f - np.roll(f,L,axis=0) )/dx, theta * (np.roll(f,R,axis=0) - np.roll(f,L,axis=0) ) / (2*dx), theta * ( f - np.roll(f,L,axis=0) ) / dx)
 
 	return df_dx
 
@@ -89,7 +89,7 @@ def getFlux(rho_P, rho_M, vx_P, vx_M, Pi_P, Pi_M, P_P, P_M, gamma, cs):
   # Pressure equation of state
   P_star = (gamma-1)*(en_star-np.divide(0.5*(momx_star**2),rho_star, out=np.zeros_like(0.5*(momx_star**2)), where=rho_star!=0))
   
-  # compute fluxes (local Kurganov-Tadamor)
+  # compute fluxes (local Kurganov-Tadmor)
   flux_Mass   = momx_star
   flux_Momx   = np.divide(momx_star**2,rho_star, out=np.zeros_like(momx_star**2), where=rho_star!=0) + P_star + P_star
   flux_Energy = (en_star+P_star) * np.divide(momx_star,rho_star, out=np.zeros_like(momx_star), where=rho_star!=0)
@@ -97,23 +97,35 @@ def getFlux(rho_P, rho_M, vx_P, vx_M, Pi_P, Pi_M, P_P, P_M, gamma, cs):
   
   # find wavespeeds
 
-  C1_P = vx_P
-  C1_M = vx_M
+  C1_P = np.abs(vx_P)
+  C1_M = np.abs(vx_M)
   C1 = np.maximum( C1_P, C1_M )
 
-  C2_P = rho_P*vx_P - np.sqrt(np.divide(Pi_P * rho_P + cs**2 * rho_P**2 - rho_P * vx_P**2 +  rho_P**2 * vx_P**2 ,rho_P,
-   out=np.zeros_like(Pi_P * rho_P + cs**2 * rho_P**2 - rho_P * vx_P**2 +  rho_P**2 * vx_P**2), where=rho_P!=0))
-  C2_M = rho_M*vx_M - np.sqrt(np.divide(Pi_M * rho_M + cs**2 * rho_M**2 - rho_M * vx_M**2 +  rho_M**2 * vx_M**2 ,rho_M,
-   out=np.zeros_like(Pi_M * rho_M + cs**2 * rho_M**2 - rho_M * vx_M**2 +  rho_M**2 * vx_M**2), where=rho_M!=0))
+
+  
+  C2_P = np.abs(rho_P*vx_P - np.sqrt(np.abs(np.divide(Pi_P * rho_P + cs**2 * rho_P**2 - rho_P * vx_P**2 +  rho_P**2 * vx_P**2 ,rho_P,
+   out=np.zeros_like(Pi_P * rho_P + cs**2 * rho_P**2 - rho_P * vx_P**2 +  rho_P**2 * vx_P**2), where=rho_P!=0))))
+  C2_M = np.abs(rho_M*vx_M - np.sqrt(np.abs(np.divide(Pi_M * rho_M + cs**2 * rho_M**2 - rho_M * vx_M**2 +  rho_M**2 * vx_M**2 ,rho_M,
+   out=np.zeros_like(Pi_M * rho_M + cs**2 * rho_M**2 - rho_M * vx_M**2 +  rho_M**2 * vx_M**2), where=rho_M!=0))))
   C2 = np.maximum( C2_P, C2_M )
 
-  C3_P = rho_P*vx_P + np.sqrt(np.divide(Pi_P * rho_P + cs**2 * rho_P**2 - rho_P * vx_P**2 +  rho_P**2 * vx_P**2 ,rho_P,
-   out=np.zeros_like(Pi_P * rho_P + cs**2 * rho_P**2 - rho_P * vx_P**2 +  rho_P**2 * vx_P**2), where=rho_P!=0))
-  C3_M = rho_M*vx_M - np.sqrt(np.divide(Pi_M * rho_M + cs**2 * rho_M**2 - rho_M * vx_M**2 +  rho_M**2 * vx_M**2 ,rho_M,
-   out=np.zeros_like(Pi_M * rho_M + cs**2 * rho_M**2 - rho_M * vx_M**2 +  rho_M**2 * vx_M**2), where=rho_M!=0))
+  C3_P = np.abs(rho_P*vx_P + np.sqrt(np.abs(np.divide(Pi_P * rho_P + cs**2 * rho_P**2 - rho_P * vx_P**2 +  rho_P**2 * vx_P**2 ,rho_P,
+   out=np.zeros_like(Pi_P * rho_P + cs**2 * rho_P**2 - rho_P * vx_P**2 +  rho_P**2 * vx_P**2), where=rho_P!=0))))
+  C3_M = np.abs(rho_M*vx_M - np.sqrt(np.abs(np.divide(Pi_M * rho_M + cs**2 * rho_M**2 - rho_M * vx_M**2 +  rho_M**2 * vx_M**2 ,rho_M,
+   out=np.zeros_like(Pi_M * rho_M + cs**2 * rho_M**2 - rho_M * vx_M**2 +  rho_M**2 * vx_M**2), where=rho_M!=0))))
   C3 = np.maximum( C3_P, C3_M )
 
+
   C = np.maximum( C1, C2, C3 )
+
+  # add stabilizing diffusive term
+  flux_Mass   -= C * 0.5 * (rho_P - rho_M)
+  flux_Momx   -= C * 0.5 * (rho_P * vx_P - rho_M * vx_M)
+  flux_Energy -= C * 0.5 * ( en_P - en_M )
+  flux_Pi_v   -= C * 0.5 * ( Pi_P - Pi_M )
+
+  return flux_Mass, flux_Momx, flux_Energy, flux_Pi_v
+
   
   # add stabilizing diffusive term
   flux_Mass   -= C * 0.5 * (rho_P - rho_M)
@@ -123,19 +135,19 @@ def getFlux(rho_P, rho_M, vx_P, vx_M, Pi_P, Pi_M, P_P, P_M, gamma, cs):
 
   return flux_Mass, flux_Momx, flux_Energy, flux_Pi_v
 
-def applyFluxes(H, flux_H_X, dx, J = 0):
-	"""
+
+def applyFluxes(H, flux_H1_X, flux_H2_X , dx, J = 0):
+    """
     Apply fluxes to conserved variables
-	H        is a matrix of the conserved variable field
-	flux_H_X is a matrix of the x-dir fluxes
-	dx       is the cell size
-	"""
-	# directions for np.roll() 
-	R = -1   # right
-	L = 1    # left
-	
-	# update solution
-	H += - flux_H_X / dx
-	H += J
-	
-	return H
+    H         is a matrix of the conserved variable field
+    flux_H1_X is a matrix of the x-dir fluxes
+    flux_H2_X is a matrix of the x-dir fluxes
+    dx        is the cell size
+    """
+    
+    # update solution
+    H += - (flux_H1_X - flux_H2_X ) / dx
+    H += J
+    
+    return H
+

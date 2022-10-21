@@ -15,7 +15,7 @@ def getConserved( rho, vx, P, gamma, vol ):
 	"""
 	Mass   = rho * vol
 	Momr   = rho * vx * vol
-	Energy = (P/(gamma-1) + 0.5* rho *(vx)*vol)
+	Energy = (P/(gamma-1) + 0.5* rho *(vx**2)*vol)
 	
 	return Mass, Momr, Energy
 
@@ -28,7 +28,7 @@ def getPrimitive( Mass, Momx, Energy, gamma, vol ):
   gamma    is ideal gas gamma
   vol      is cell volume
   rho      is matrix of cell densities
-  vx       is matrix of cell r-velocity
+  vx       is matrix of cell x-velocity
   P        is matrix of cell pressures
   """
   rho = Mass / vol
