@@ -12,6 +12,7 @@ def plot_density(x,y,z):
     plt.show()
 
 
+
 def main():
     """ Finite Volume simulation """
     
@@ -20,7 +21,7 @@ def main():
     boxsize                = 1.  # in some unit system l
     gamma                  = 5/3 # adiabatic index
     zeta                   = 0.2 # bulk viscosity coefficient
-    tau_nu                 = 1
+    tau_nu                 = 0.1
     courant_fac            = 0.4
     cs                     = 1   # l/s
     t                      = 0   # s 
@@ -47,11 +48,17 @@ def main():
 
     v1 = -w0*np.exp(-(X-(boxsize-0.5*dx)*0.5)**2 / 2*(sigma**2)) 
     v2 = -w0*np.exp(-(Y-(boxsize-0.5*dx)*0.5)**2 / 2*(sigma**2)) 
-    vx =  np.sin( np.sqrt(v1**2 + v2**2))
+    vx = -np.sin( 2 * np.pi * np.sqrt((X-(boxsize-0.5*dx)*0.5)**2 + (Y-(boxsize-0.5*dx)*0.5)**2)) 
     plot_density(X,Y,vx)
-    P = 2.5 * np.ones(X.shape)
+
+
+    P = 0.5 * np.ones(X.shape)
     Pi = np.zeros(X.shape)
     Pi_vx = Pi*vx
+
+    # Get mean rho 
+    times  = np.zeros(int(tEnd/tOut))
+    rho_mean = np.mean(rho[:0]) * np.ones(int(tEnd/tOut))
 
     # Get conserved variables
     Mass, Momx, Energy = getConserved( rho, vx, P, gamma, vol)
@@ -66,11 +73,20 @@ def main():
         # get Primitive variables
         rho, vx, P = getPrimitive( Mass, Momx, Energy, gamma, vol )
 
-        #print(a,rho)
-        #a +=1
+        # get mean values (to plot)
+        print(a,rho)
+        a +=1
+        times[a] = t 
+        rho_mean[a] = t
+
         
         # get time step (CFL) = dx / max signal speed
-        dt = courant_fac*np.min( np.divide(dx , (np.abs(vx)) , out=np.zeros_like(vx) , where=(np.abs(vx))!=0 ))
+
+        c = local_propagation_speed(rho, vx, Pi, cs)
+
+        c
+
+        dt = courant_fac*np.min( np.divide(dx , c , out=np.zeros_like( dx / (2*cs) * np.ones(X.shape)  ) , where=(c)!=0 ))
       
         plotThisTurn = False
         if t + dt > outputCount*tOut:
@@ -79,14 +95,13 @@ def main():
         
         # calculate gradients
         rho_dx = getGradient(rho, dx)
+        print(rho_dx)
         vx_dx = getGradient(vx,   dx)
         P_dx  = getGradient(P,    dx)
         Pi_dx = getGradient(Pi,   dx)
         
         # extrapolate half-step in time
-    
         rho_prime = rho - 0.5*dt * ( vx * rho_dx + rho * vx_dx)
-
         vx_prime  = vx  - 0.5*dt * np.divide(( vx * vx_dx * rho + P_dx ), rho , out=np.zeros_like(vx * vx_dx * rho + P_dx), where=rho!=0)
         P_prime   = P   - 0.5*dt * ( gamma*P * (vx_dx)  + vx * P_dx  )
         Pi_prime  = Pi  - 0.5*dt * (Pi_dx)
@@ -107,22 +122,23 @@ def main():
 
         J = Pi*vx_dx - (zeta / tau_nu * vx_dx + Pi / tau_nu)
 
-        Mass   = applyFluxes(Mass,   flux_Mass_XR,   flux_Mass_XL,   dx)
-        # print('Mass',Mass)
-        Momx   = applyFluxes(Momx,   flux_Momx_XR,   flux_Momx_XL,   dx) 
-        # print('Momentum',Momx)
-        Energy = applyFluxes(Energy, flux_Energy_XR, flux_Energy_XL, dx)
-        # print('Energy',Energy)
-        Pi_vx  = applyFluxes(Pi_vx,  flux_Pi_vxR,    flux_Pi_vxL,    dx, J)
-        # print('Pi v',Pi_vx)
+        Mass   = vol*dt*applyFluxes(Mass,   flux_Mass_XR,   flux_Mass_XL,   dx)
+        print('Mass',Mass)
+        Momx   = vol*dt*applyFluxes(Momx,   flux_Momx_XR,   flux_Momx_XL,   dx) 
+        print('Momentum',Momx)
+        Energy = vol*dt*applyFluxes(Energy, flux_Energy_XR, flux_Energy_XL, dx)
+        print('Energy',Energy)
+        Pi_vx  = vol*dt*applyFluxes(Pi_vx,  flux_Pi_vxR,    flux_Pi_vxL,    dx, J)
+        print('Pi v',Pi_vx)
+        
         
 
         # Boundary conditions
-        ''' 
+        '''
         rho[0][:] = rho[3][:]
         rho[1][:] = rho[3][:]        
         rho[N-1][:] = rho[N-4][:]
-        rho[N-3][:] = rho[N-4][:]
+        rho[N-2][:] = rho[N-4][:]
         rho[:][0] = rho[:][3]
         rho[:][1] = rho[:][3]        
         rho[:][N-1] = rho[:][N-4]
@@ -145,7 +161,8 @@ def main():
             plt.pause(0.001)
             outputCount += 1
             
-          
+        else:
+           plt.plot(rho_mean, times)
   
     
     # Save figure

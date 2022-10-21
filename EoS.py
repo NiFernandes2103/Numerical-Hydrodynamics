@@ -15,7 +15,7 @@ def getConserved( rho, vx, P, gamma, vol ):
 	"""
 	Mass   = rho * vol
 	Momr   = rho * vx * vol
-	Energy = (P/(gamma-1) + 0.5* rho *(vx**2)*vol)
+	Energy = (P/(gamma-1) + 0.5* rho *(vx**2))*vol
 	
 	return Mass, Momr, Energy
 
@@ -33,6 +33,6 @@ def getPrimitive( Mass, Momx, Energy, gamma, vol ):
   """
   rho = Mass / vol
   vx  = np.divide(Momx , rho, out=np.zeros_like(Momx), where=rho!=0) / vol
-  P   = (Energy/vol - 0.5*rho * (vx)) * (gamma-1)
+  P   = (Energy/vol - 0.5 * rho * (vx)) * (gamma-1)
   
   return rho, vx, P

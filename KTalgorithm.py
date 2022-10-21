@@ -11,6 +11,21 @@ def minmod3(x,y,z):
 def sign(x):
   return np.sign(x)
 
+def local_propagation_speed(rho, vx, Pi, cs): 
+   '''
+    rho          is a matrix of left-state  density
+    vx_P         is a matrix of x-velocity
+    Pi           is a matrix of bulk viscosity 
+    cs           is the speed of sound
+    '''
+
+   C1 = np.abs(vx)
+
+   C2 = np.abs(vx - np.sqrt( np.divide(Pi , rho , out=np.zeros_like(Pi), where=vx!=0 )  ) )
+
+   C3 = np.abs(vx + np.sqrt( np.divide(Pi , rho , out=np.zeros_like(Pi), where=vx!=0 )  ) )
+
+   return np.maximum(C1,C2,C3)
 
 def getGradient(f, dx, theta=1):
 	"""
