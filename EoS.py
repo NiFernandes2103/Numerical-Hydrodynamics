@@ -14,10 +14,10 @@ def getConserved( rho, vx, P, gamma, vol ):
 	Energy   is matrix of energy in cells
 	"""
 	Mass   = rho * vol
-	Momr   = rho * vx * vol
+	Momx   = rho * vx * vol
 	Energy = (P/(gamma-1) + 0.5* rho *(vx**2))*vol
 	
-	return Mass, Momr, Energy
+	return Mass, Momx, Energy
 
 def getPrimitive( Mass, Momx, Energy, gamma, vol ):
   """

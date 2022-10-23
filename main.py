@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline, interp1d
 from KTalgorithm import *
 from EoS import *
+from RK_Heuns_integrator import *
 
 def plot_density(x,y,z):
 
@@ -22,7 +23,6 @@ def main():
     gamma                  = 5/3 # adiabatic index
     zeta                   = 0.2 # bulk viscosity coefficient
     tau_nu                 = 0.1
-    courant_fac            = 0.4
     cs                     = 1   # l/s
     t                      = 0   # s 
     tEnd                   = 2
@@ -41,17 +41,11 @@ def main():
 
     w0 = 0.1
     sigma = 5/np.sqrt(2.)
-    rho = np.exp(-(X-(boxsize-0.5*dx)*0.5)**2  / 2*(sigma**2) - (Y-(boxsize-0.5*dx)*0.5)**2 / 2*(sigma**2)) 
+    rho = (1 - (X**2 + Y**2)/0.25 )**2 > 0
     # put Cubic spline in place of Gaussian
     plot_density(X,Y,rho)
-
-
-    v1 = -w0*np.exp(-(X-(boxsize-0.5*dx)*0.5)**2 / 2*(sigma**2)) 
-    v2 = -w0*np.exp(-(Y-(boxsize-0.5*dx)*0.5)**2 / 2*(sigma**2)) 
-    vx = -np.sin( 2 * np.pi * np.sqrt((X-(boxsize-0.5*dx)*0.5)**2 + (Y-(boxsize-0.5*dx)*0.5)**2)) 
+    vx = np.zeros(X.shape)
     plot_density(X,Y,vx)
-
-
     P = 0.5 * np.ones(X.shape)
     Pi = np.zeros(X.shape)
     Pi_vx = Pi*vx
@@ -79,14 +73,8 @@ def main():
         times[a] = t 
         rho_mean[a] = t
 
-        
-        # get time step (CFL) = dx / max signal speed
-
-        c = local_propagation_speed(rho, vx, Pi, cs)
-
-        c
-
-        dt = courant_fac*np.min( np.divide(dx , c , out=np.zeros_like( dx / (2*cs) * np.ones(X.shape)  ) , where=(c)!=0 ))
+        # define timestep
+        dt = dx/cs
       
         plotThisTurn = False
         if t + dt > outputCount*tOut:
@@ -115,25 +103,31 @@ def main():
         
         # compute fluxes (local Kurganov-Tadmor)
 
-        flux_Mass_XR, flux_Momx_XR, flux_Energy_XR, flux_Pi_vxR = getFlux(rhoP_XR, rhoM_XR, vxP_XR, vxM_XR, PiM_XR, PiP_XR, PP_XR, PM_XR, gamma, cs)
-        flux_Mass_XL, flux_Momx_XL, flux_Energy_XL, flux_Pi_vxL = getFlux(rhoP_XL, rhoM_XL, vxP_XL, vxM_XL, PiM_XL, PiP_XL, PP_XL, PM_XL, gamma, cs)
+        flux_Mass_XR, flux_Momx_XR, flux_Pi_vxR = getFlux(rhoP_XR, rhoM_XR, vxP_XR, vxM_XR, PiM_XR, PiP_XR, PP_XR, PM_XR, gamma, cs)
+        flux_Mass_XL, flux_Momx_XL, flux_Pi_vxL = getFlux(rhoP_XL, rhoM_XL, vxP_XL, vxM_XL, PiM_XL, PiP_XL, PP_XL, PM_XL, gamma, cs)
         
         # update solution
 
         J = Pi*vx_dx - (zeta / tau_nu * vx_dx + Pi / tau_nu)
 
-        Mass   = vol*dt*applyFluxes(Mass,   flux_Mass_XR,   flux_Mass_XL,   dx)
-        print('Mass',Mass)
-        Momx   = vol*dt*applyFluxes(Momx,   flux_Momx_XR,   flux_Momx_XL,   dx) 
-        print('Momentum',Momx)
-        Energy = vol*dt*applyFluxes(Energy, flux_Energy_XR, flux_Energy_XL, dx)
-        print('Energy',Energy)
-        Pi_vx  = vol*dt*applyFluxes(Pi_vx,  flux_Pi_vxR,    flux_Pi_vxL,    dx, J)
-        print('Pi v',Pi_vx)
-        
+        Mass   =  modified_RungeKutta( Mass, vol* applyFluxes(Mass,   flux_Mass_XR,   flux_Mass_XL,   dx), dt)
+        SMass = np.sum(Mass)
+        print('Mass',SMass)
+        Momx   =  modified_RungeKutta( Momx, vol * applyFluxes(Momx,   flux_Momx_XR,   flux_Momx_XL,   dx), dt)  
+        SMomx = np.sum(Momx)
+        print('Momentum',SMomx)
+        Pi_vx  =  modified_RungeKutta( Pi_dx , vol * applyFluxes(Pi_vx,  flux_Pi_vxR,    flux_Pi_vxL,    dx, J))
         
 
+        # effectively zero terms
+        threshold = 10^-10
+        Mass = Mass > threshold
+        Momx  = Momx  > threshold
+        Pi_vx  = Pi_vx  > threshold
+        Energy = Energy > threshold
+
         # Boundary conditions
+        
         '''
         rho[0][:] = rho[3][:]
         rho[1][:] = rho[3][:]        
