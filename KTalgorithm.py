@@ -88,7 +88,7 @@ def getFlux(rho_P, rho_M, vx_P, vx_M, Pi_P, Pi_M, P_P, P_M, gamma):
   
 
   # compute star (averaged) states over the left and right states
-  rho_av  = 0.5*(rho_P + rho_M)
+
   momx_av = 0.5*(rho_P * vx_P + rho_M * vx_M)
   Pi_av   = 0.5*(Pi_P + Pi_M)
   Pi_vx_av = 0.5*(Pi_P * vx_P + Pi_M * vx_M)
@@ -107,7 +107,7 @@ def getFlux(rho_P, rho_M, vx_P, vx_M, Pi_P, Pi_M, P_P, P_M, gamma):
 
   C_P = local_propagation_speed(rho_P , vx_P, Pi_P, gamma) # max propagation speed from the left
 
-  C_M = local_propagation_speed(rho_P , vx_P, Pi_P, gamma) # max propagation speed from the right
+  C_M = local_propagation_speed(rho_M , vx_M, Pi_M, gamma) # max propagation speed from the right
 
   C = np.maximum(C_M, C_P)
 
