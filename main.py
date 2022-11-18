@@ -149,15 +149,12 @@ def main():
 
         J = (Pi * vx_dx - (zeta / tau_nu * vx_dx + Pi / tau_nu))
         
-        print(Pi*vx_dx)
-        #print(J)
+        
 
         rho    = modified_RungeKutta(rho,   applyFluxes( flux_Mass_XR,   flux_Mass_XL,   dx),    dt)
         vx     = np.divide(modified_RungeKutta(Momx,  applyFluxes( flux_Momx_XR,   flux_Momx_XL,   dx),    dt), rho,
                          out=np.zeros_like(modified_RungeKutta(Momx,  applyFluxes( flux_Momx_XR,   flux_Momx_XL,   dx), dt)), where=rho!=0)
-        Pi     = np.divide(modified_RungeKutta(Pi, applyFluxes( flux_Pi_vxR,    flux_Pi_vxL,    dx, J), dt), vx,
-                         out=np.zeros_like(modified_RungeKutta(Pi, applyFluxes( flux_Pi_vxR,    flux_Pi_vxL,    dx, J), dt)), where=vx!=0)
-        
+        Pi     = modified_RungeKutta(Pi, applyFluxes( flux_Pi_vxR,    flux_Pi_vxL,    dx, J), dt)
         
 
         #-----------------------------------------------------------------------------------------------------------------------------------#
