@@ -2,10 +2,9 @@ import numpy as np
 from KTalgorithm import *
 
 def Euler(q , C , dt):
-    
+
     '''
     Foward Euler timestep
-
     '''
     E = q + dt * C
 

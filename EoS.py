@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def getConserved( rho, vx, Pi, gamma, vol ):
+def getConserved( rho, vx, vol ):
     """
     Calculate the conserved variable from the primitive
     rho      is matrix of cell densities
@@ -13,9 +13,8 @@ def getConserved( rho, vx, Pi, gamma, vol ):
     """
     Mass   = rho * vol
     Momr   = rho * vx * vol
-    Pi_vx  = Pi  * vx
-    
-    return Mass, Momr, Pi_vx
+
+    return Mass, Momr
   
 def getPrimitive( Mass, Momx, gamma, vol):
   """

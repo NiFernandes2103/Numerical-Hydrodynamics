@@ -92,15 +92,12 @@ def getFlux(rho_P, rho_M, vx_P, vx_M, Pi_P, Pi_M, P_P, P_M, gamma):
   momx_av = 0.5*(rho_P * vx_P + rho_M * vx_M)
   Pi_av   = 0.5*(Pi_P + Pi_M)
   Pi_vx_av = 0.5*(Pi_P * vx_P + Pi_M * vx_M)
-  
-  # Pressure equation of state
+  P_av = 0.5*(P_P + P_M)
 
-  P_av = 0.5*(np.abs(rho_P)**gamma + np.abs(rho_M)**gamma)
-  
   # compute fluxes (local Kurganov-Tadmor)
 
   flux_Mass   = momx_av
-  flux_Momx   = np.divide((rho_P*vx_P)**2 , 2*rho_P,  out=np.zeros_like((rho_P*vx_P)**2), where=rho_P!=0)  + np.divide((rho_M*vx_M)**2 , 2*rho_M,  out=np.zeros_like((rho_M*vx_M)**2), where=rho_M!=0) + P_av + Pi_av
+  flux_Momx   = 0.5*(rho_P*(vx_P)**2 + rho_M*(vx_M)**2) + P_av + Pi_av
   flux_Pi_v   = Pi_vx_av
   
   # find wavespeeds
@@ -126,6 +123,7 @@ def applyFluxes(flux_H1_X, flux_H2_X , dx, J = 0):
     flux_H2_X is a matrix of the x-dir fluxes
     dx        is the cell size
     """
+
     C = 0
 
     # update solution

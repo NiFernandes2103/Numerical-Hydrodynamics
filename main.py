@@ -13,12 +13,12 @@ def main():
     N                      = 128 # resolution
     boxsize                = 1.  # in some unit system l
     gamma                  = 5/3 # adiabatic index
-    zeta                   = 0.1 # bulk viscosity coefficient
-    tau_nu                 = 0.2
+    zeta                   = 1 # bulk viscosity coefficient
+    tau_nu                 = 5000
     t                      = 0   # s 
     tEnd                   = 2   # time at the end
     tOut                   = 0.02 # time of each output
-    plotRealTime = True # switch on for plotting as the simulation goes along
+    plotRealTime = False # switch on for plotting as the simulation goes along
 
     #test parameters
     flimit                 = 10**4  # Warns if fluxes are larger than this value
@@ -66,7 +66,7 @@ def main():
 
 
     # Get conserved variables
-    Mass, Momx, Pi_vx = getConserved( rho, vx, Pi, gamma, vol)
+    Mass, Momx = getConserved( rho, vx, vol)
 
     #-----------------------------------------------------------------------------------------------------------------------------------#
 
@@ -84,10 +84,11 @@ def main():
         #-----------------------------------------------------------------------------------------------------------------------------------#
 
         # get Conserved variables
-        Mass, Momx, Pi_vx = getConserved( rho, vx, Pi, gamma, vol)
+        Mass, Momx = getConserved( rho, vx, vol)
 
         if np.any(Mass < 0):
           print("Mass is negative")
+          exit()
 
         # get Primitive variables
         rho, vx, P = getPrimitive( Mass, Momx, gamma, vol )
@@ -134,8 +135,8 @@ def main():
         
         # compute fluxes (local Kurganov-Tadmor)
 
-        flux_Mass_XR, flux_Momx_XR, flux_Pi_vxR = getFlux(rhoP_XR, rhoM_XR, vxP_XR, vxM_XR, PiM_XR, PiP_XR, PP_XR, PM_XR, gamma)
-        flux_Mass_XL, flux_Momx_XL, flux_Pi_vxL = getFlux(rhoP_XL, rhoM_XL, vxP_XL, vxM_XL, PiM_XL, PiP_XL, PP_XL, PM_XL, gamma)
+        flux_Mass_XR, flux_Momx_XR, flux_Pi_vxR = getFlux(rhoP_XR, rhoM_XR, vxP_XR, vxM_XR, PiP_XR, PiM_XR, PP_XR, PM_XR, gamma)
+        flux_Mass_XL, flux_Momx_XL, flux_Pi_vxL = getFlux(rhoP_XL, rhoM_XL, vxP_XL, vxM_XL, PiP_XL, PiM_XL, PP_XL, PM_XL, gamma)
 
         # tests for flux limitation
         if runFluxLimitTests:
@@ -146,7 +147,10 @@ def main():
         
         # update solution
 
-        J = Pi * vx_dx - (zeta / tau_nu * vx_dx + Pi / tau_nu)
+        J = (Pi * vx_dx - (zeta / tau_nu * vx_dx + Pi / tau_nu))
+        
+        print(Pi*vx_dx)
+        #print(J)
 
         rho    = modified_RungeKutta(rho,   applyFluxes( flux_Mass_XR,   flux_Mass_XL,   dx),    dt)
         vx     = np.divide(modified_RungeKutta(Momx,  applyFluxes( flux_Momx_XR,   flux_Momx_XL,   dx),    dt), rho,
@@ -173,10 +177,10 @@ def main():
         vx[N-1]  = -vx[N-4]
         vx[N-2]  = -vx[N-4]
         
-        Pi[0]    = Pi[3]
-        Pi[1]    = Pi[3]        
-        Pi[N-1]  = Pi[N-4]
-        Pi[N-2]  = Pi[N-4]
+        Pi[0]    = 0
+        Pi[1]    = 0
+        Pi[N-1]  = 0
+        Pi[N-2]  = 0
 
         #-----------------------------------------------------------------------------------------------------------------------------------#
 
