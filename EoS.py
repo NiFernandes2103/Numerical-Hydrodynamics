@@ -38,3 +38,11 @@ def getSpeedOfSound(rho, gamma):
   cs = np.sqrt((gamma)*np.abs(rho)**(gamma-1))
 
   return cs
+
+
+def regParams(Pi,rho_max):
+
+  r = np.amax(np.abs(Pi)/rho_max)
+
+  return np.divide(np.tanh(r) * Pi , r, out=np.zeros_like(np.tanh(r) * Pi), where=r!=0)
+  

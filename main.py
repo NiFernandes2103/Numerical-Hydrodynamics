@@ -14,11 +14,11 @@ def main():
     boxsize                = 1.  # in some unit system l
     gamma                  = 5/3 # adiabatic index
     zeta                   = 1 # bulk viscosity coefficient
-    tau_nu                 = 5000
+    tau_nu                 = 5
     t                      = 0   # s 
-    tEnd                   = 2   # time at the end
+    tEnd                   = 20   # time at the end
     tOut                   = 0.02 # time of each output
-    plotRealTime = False # switch on for plotting as the simulation goes along
+    plotRealTime = True  # switch on for plotting as the simulation goes along
 
     #test parameters
     flimit                 = 10**4  # Warns if fluxes are larger than this value
@@ -155,6 +155,8 @@ def main():
         vx     = np.divide(modified_RungeKutta(Momx,  applyFluxes( flux_Momx_XR,   flux_Momx_XL,   dx),    dt), rho,
                          out=np.zeros_like(modified_RungeKutta(Momx,  applyFluxes( flux_Momx_XR,   flux_Momx_XL,   dx), dt)), where=rho!=0)
         Pi     = modified_RungeKutta(Pi, applyFluxes( flux_Pi_vxR,    flux_Pi_vxL,    dx, J), dt)
+
+        Pi = regParams(Pi,1)
         
 
         #-----------------------------------------------------------------------------------------------------------------------------------#
