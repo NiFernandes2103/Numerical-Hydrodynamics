@@ -13,11 +13,11 @@ def main():
     N                      = 128 # resolution
     boxsize                = 1.  # in some unit system l
     gamma                  = 5/3 # adiabatic index
-    zeta                   = 1 # bulk viscosity coefficient
-    tau_nu                 = 5
+    zeta                   = 0 # bulk viscosity coefficient
+    tau_nu                 = 200
     t                      = 0   # s 
     tEnd                   = 20   # time at the end
-    tOut                   = 0.02 # time of each output
+    tOut                   = 2 # time of each output
     plotRealTime = True  # switch on for plotting as the simulation goes along
 
     #test parameters
@@ -32,27 +32,37 @@ def main():
     dx = boxsize / N   # box size
     vol = dx**2        # volume of each box
     xlin = np.linspace(0.5*dx, boxsize-0.5*dx, N, dtype=np.float64 ) # simulation limits
-    Y, X = np.meshgrid( xlin, xlin)
+
 
     #-----------------------------------------------------------------------------------------------------------------------------------#
 
     # Generate Initial Conditions  
 
 
-    #rho = np.zeros(X.shape)
-    rho = ((1 - ((xlin - (boxsize-0.5*dx)*0.5)**2)/0.25 )**4 ) # Mauricio`s funtion advice    
-    plt.plot(xlin, rho)
-    plt.plot()
-    #rho = initial_condition(xlin,1,0.1)
+    #rho0 = np.ones(xlin.shape)
+    rho0 = ((1 - ((xlin - (boxsize-0.5*dx)*0.5)**2)/0.25 )**4 ) # Mauricio`s funtion advice   
+    #rho0 = 1*(xlin < boxsize*0.5) + 0.125*(xlin >= boxsize*0.5)
+    
 
     # put Cubic spline in place of Gaussian
   
 
-    vx = np.zeros(xlin.shape)
-    #vx = np.abs((xlin - (boxsize-0.5*dx)*0.5)/16)
-    P = (np.abs(rho))**gamma
-    Pi = np.zeros(xlin.shape)
+  
+    #vx0 = np.abs((xlin - (boxsize-0.5*dx)*0.5)/16)
+    vx0 = np.zeros(xlin.shape)
+    #vx0 = np.sin(xlin)*np.ones(xlin.shape)
+
+    P0 = (np.abs(rho0))**gamma
+    Pi0 = np.zeros(xlin.shape)
+
+    #-----------------------------------------------------------------------------------------------------------------------------------#
+
+    rho = rho0
+    vx = vx0
+    P = P0
+    Pi = Pi0
     cs = getSpeedOfSound(rho,gamma)
+    
 
     #-----------------------------------------------------------------------------------------------------------------------------------#
   
@@ -73,6 +83,14 @@ def main():
 
     # prep figure
     fig = plt.figure(figsize=(4,4), dpi=80)
+    ax1 = fig.add_subplot(121)
+    ax2 = fig.add_subplot(122)
+    ax1.title.set_text('Density')
+    ax2.title.set_text('Velocity')
+
+    ax1.plot(xlin, rho0)
+    ax2.plot(xlin, vx0)
+
     outputCount = 1
 
     #-----------------------------------------------------------------------------------------------------------------------------------#
@@ -110,7 +128,7 @@ def main():
       
         plotThisTurn = False
 
-        if t + dt > outputCount*tOut:
+        if t + dt > outputCount*tOut or t == 0 :
             plotThisTurn = True
         
         #-----------------------------------------------------------------------------------------------------------------------------------#
@@ -148,7 +166,6 @@ def main():
         # update solution
 
         J = (Pi * vx_dx - (zeta / tau_nu * vx_dx + Pi / tau_nu))
-        
         
 
         rho    = modified_RungeKutta(rho,   applyFluxes( flux_Mass_XR,   flux_Mass_XL,   dx),    dt)
@@ -190,23 +207,22 @@ def main():
         
         # plot in real time 
         if (plotRealTime and plotThisTurn) or (t >= tEnd):
-            plt.cla()
-            plt.plot(xlin,rho)
-            #plt.imshow()
-            #print(np.any(rho > 10**3))
-            #print(np.any(vx > 10**2))
-            ax = plt.gca()
-            plt.ylim((0,1+0.1))
+            ax1.plot(xlin,rho)
+            ax1.set_ylim((0,1+0.1))
+            ax2.plot(xlin,vx)
             plt.xlim((0,boxsize))
             plt.pause(0.001)
             outputCount += 1
+            
        #-----------------------------------------------------------------------------------------------------------------------------------#    
   
            
     #plt.plot(rho_mean, time)
         
     # Save figure
-    plt.savefig('finitevolume.png',dpi=240)
+  
+    
+    plt.savefig('finitevolume_PolynomialDensity_.png',dpi=240)
 
     plt.show()
 
