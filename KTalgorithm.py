@@ -31,7 +31,7 @@ def getGradient(f, dx, theta=1):
 
     return df_dx
 
-def local_propagation_speed(rho, vx, Pi, gamma): 
+def local_propagation_speed(rho, vx, Pi, gamma, B): 
    '''
     rho          is a matrix of left-state  density
     vx_P         is a matrix of x-velocity
@@ -39,13 +39,16 @@ def local_propagation_speed(rho, vx, Pi, gamma):
     cs           is the speed of sound
     '''
 
-   cs = getSpeedOfSound(rho, gamma)
-
    C1 = np.abs(vx)
 
-   C2 = np.abs(vx - np.sqrt(np.abs(cs**2 + np.divide(Pi , rho , out=np.zeros_like(Pi), where=rho!=0 ))  ) )
+   C2 = np.abs(vx/(2*gamma) - np.divide(np.sqrt(rho**2 * vx**2 - 2 * rho * vx**2 * gamma + 4 * (B + Pi) * rho * gamma**2 + 4* rho**(1+ gamma) * gamma**3 ),
+                                        2 * rho * gamma, out=np.zeros_like(rho**2 * vx**2 - 2 * rho * vx**2 * gamma + 4 * (B + Pi) * rho * gamma**2 + 4* rho**(1+ gamma) * gamma**3),
+                                        where=rho!=0)) 
 
-   C3 = np.abs(vx + np.sqrt(np.abs( cs**2 + np.divide(Pi , rho , out=np.zeros_like(Pi), where=rho!=0 ) ) ) )
+
+   C3 = np.abs(vx/(2*gamma) + np.divide(np.sqrt(rho**2 * vx**2 - 2 * rho * vx**2 * gamma + 4 * (B + Pi) * rho * gamma**2 + 4* rho**(1+ gamma) * gamma**3 ),
+                                        2 * rho * gamma, out=np.zeros_like(rho**2 * vx**2 - 2 * rho * vx**2 * gamma + 4 * (B + Pi) * rho * gamma**2 + 4* rho**(1+ gamma) * gamma**3),
+                                          where=rho!=0))   
 
    return np.maximum(C1,C2,C3)
 
@@ -69,9 +72,9 @@ def extrapolateInSpaceToFace(q, q_dx, dx):
   
   return qM_XL, qP_XL, qM_XR, qP_XR
 
-def getFlux(rho_P, rho_M, vx_P, vx_M, Pi_P, Pi_M, P_P, P_M, gamma):
+def getFlux(rho_P, rho_M, vx_P, vx_M, Pi_P, Pi_M, P_P, P_M, gamma, B):
   """
-  Calculate fluxed between 2 states with local Kurganov Tadmor rule 
+  Calculate fluxed between 2 states with local Kurganov-Tadmor rule 
   rho_P        is a matrix of left-state  density
   rho_M        is a matrix of right-state density
   vx_P         is a matrix of left-state  x-velocity
@@ -97,14 +100,14 @@ def getFlux(rho_P, rho_M, vx_P, vx_M, Pi_P, Pi_M, P_P, P_M, gamma):
   # compute fluxes (local Kurganov-Tadmor)
 
   flux_Mass   = momx_av
-  flux_Momx   = 0.5*(rho_P*(vx_P)**2 + rho_M*(vx_M)**2) + P_av + Pi_av
-  flux_Pi_v   = Pi_vx_av
+  flux_Momx   = 0.25*(rho_P*(vx_P)**2 + rho_M*(vx_M)**2) + (P_av + Pi_av)/gamma
+  flux_Pi_v   = Pi_vx_av + B * (vx_P + vx_M)
   
   # find wavespeeds
 
-  C_P = local_propagation_speed(rho_P , vx_P, Pi_P, gamma) # max propagation speed from the left
+  C_P = local_propagation_speed(rho_P , vx_P, Pi_P, gamma, B) # max propagation speed from the left
 
-  C_M = local_propagation_speed(rho_M , vx_M, Pi_M, gamma) # max propagation speed from the right
+  C_M = local_propagation_speed(rho_M , vx_M, Pi_M, gamma, B) # max propagation speed from the right
 
   C = np.maximum(C_M, C_P)
 

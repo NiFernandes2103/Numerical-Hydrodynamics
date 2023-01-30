@@ -12,7 +12,7 @@ def main():
     # Simulation parameters
     N                      = 128 # resolution
     boxsize                = 1.  # in some unit system l
-    gamma                  = 5/3 # adiabatic index
+    gamma                  = 2 # adiabatic index
     zeta                   = 0 # bulk viscosity coefficient
     tau_nu                 = 200
     t                      = 0   # s 
@@ -40,15 +40,15 @@ def main():
 
 
     #rho0 = np.ones(xlin.shape)
-    rho0 = ((1 - ((xlin - (boxsize-0.5*dx)*0.5)**2)/0.25 )**4 ) # Mauricio`s funtion advice   
-    #rho0 = 1*(xlin < boxsize*0.5) + 0.125*(xlin >= boxsize*0.5)
+    #rho0 = ((1 - ((xlin - (boxsize-0.5*dx)*0.5)**2)/0.25 )**4 ) + np.ones(xlin.shape) # Mauricio`s funtion advice   
+    rho0 = 1*(xlin < boxsize*0.5) + 0.125*(xlin >= boxsize*0.5)
     
 
     # put Cubic spline in place of Gaussian
   
 
   
-    #vx0 = np.abs((xlin - (boxsize-0.5*dx)*0.5)/16)
+    #vx0 = 100*np.abs((xlin - (boxsize-0.5*dx)*0.5)/16)
     vx0 = np.zeros(xlin.shape)
     #vx0 = np.sin(xlin)*np.ones(xlin.shape)
 
@@ -61,16 +61,9 @@ def main():
     vx = vx0
     P = P0
     Pi = Pi0
+    B = zeta/tau_nu
     cs = getSpeedOfSound(rho,gamma)
     
-
-    #-----------------------------------------------------------------------------------------------------------------------------------#
-  
-
-    # Get mean rho 
-    
-    time  = np.zeros(int(tEnd/0.01)+1)
-    #rho_mean = np.mean(rho[:0]) * np.ones(int(tEnd/0.01)+1)
 
     #-----------------------------------------------------------------------------------------------------------------------------------#
 
@@ -153,8 +146,8 @@ def main():
         
         # compute fluxes (local Kurganov-Tadmor)
 
-        flux_Mass_XR, flux_Momx_XR, flux_Pi_vxR = getFlux(rhoP_XR, rhoM_XR, vxP_XR, vxM_XR, PiP_XR, PiM_XR, PP_XR, PM_XR, gamma)
-        flux_Mass_XL, flux_Momx_XL, flux_Pi_vxL = getFlux(rhoP_XL, rhoM_XL, vxP_XL, vxM_XL, PiP_XL, PiM_XL, PP_XL, PM_XL, gamma)
+        flux_Mass_XR, flux_Momx_XR, flux_Pi_vxR = getFlux(rhoP_XR, rhoM_XR, vxP_XR, vxM_XR, PiP_XR, PiM_XR, PP_XR, PM_XR, gamma, B)
+        flux_Mass_XL, flux_Momx_XL, flux_Pi_vxL = getFlux(rhoP_XL, rhoM_XL, vxP_XL, vxM_XL, PiP_XL, PiM_XL, PP_XL, PM_XL, gamma, B)
 
         # tests for flux limitation
         if runFluxLimitTests:
@@ -165,7 +158,7 @@ def main():
         
         # update solution
 
-        J = (Pi * vx_dx - (zeta / tau_nu * vx_dx + Pi / tau_nu))
+        J = -(Pi)
         
 
         rho    = modified_RungeKutta(rho,   applyFluxes( flux_Mass_XR,   flux_Mass_XL,   dx),    dt)
@@ -216,13 +209,11 @@ def main():
             
        #-----------------------------------------------------------------------------------------------------------------------------------#    
   
-           
-    #plt.plot(rho_mean, time)
         
     # Save figure
   
     
-    plt.savefig('finitevolume_PolynomialDensity_.png',dpi=240)
+    plt.savefig('finitevolume.png',dpi=240)
 
     plt.show()
 

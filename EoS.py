@@ -12,9 +12,9 @@ def getConserved( rho, vx, vol ):
     Momx     is matrix of x-momentum in cells
     """
     Mass   = rho * vol
-    Momr   = rho * vx * vol
+    Momx   = rho * vx 
 
-    return Mass, Momr
+    return Mass, Momx
   
 def getPrimitive( Mass, Momx, gamma, vol):
   """
@@ -24,7 +24,7 @@ def getPrimitive( Mass, Momx, gamma, vol):
   gamma    is ideal gas gamma
   vol      is cell volume
   rho      is matrix of cell densities
-  vx       is matrix of cell r-velocity
+  vx       is matrix of cell x-velocity
   P        is matrix of cell pressures
   """
   rho = Mass / vol
