@@ -41,14 +41,10 @@ def local_propagation_speed(rho, vx, Pi, gamma, B):
 
    C1 = np.abs(vx)
 
-   C2 = np.abs(vx/(2*gamma) - np.divide(np.sqrt(rho**2 * vx**2 - 2 * rho * vx**2 * gamma + 4 * (B + Pi) * rho * gamma**2 + 4* rho**(1+ gamma) * gamma**3 ),
-                                        2 * rho * gamma, out=np.zeros_like(rho**2 * vx**2 - 2 * rho * vx**2 * gamma + 4 * (B + Pi) * rho * gamma**2 + 4* rho**(1+ gamma) * gamma**3),
-                                        where=rho!=0)) 
+   C2 = np.abs(vx/(2*gamma) - np.sqrt( vx**2 - np.divide(2 * vx**2 * gamma + 4 * (B + Pi) * gamma**2, rho, out=np.zeros_like(2 * vx**2 * gamma + 4 * (B + Pi) * gamma**2)) + 4* rho**(gamma-1) * gamma**3 ), where=rho!=0) 
 
 
-   C3 = np.abs(vx/(2*gamma) + np.divide(np.sqrt(rho**2 * vx**2 - 2 * rho * vx**2 * gamma + 4 * (B + Pi) * rho * gamma**2 + 4* rho**(1+ gamma) * gamma**3 ),
-                                        2 * rho * gamma, out=np.zeros_like(rho**2 * vx**2 - 2 * rho * vx**2 * gamma + 4 * (B + Pi) * rho * gamma**2 + 4* rho**(1+ gamma) * gamma**3),
-                                          where=rho!=0))   
+   C3 = np.abs(vx/(2*gamma) + np.sqrt( vx**2 - np.divide(2 * vx**2 * gamma + 4 * (B + Pi) * gamma**2, rho, out=np.zeros_like(2 * vx**2 * gamma + 4 * (B + Pi) * gamma**2)) + 4* rho**(gamma-1) * gamma**3 ), where=rho!=0)
 
    return np.maximum(C1,C2,C3)
 
@@ -101,7 +97,7 @@ def getFlux(rho_P, rho_M, vx_P, vx_M, Pi_P, Pi_M, P_P, P_M, gamma, B):
 
   flux_Mass   = momx_av
   flux_Momx   = 0.25*(rho_P*(vx_P)**2 + rho_M*(vx_M)**2) + (P_av + Pi_av)/gamma
-  flux_Pi_v   = Pi_vx_av + B * (vx_P + vx_M)
+  flux_Pi_v   = Pi_vx_av + B * (vx_P + vx_M) * 0.5
   
   # find wavespeeds
 

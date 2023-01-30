@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.interpolate import CubicSpline, interp1d
 from KTalgorithm import *
 from EoS import *
 from RK_Heuns_integrator import *
@@ -13,10 +12,10 @@ def main():
     N                      = 128 # resolution
     boxsize                = 1.  # in some unit system l
     gamma                  = 2 # adiabatic index
-    zeta                   = 0 # bulk viscosity coefficient
+    zeta                   = 1 # bulk viscosity coefficient
     tau_nu                 = 200
     t                      = 0   # s 
-    tEnd                   = 20   # time at the end
+    tEnd                   = 2   # time at the end
     tOut                   = 2 # time of each output
     plotRealTime = True  # switch on for plotting as the simulation goes along
 
@@ -40,13 +39,9 @@ def main():
 
 
     #rho0 = np.ones(xlin.shape)
-    #rho0 = ((1 - ((xlin - (boxsize-0.5*dx)*0.5)**2)/0.25 )**4 ) + np.ones(xlin.shape) # Mauricio`s funtion advice   
-    rho0 = 1*(xlin < boxsize*0.5) + 0.125*(xlin >= boxsize*0.5)
+    rho0 = ((1 - ((xlin - (boxsize-0.5*dx)*0.5)**2)/0.25 )**4 ) + 0.5*np.ones(xlin.shape) # Mauricio`s funtion advice   
+    #rho0 = 1*(xlin < boxsize*0.5) + 0.125*(xlin >= boxsize*0.5)
     
-
-    # put Cubic spline in place of Gaussian
-  
-
   
     #vx0 = 100*np.abs((xlin - (boxsize-0.5*dx)*0.5)/16)
     vx0 = np.zeros(xlin.shape)
@@ -65,12 +60,7 @@ def main():
     cs = getSpeedOfSound(rho,gamma)
     
 
-    #-----------------------------------------------------------------------------------------------------------------------------------#
-
-
-    # Get conserved variables
-    Mass, Momx = getConserved( rho, vx, vol)
-
+   
     #-----------------------------------------------------------------------------------------------------------------------------------#
 
 
@@ -95,11 +85,11 @@ def main():
         #-----------------------------------------------------------------------------------------------------------------------------------#
 
         # get Conserved variables
-        Mass, Momx = getConserved( rho, vx, vol)
+        Mass, Momx, Pi_vx = getConserved( rho, vx, Pi, vol)
 
         if np.any(Mass < 0):
           print("Mass is negative")
-          exit()
+     
 
         # get Primitive variables
         rho, vx, P = getPrimitive( Mass, Momx, gamma, vol )
@@ -166,7 +156,6 @@ def main():
                          out=np.zeros_like(modified_RungeKutta(Momx,  applyFluxes( flux_Momx_XR,   flux_Momx_XL,   dx), dt)), where=rho!=0)
         Pi     = modified_RungeKutta(Pi, applyFluxes( flux_Pi_vxR,    flux_Pi_vxL,    dx, J), dt)
 
-        Pi = regParams(Pi,1)
         
 
         #-----------------------------------------------------------------------------------------------------------------------------------#
@@ -201,7 +190,7 @@ def main():
         # plot in real time 
         if (plotRealTime and plotThisTurn) or (t >= tEnd):
             ax1.plot(xlin,rho)
-            ax1.set_ylim((0,1+0.1))
+            ax1.set_ylim((0,2+0.1))
             ax2.plot(xlin,vx)
             plt.xlim((0,boxsize))
             plt.pause(0.001)

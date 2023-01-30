@@ -30,5 +30,3 @@ def modified_RungeKutta(q, C, dt, s=2):
     return y[s-1]
 
 
-def heun_integrator(t,y):
-    pass
