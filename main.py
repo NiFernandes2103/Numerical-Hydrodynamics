@@ -82,4 +82,6 @@ def animate_density(i):
 ani = animation.FuncAnimation(figure, animate_density, init_func=init,
                                frames=1000, interval=20, blit=True)
 
-HTML(ani.to_html5_video())
+ani.save("noShearnonRelativisticIS.gif")
+
+#HTML(ani.to_html5_video())

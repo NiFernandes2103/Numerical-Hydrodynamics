@@ -44,8 +44,6 @@ def local_propagation_speed(rho, vx, Pi, gamma, B):
    return np.maximum(C1,C2,C3)
 
 
-
-
 def getGradient(f, dx, theta=1):
     """
     Calculate the gradients of a field
@@ -106,7 +104,6 @@ def getFlux(rho_P, rho_M, vx_P, vx_M, Pi_P, Pi_M, P_P, P_M, gamma, B):
   
 
   # compute (averaged) states over the left and right states
-  rho_av   = 0.5*(rho_P + rho_M)
   momx_av  = 0.5*(rho_P * vx_P + rho_M * vx_M)
   Pi_av    = 0.5*(Pi_P + Pi_M)
   Pi_vx_av = 0.5*(Pi_P * vx_P + Pi_M * vx_M)
@@ -160,7 +157,7 @@ def KTschemeNonRelativisticIS(t,IC, dx, xlin, gamma, zeta, tau_nu, BC = None, th
 
     # Generate Initial Conditions  
 
-    N = xlin.shape
+    N = xlin.shape[0]
 
     ''' Initial conditions for rho '''
     rho = IC[0:N]
@@ -177,26 +174,16 @@ def KTschemeNonRelativisticIS(t,IC, dx, xlin, gamma, zeta, tau_nu, BC = None, th
     ''' Pi initial condition '''
     Pi = IC[2*N:]
 
-
-   #-----------------------------------------------------------------------------------------------------------------------------------#
-
-
-    # getSpeedOfSound(rho, gamma)
-    cs = getSpeedOfSound(rho,gamma)
-    
-
     #-----------------------------------------------------------------------------------------------------------------------------------#
 
     # get Conserved variables
     vol = dx*dx
-    Mass, Momx, Pi_vx = getConserved( rho, vx, Pi, gamma, vol)
+    Mass, Momx, Pi_vx = getConserved( rho, vx, Pi, vol)
 
 
     # get Primitive variables
     rho, vx, P = getPrimitive( Mass, Momx, gamma, vol )
 
-    # get Speed of sound
-    cs = getSpeedOfSound(rho, gamma)
 
     #-----------------------------------------------------------------------------------------------------------------------------------#
     
