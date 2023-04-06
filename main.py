@@ -28,7 +28,7 @@ t                      = 0   # s
 tEnd                   = 2   # time at the end
 tOut                   = 0.01 # time of each output
 
-N                      = 400 # resolution
+N                      = 1000 # resolution
 boxsize                = 1.  # in some unit system l
 gamma                  = 2 # adiabatic index
 zeta                   = 1 # bulk viscosity coefficient
@@ -42,11 +42,13 @@ vol = dx**2        # volume of each box
 xlin = np.linspace(0.5*dx, boxsize-0.5*dx, N) # simulation limits
 
 
-#rho = ((1 - ((xlin - (boxsize-0.5*dx)*0.5)**2)/0.25 )**4 ) + 0.5*np.ones(xlin.shape) # Mauricio`s funtion advice    
+#rho = ((1 - ((xlin - (boxsize-0.5*dx)*0.5)**2)/0.25 )**4 ) + 0.5*np.ones(xlin.shape) # Mauricio`s funtion advice
+#rho  = 0.5*np.sin(2*np.pi*xlin) + 1*np.ones(xlin.shape)    
 rho = 1*(xlin < boxsize*0.5) + 0.125*(xlin >= boxsize*0.5)
 
-#vx = np.zeros(xlin.shape)
-vx = 0.5*np.ones(xlin.shape)
+
+vx = np.zeros(xlin.shape)
+#vx = 0.5*np.ones(xlin.shape)
 #vx = np.abs((xlin - (boxsize-0.5*dx)*0.5)/16)
 
 
@@ -66,6 +68,9 @@ ax1 = plt.subplot(1,1,1)
 ax1.set_xlim((0,boxsize))
 ax1.set_ylim((0, 3))
 line, = ax1.plot([], [], lw=2)
+ax1.set_xlabel('x/x_0')
+ax1.set_ylabel('rho/rho_0')
+ax1.set_title('non-relativistic Israel-Stewart equation')
 
 def init():
     line.set_data([], [])
@@ -82,6 +87,6 @@ def animate_density(i):
 ani = animation.FuncAnimation(figure, animate_density, init_func=init,
                                frames=1000, interval=20, blit=True)
 
-ani.save("noShearnonRelativisticIS.gif")
+ani.save("nonRelativisticIS3.gif")
 
 #HTML(ani.to_html5_video())
