@@ -5,6 +5,7 @@ from scipy import integrate
 from matplotlib.ticker import LinearLocator
 from mpl_toolkits import mplot3d
 import time
+
 start_time = time.time()
 
 '''
@@ -151,10 +152,10 @@ def Burgers(t_init,q,dx,dy,X,Y,explicit_in_time=0):
 
   u = q
 
-  '''
+  
   u[0] = u[1]
   u[-1] = u[-2]
-  '''
+
 
 #-----------------------------------------------------------------------------------------------------------------------------------#
 
@@ -240,9 +241,9 @@ def Heuns(q,f,dt,t,ExplicitTimeDependence):
 
   k1 = dt*f(t,q)
   if ExplicitTimeDependence:
-    k2 = dt*f(t + dt,q + dt*k1)
+    k2 = dt*f(t + dt,q + k1)
   else:
-    k2 = dt*(Euler(q + dt*k1,f(t,q + dt*k1),dt))
+    k2 = dt*(Euler(q + dt*k1,f(t,q + k1),dt))
 
   return q + 1/2 * (k1 + k2)
 
@@ -297,9 +298,9 @@ def integrator(scheme, time, q0, dtmax, BC, method = "Heuns", args=None):
 
     # condition to ensure that the time steps are small enough so that
     # waves do not interfere with each other 
-    courant_number = np.min(np.divide( dx, local_propagation_speed(q), out=np.zeros_like(dx*np.ones(q.shape)), where=local_propagation_speed(q)!=0))
-
+    courant_number = dx/np.max(local_propagation_speed(q))
     dt  =  np.minimum(dtmax, 0.5*courant_number) 
+    
 
     if method == "Heuns":
       q = Heuns(q,C,dt,t,args[-1])
@@ -324,10 +325,10 @@ fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
 
 
 # Simulation parameters
-N                      = 100 # resolution
+N                      = 400 # resolution
 boxsize                = 4.  # in some unit system l
 t                      = 0   # s 
-tEnd                   = 0.1   # time at the end
+tEnd                   = 2   # time at the end
 
 # Define Mesh
 dx = boxsize / N   # box size
@@ -337,7 +338,8 @@ X,Y = np.meshgrid(xlin,xlin)
 
 R = np.sqrt(X**2 + Y**2)
 
-u = 1*(R <= boxsize*0.25) + 0.125*(R > boxsize*0.5)
+#u = 1*(R <= boxsize*0.25) + 0.125*(R > boxsize*0.5)
+u = 1*(X <= boxsize*0.25) + 0.125*(X > boxsize*0.5)
 
 solution = integrator(Burgers, (t,tEnd), u, 0.01, None, args=(dx,dy,X,Y,True))
 
@@ -349,7 +351,7 @@ ax.set_ylim(-2, 2)
 
 print(len(solution))
 
-plt.imshow(solution[200])
+plt.imshow(solution[0],aspect='auto')
 
 surf = ax.plot_surface(X,Y,solution[0], cmap="plasma")
 ax.view_init()
