@@ -24,6 +24,7 @@ def applyBC(y):
   Pi[0]     = Pi[1]   
   Pi[-1]    = Pi[-2]
 
+plotfinalstate = 1
 
 for i in range(10):
   t                      = 0   # s 
@@ -40,7 +41,7 @@ for i in range(10):
   zeta                   = 1 # bulk viscosity coefficient
   tau_nu                 = 1
   theta                  = 1
-
+  
 
   # Define Mesh
   dx = boxsize / N   # box size
@@ -91,7 +92,16 @@ for i in range(10):
   ax3.set_xlabel('x/x_0')
   ax3.set_ylabel('Pi/P_0')
 
-
+  if plotfinalstate == 1:
+    x = xlin
+    a = solution[0][:N]
+    b = solution[0][N:2*N]
+    c = solution[0][2*N:]
+    line1.set_data(x, a)
+    line2.set_data(x, b)
+    line3.set_data(x, c)
+    filename = "FinalStatenonRelativisticIS{}.png".format(i)
+    plt.savefig(str(filename))
 
   def init():
       line1.set_data([], [])
@@ -113,9 +123,9 @@ for i in range(10):
     return (line1,line2,line3,)
 
 
-  ani = animation.FuncAnimation(figure, animate, init_func=init,
-                                frames=200, interval=20, blit=True)
+  #ani = animation.FuncAnimation(figure, animate, init_func=init,
+  #                              frames=200, interval=20, blit=True)
 
-  filename = "nonRelativisticIS{}.gif".format(i)
-  ani.save(str(filename))
+  #filename = "nonRelativisticIS{}.png".format(i)
+  #plt.save(str(filename))
 

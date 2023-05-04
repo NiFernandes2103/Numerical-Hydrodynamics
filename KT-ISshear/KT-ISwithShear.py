@@ -4,7 +4,7 @@ import matplotlib as mpl
 from scipy import integrate
 from KTmethods2d import *
 
-def KTschemeNonRelativisticIS(t,IC, dx, dy, xlin, gamma, zeta, tau_nu, eta, theta=1):
+def KTschemeNonRelativisticIS(t, IC, dx, dy, xlin, gamma, zeta, tau_nu, eta, theta=1):
 
     """ Finite Volume simulation """
   
