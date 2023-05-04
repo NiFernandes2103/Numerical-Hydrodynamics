@@ -32,7 +32,7 @@ def modified_RungeKutta(q, C, dt, s=2):
 def Heuns(q,f,dt,t):
 
   k1 = dt*f(t,q)
-  k2 = dt*f(t + 1,q + k1)
+  k2 = dt*f(t + dt,q + k1)
 
   return q + 1/2 * (k1 + k2)
 

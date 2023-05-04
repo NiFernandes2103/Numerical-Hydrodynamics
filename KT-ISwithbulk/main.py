@@ -24,69 +24,98 @@ def applyBC(y):
   Pi[0]     = Pi[1]   
   Pi[-1]    = Pi[-2]
 
-t                      = 0   # s 
-tEnd                   = 2   # time at the end
-tOut                   = 0.01 # time of each output
 
-N                      = 400 # resolution
-boxsize                = 1.  # in some unit system l
-gamma                  = 4 # adiabatic index
-zeta                   = 1 # bulk viscosity coefficient
-tau_nu                 = 1
-theta                  = 1
+for i in range(10):
+  t                      = 0   # s 
+  tEnd                   = 2   # time at the end
+  tOut                   = 0.01 # time of each output
 
-
-# Define Mesh
-dx = boxsize / N   # box size
-vol = dx**2        # volume of each box
-xlin = np.linspace(0.5*dx, boxsize-0.5*dx, N) # simulation limits
-
-
-rho = ((1 - ((xlin - (boxsize-0.5*dx)*0.5)**2)/0.25 )**4 ) + 0.5*np.ones(xlin.shape) # Mauricio`s funtion advice
-#rho  = 0.5*np.sin(2*np.pi*xlin) + 1*np.ones(xlin.shape)    
-#rho = 1*(xlin < boxsize*0.5) + 0.125*(xlin >= boxsize*0.5)
+  if i == 1:
+    N                      = 1000 # resolution
+  else:
+    N                      = 400 # resolution
+    
+  boxsize                = 10.  # in some unit system l
+  gamma                  = 2 # adiabatic index
+  zeta                   = 1 # bulk viscosity coefficient
+  tau_nu                 = 1
+  theta                  = 1
 
 
-vx = np.zeros(xlin.shape)
-#vx = 0.5*np.ones(xlin.shape)
-#vx = np.abs((xlin - (boxsize-0.5*dx)*0.5)/16)
+  # Define Mesh
+  dx = boxsize / N   # box size
+  vol = dx**2        # volume of each box
+  xlin = np.linspace(0.5*dx, boxsize-0.5*dx, N) # simulation limits
+  if i == 0 or i == 1 or i == 4 or i == 7:
+    rho = ((1 - ((xlin - (boxsize-0.5*dx)*0.5)**2)/0.1 )**4 )*(abs((xlin-(boxsize-0.5*dx)*0.5)) < 0.2) + 0.5*np.ones(xlin.shape) # Mauricio`s funtion advice
+  elif i == 2 or i == 5 or i == 8:
+    rho  = 0.5*np.sin(2*np.pi*xlin) + 1*np.ones(xlin.shape)    
+  else:
+    rho = 1*(xlin < boxsize*0.5) + 0.125*(xlin >= boxsize*0.5)
+
+  if i == 0 or i == 1 or i == 2 or i == 3:
+    vx = np.zeros(xlin.shape)
+  if i == 4 or i == 5 or i == 6:
+    vx = 0.5*np.ones(xlin.shape)
+  else:
+    vx = np.abs((xlin - (boxsize-0.5*dx)*0.5)/16)
 
 
-Pi = np.zeros(xlin.shape)
+  Pi = np.zeros(xlin.shape)
 
-IC = np.hstack((rho,rho*vx,Pi)) # here the initial conditions are stacked in a vector 
-                            # rho is IC[0:N] for example
-
-
-solution = integrator(KTschemeNonRelativisticIS, (t,tEnd), IC, 0.01, applyBC, args=(dx, xlin, gamma, zeta, tau_nu, None, theta))
+  IC = np.hstack((rho,rho*vx,Pi)) # here the initial conditions are stacked in a vector 
+                              # rho is IC[0:N] for example
 
 
-figure = plt.figure()
-ax1 = plt.subplot(1,1,1)
-
-# set ax boundaries
-ax1.set_xlim((0,boxsize))
-ax1.set_ylim((-3, 3))
-line, = ax1.plot([], [], lw=2)
-ax1.set_xlabel('x/x_0')
-ax1.set_ylabel('rho/rho_0')
-ax1.set_title('non-relativistic Israel-Stewart equation')
-
-def init():
-    line.set_data([], [])
-    return (line,)
+  solution = integrator(KTschemeNonRelativisticIS, (t,tEnd), IC, 0.01, applyBC, args=(dx, xlin, gamma, zeta, tau_nu, None, theta))
 
 
-def animate_density(i):
-  x = xlin
-  y = solution[i][2*N:]
-  line.set_data(x, y)
-  return (line,)
+  figure, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
+
+  # set ax boundaries
+  ax1.set_xlim((4,6))
+  ax1.set_ylim((0, 3))
+  line1, = ax1.plot([], [], lw=2)
+  ax1.set_ylabel('rho/rho_0')
+  ax1.set_title('Density')
+
+  ax2.set_xlim((4,6))
+  ax2.set_ylim((-1, 2))
+  line2, = ax2.plot([], [], lw=2)
+  ax2.set_title('Velocity')
+
+  ax3.set_xlim((4,6))
+  ax3.set_ylim((-1.5, 1.5))
+
+  line3, = ax3.plot([], [], lw=2)
+  ax3.set_xlabel('x/x_0')
+  ax3.set_ylabel('Pi/P_0')
 
 
-ani = animation.FuncAnimation(figure, animate_density, init_func=init,
-                               frames=1000, interval=20, blit=True)
 
-ani.save("nonRelativisticIS.gif")
+  def init():
+      line1.set_data([], [])
+      line2.set_data([], [])
+      line3.set_data([], [])
+    
+      return (line1,line2,line3,)
 
-#HTML(ani.to_html5_video())
+
+  def animate(i):
+    x = xlin
+    a = solution[i][:N]
+    b = solution[i][N:2*N]
+    c = solution[i][2*N:]
+    line1.set_data(x, a)
+    line2.set_data(x, b)
+    line3.set_data(x, c)
+
+    return (line1,line2,line3,)
+
+
+  ani = animation.FuncAnimation(figure, animate, init_func=init,
+                                frames=200, interval=20, blit=True)
+
+  filename = "nonRelativisticIS{}.gif".format(i)
+  ani.save(str(filename))
+
