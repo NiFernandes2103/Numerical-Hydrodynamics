@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from scipy import integrate
-from 2dKTmethods import *
+from KTmethods2d import *
 
 def KTschemeNonRelativisticIS(t,IC, dx, dy, xlin, gamma, zeta, tau_nu, eta, theta=1):
 
