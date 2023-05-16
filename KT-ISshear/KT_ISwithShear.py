@@ -1,6 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib as mpl
 from scipy import integrate
 from KTmethods2d import *
 
@@ -35,23 +33,19 @@ def KTschemeNonRelativisticIS(t, IC, dx, dy, xlin, gamma, zeta, tau_nu, eta, the
     Piyx = IC[5*N:6*N]
     Piyy = IC[6*N:]
 
-
    #-----------------------------------------------------------------------------------------------------------------------------------#
-
 
     # getSpeedOfSound(rho, gamma)
     cs = getSpeedOfSound(rho,gamma)
     
-
     #-----------------------------------------------------------------------------------------------------------------------------------#
 
     # get Conserved variables
     vol = dx*dx
-    Mass, Momx, Momy = getConserved( rho, vx, vy, gamma, vol)
-
+    Mass, Momx, Momy = getConserved(rho, vx, vy, gamma, vol)
 
     # get Primitive variables
-    rho, vx, vy, P = getPrimitive( Mass, Momx, Momy, gamma, vol )
+    #rho, vx, vy, P = getPrimitive( Mass, Momx, Momy, gamma, vol )
 
     # get Speed of sound
     cs = getSpeedOfSound(rho, gamma)
@@ -165,7 +159,7 @@ def KTschemeNonRelativisticIS(t, IC, dx, dy, xlin, gamma, zeta, tau_nu, eta, the
     
     return np.vstack((timederivative_rho,timederivative_Momx,timederivative_Momy,timederivative_Pixx,timederivative_Pixy,timederivative_Piyx,timederivative_Piyy))
   
-def integrator(scheme, time, q0, dtmax, BC, method = "Heuns", args=None):
+def integrator(scheme, time, q0, dtmax, method = "Heuns", args=None):
 
   '''
   This is an integrator that evolves a
@@ -205,6 +199,7 @@ def integrator(scheme, time, q0, dtmax, BC, method = "Heuns", args=None):
 
     C = scheme
 
+    # speed of sound
     cs = getSpeedOfSound(q[0:N],args[3])
 
     # condition to ensure that the time steps are small enough so that
@@ -212,10 +207,12 @@ def integrator(scheme, time, q0, dtmax, BC, method = "Heuns", args=None):
     courant_number = np.divide(dx,np.max(local_propagation_speed(q[0:N],q[N:2*N],q[2*N:3*N],args[-3],args[4],args[5],cs)),out=np.array([10.0]),
                                where=np.max(local_propagation_speed(q[0:N],q[N:2*N],q[2*N:3*N],args[-3],args[4],args[5],cs))!=0)
     
+    # if courant number becomes zero then the program will not proceed
     if (np.finfo(float).eps > courant_number):
       print("slow update")
+      exit()
 
-    dt  =  np.minimum(dtmax,0.2*courant_number) 
+    dt  =  np.minimum(dtmax, 0.2*courant_number) 
     print("dt: ",dt)
 
     if method == "Heuns":
@@ -238,7 +235,7 @@ t                      = 0   # s
 tEnd                   = 0.1   # time at the end
 tOut                   = 0.01 # time of each output
 
-N                      = 1000 # resolution
+N                      = 200 # resolution
 boxsize                = 1.  # in some unit system l
 gamma                  = 2 # adiabatic index
 zeta                   = 1 # bulk viscosity coefficient
@@ -258,19 +255,20 @@ R = np.sqrt(X**2 + Y**2)
 
 # initial condition of density
 
-rho = (1*(R <= 1*0.25) + 0.125*(R > 1*0.5))
+rho = (1*(R <= 1*0.25) + 0.25*(R > 1*0.25))
+plt.imshow(rho)
+plt.show()
 #rho = ((1 - ((xlin - (boxsize-0.5*dx)*0.5)**2)/0.25 )**4 ) + 0.5*np.ones(xlin.shape) # Mauricio`s funtion advice    
 #rho = 1*(X < boxsize*0.5) + 0.125*(X >= boxsize*0.5)
 
 # initial condition of velocity
-#vx = np.zeros(s)
+vx = np.zeros(s)
 #vx = 0.5*np.ones(xlin.shape)
-vx = 1*(X < boxsize*0.5) + 0*(X >= boxsize*0.5)
+#vx = 1*(X < boxsize*0.5) + 0*(X >= boxsize*0.5)
 #vx = np.abs((xlin - (boxsize-0.5*dx)*0.5)/16)
 
 vy = np.zeros(s)
 #vy = 0.5*np.ones(xlin.shape)
-
 
 # initial condition of Pi tensor
 Pixx = np.zeros(s)
@@ -278,11 +276,11 @@ Pixy = np.zeros(s)
 Piyx = np.zeros(s)
 Piyy = np.zeros(s)
 
-IC = np.vstack((rho,rho*vx, rho*vy,Pixx,Pixy,Piyx,Piyy)) # here the initial conditions are stacked in a vector 
+IC = np.vstack((rho, rho*vx, rho*vy, Pixx, Pixy, Piyx, Piyy)) # here the initial conditions are stacked in a vector 
                             # rho is IC[0:N] for example
 
 # dx, dy, xlin, gamma, zeta, tau_nu, BC, theta=1
 
-solution = integrator(KTschemeNonRelativisticIS, (t, tEnd), IC, 0.01, None, args=(dx, dy, xlin, gamma, zeta, tau_nu, eta, theta))
+solution = integrator(KTschemeNonRelativisticIS, (t, tEnd), IC, 0.01, method="RK4", args=(dx, dy, xlin, gamma, zeta, tau_nu, eta, theta))
 
 

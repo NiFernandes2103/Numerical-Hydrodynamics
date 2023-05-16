@@ -139,18 +139,11 @@ def local_propagation_speed(rho, vx, vy, eta, zeta, tau_nu, cs):
     cs           is the speed of sound
     '''
 
-  
-   #C1 = np.abs(vx)
+   C1 = np.sqrt(np.divide(eta*tau_nu, rho, out=np.zeros_like(np.ones(rho.shape)), where=rho!=0))
 
-   #C2 = np.abs(vy)
+   C2 = np.sqrt(np.divide(cs**2 * (zeta + 4/3 * tau_nu), rho*tau_nu, out=np.zeros_like(np.ones(rho.shape)), where=rho!=0))
 
-   #C0 = np.maximum(C1,C2)
-
-   C3 = np.sqrt(np.divide(eta*tau_nu, rho, out=np.zeros_like(np.ones(rho.shape)), where=rho!=0))
-
-   C4 = np.sqrt(np.divide(cs**2 * (zeta + 4/3 * tau_nu), rho*tau_nu, out=np.zeros_like(np.ones(rho.shape)), where=rho!=0))
-
-   return np.maximum(C3,C4)
+   return np.maximum(C1,C2)
 
 def getXFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pixx_P, Pixx_M, Pixy_P,
               Pixy_M, Piyx_P, Piyx_M, Piyy_P, Piyy_M, P_P, P_M, gamma, eta,
