@@ -30,7 +30,6 @@ def getGradient(f, dx, axis=0, theta=1):
     
     """
 
-
     df_dx = np.zeros(f.shape)
     n = f.shape[axis]   
     K = np.arange(0, n)

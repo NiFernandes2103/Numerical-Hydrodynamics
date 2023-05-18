@@ -5,6 +5,7 @@ from scipy import integrate
 
 
 def getConserved( rho, vx, vy, gamma, vol ):
+
     """
     Calculate the conserved variable from the primitive
     rho      is matrix of cell densities
@@ -16,6 +17,7 @@ def getConserved( rho, vx, vy, gamma, vol ):
     Momx     is matrix of x-momentum in cells
     Momy     is matrix of y-momentum in cells
     """
+
     Mass   = rho * vol
     Momx   = rho * vx
     Momy   = rho * vy  
@@ -262,10 +264,10 @@ def getYFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pixx_P, Pixx_M, Pixy_P,
   flux_Mass   = momy_av 
   flux_Momx   = 0.5*(rho_P*(vx_P*vy_P) + rho_M*(vx_M*vy_M)) + (Pixy_av)/gamma
   flux_Momy   = 0.25*(rho_P*(vy_P)**2 + rho_M*(vy_M)**2) + (P_av + Piyy_av)/gamma
-  flux_Pixx_vy   = Pixx_vy_av + (A - 2/3 * B) * (vx_P + vx_M) * 0.5
+  flux_Pixx_vy   = Pixx_vy_av + (A - 2/3 * B) * (vy_P + vy_M) * 0.5
   flux_Pixy_vy   = Pixy_vy_av + B * (vy_P + vy_M) * 0.5
   flux_Piyx_vy   = Piyx_vy_av + B * (vy_P + vy_M) * 0.5
-  flux_Piyy_vy   = Piyy_vy_av + B * (vx_P + vx_M) + (A - 2/3 * B) * (vx_P + vx_M) * 0.5
+  flux_Piyy_vy   = Piyy_vy_av + B * (vx_P + vx_M) + (A - 2/3 * B) * (vy_P + vy_M) * 0.5
 
   
   # find wavespeeds

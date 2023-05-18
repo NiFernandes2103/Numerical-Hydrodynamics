@@ -24,20 +24,19 @@ def local_propagation_speed(rho, vx, Pi, gamma, B):
     cs           is the speed of sound
     '''
 
+  
    C1 = np.abs(vx)
-
+   cs = getSpeedOfSound(rho, gamma)
 
    try:
-     C2 = np.abs(vx/(2*gamma) - np.divide(np.emath.sqrt(4*B*rho*gamma+4*rho**(1+gamma) * gamma**2 - rho**2 * vx**2 * gamma**2 + 4 * rho * gamma * Pi ),
-                                        2 * rho * gamma, out=np.zeros_like(4*B*rho*gamma+4*rho**(1+gamma) * gamma**2 - rho**2 * vx**2 * gamma**2 + 4 * rho * gamma * Pi),
-                                        where=rho!=0)) 
+     C2 = np.abs(vx/(2) - np.emath.sqrt(cs**2/gamma - vx**2 / 4 + np.divide((Pi+B)*np.ones(rho.shape)/gamma,rho,out(zeros_like(rho.shape)),where=rho!=0)))
+                                      
    except:
      C2 = np.zeros(vx.shape)
 
    try:
-     C3 = np.abs(vx/(2*gamma) + np.divide(np.emath.sqrt(4*B*rho*gamma+4*rho**(1+gamma) * gamma**2 - rho**2 * vx**2 * gamma**2 + 4 * rho * gamma * Pi ),
-                                        2 * rho * gamma, out=np.zeros_like(4*B*rho*gamma+4*rho**(1+gamma) * gamma**2 - rho**2 * vx**2 * gamma**2 + 4 * rho * gamma * Pi),
-                                          where=rho!=0))   
+     C3 = np.abs(vx/(2) + np.emath.sqrt(cs**2/gamma - vx**2 / 4 + np.divide((Pi+B)*np.ones(rho.shape)/gamma,rho,out(zeros_like(rho.shape)),where=rho!=0)))
+ 
    except:
      C3 = np.zeros(vx.shape)
 
