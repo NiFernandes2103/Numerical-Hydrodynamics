@@ -21,8 +21,8 @@ def applyBC(y):
   vx[0]     = vx[1]      
   vx[-1]    = vx[-2]
 
-  Pi[0]     = Pi[1]   
-  Pi[-1]    = Pi[-2]
+  Pi[0]     = 0
+  Pi[-1]    = 0
 
 plotfinalstate = 1
 
@@ -37,7 +37,7 @@ for i in range(10):
     N                      = 400 # resolution
     
   boxsize                = 10.  # in some unit system l
-  gamma                  = 2 # adiabatic index
+  gamma                  = 1 # adiabatic index
   zeta                   = 1 # bulk viscosity coefficient
   tau_nu                 = 1
   theta                  = 1
@@ -92,14 +92,20 @@ for i in range(10):
   ax3.set_xlabel('x/x_0')
   ax3.set_ylabel('Pi/P_0')
 
+  line4, = ax4.plot([], [], lw=2)
+  ax4.set_xlabel('x/x_0')
+  ax4.set_ylabel('P/P_0')
+
   if plotfinalstate == 1:
     x = xlin
     a = solution[0][:N]
     b = solution[0][N:2*N]
     c = solution[0][2*N:]
+    d = (np.abs(a))**gamma
     line1.set_data(x, a)
     line2.set_data(x, b)
     line3.set_data(x, c)
+    line4.set_data(x, d)
     filename = "FinalStatenonRelativisticIS{}.png".format(i)
     plt.savefig(str(filename))
 
@@ -107,8 +113,8 @@ for i in range(10):
       line1.set_data([], [])
       line2.set_data([], [])
       line3.set_data([], [])
-    
-      return (line1,line2,line3,)
+      line4.set_data([], [])
+      return (line1,line2,line3,line4)
 
 
   def animate(i):
@@ -116,11 +122,12 @@ for i in range(10):
     a = solution[i][:N]
     b = solution[i][N:2*N]
     c = solution[i][2*N:]
+    d = (np.abs(a))**gamma
     line1.set_data(x, a)
     line2.set_data(x, b)
     line3.set_data(x, c)
-
-    return (line1,line2,line3,)
+    line4.set_data(x, d)
+    return (line1,line2,line3,line4)
 
 
   #ani = animation.FuncAnimation(figure, animate, init_func=init,
