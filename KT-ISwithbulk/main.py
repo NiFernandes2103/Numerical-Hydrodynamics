@@ -28,16 +28,16 @@ plotfinalstate = 1
 
 for i in range(10):
   t                      = 0   # s 
-  tEnd                   = 2   # time at the end
+  tEnd                   = 1   # time at the end
   tOut                   = 0.01 # time of each output
 
   if i == 1:
-    N                      = 1000 # resolution
+    N                      = 200 # resolution
   else:
     N                      = 400 # resolution
     
   boxsize                = 10.  # in some unit system l
-  gamma                  = 1 # adiabatic index
+  gamma                  = 0.5 # adiabatic index
   zeta                   = 1 # bulk viscosity coefficient
   tau_nu                 = 1
   theta                  = 1
@@ -130,9 +130,9 @@ for i in range(10):
     return (line1,line2,line3,line4)
 
 
-  #ani = animation.FuncAnimation(figure, animate, init_func=init,
-  #                              frames=200, interval=20, blit=True)
+  ani = animation.FuncAnimation(figure, animate, init_func=init,
+                                frames=200, interval=20, blit=True)
 
-  #filename = "nonRelativisticIS{}.png".format(i)
-  #plt.save(str(filename))
+  filename = "nonRelativisticIS{}.gif".format(i)
+  plt.save(str(filename))
 

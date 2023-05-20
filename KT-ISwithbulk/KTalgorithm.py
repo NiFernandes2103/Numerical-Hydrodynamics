@@ -111,7 +111,7 @@ def getFlux(rho_P, rho_M, vx_P, vx_M, Pi_P, Pi_M, P_P, P_M, gamma, B):
   # compute fluxes (local Kurganov-Tadmor)
 
   flux_Mass   = momx_av
-  flux_Momx   = 0.25*(rho_P*(vx_P)**2 + rho_M*(vx_M)**2) + (P_av + Pi_av)/gamma
+  flux_Momx   = 0.5*(rho_P*(vx_P)**2 + rho_M*(vx_M)**2) + (P_av + Pi_av)/gamma
   flux_Pi_v   = Pi_vx_av + B * (vx_P + vx_M)*0.5 
   
   # find wavespeeds
