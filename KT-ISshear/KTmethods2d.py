@@ -189,7 +189,7 @@ def getXFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pixx_P, Pixx_M, Pixy_P,
     A = zeta/tau_nu
 
     flux_Mass   = momx_av  
-    flux_Momx   = 0.25*(rho_P*(vx_P)**2 + rho_M*(vx_M)**2) + (P_av + Pixx_av)/gamma
+    flux_Momx   = 0.5*(rho_P*(vx_P)**2 + rho_M*(vx_M)**2) + (P_av + Pixx_av)/gamma
     flux_Momy   = 0.5*(rho_P*(vx_P*vy_P) + rho_M*(vx_M*vy_M)) + (Piyx_av)/gamma
     flux_Pixx_vx   = Pixx_vx_av + B * (vx_P + vx_M) + (A - 2/3 * B) * (vx_P + vx_M) * 0.5
     flux_Pixy_vx   = Pixy_vx_av + B * (vy_P + vy_M) * 0.5
@@ -263,7 +263,7 @@ def getYFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pixx_P, Pixx_M, Pixy_P,
 
   flux_Mass   = momy_av 
   flux_Momx   = 0.5*(rho_P*(vx_P*vy_P) + rho_M*(vx_M*vy_M)) + (Pixy_av)/gamma
-  flux_Momy   = 0.25*(rho_P*(vy_P)**2 + rho_M*(vy_M)**2) + (P_av + Piyy_av)/gamma
+  flux_Momy   = 0.5*(rho_P*(vy_P)**2 + rho_M*(vy_M)**2) + (P_av + Piyy_av)/gamma
   flux_Pixx_vy   = Pixx_vy_av + (A - 2/3 * B) * (vy_P + vy_M) * 0.5
   flux_Pixy_vy   = Pixy_vy_av + B * (vy_P + vy_M) * 0.5
   flux_Piyx_vy   = Piyx_vy_av + B * (vy_P + vy_M) * 0.5
