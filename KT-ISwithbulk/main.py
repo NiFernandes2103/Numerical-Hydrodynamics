@@ -26,7 +26,7 @@ def applyBC(y):
 
 plotfinalstate = 1
 
-for i in range(10):
+for i in range(1):
   t                      = 0   # s 
   tEnd                   = 1   # time at the end
   tOut                   = 0.01 # time of each output
@@ -37,7 +37,7 @@ for i in range(10):
     N                      = 400 # resolution
     
   boxsize                = 10.  # in some unit system l
-  gamma                  = 0.5 # adiabatic index
+  gamma                  = 1.4 # adiabatic index
   zeta                   = 1 # bulk viscosity coefficient
   tau_nu                 = 1
   theta                  = 1

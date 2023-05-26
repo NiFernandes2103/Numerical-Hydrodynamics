@@ -69,9 +69,9 @@ def KTschemeNonRelativisticIS(t, IC, dx, dy, xlin, gamma, zeta, tau_nu, eta, the
     vy_dy  = getGradient(vy,   dy, 1, theta)
     P_dy   = getGradient(P,    dy, 1, theta)
     Pixx_dy  = getGradient(Pixx,   dy, 1, theta)
-    Pixy_dy  = getGradient(Pixy,   dx, 1, theta)
-    Piyx_dy  = getGradient(Piyx,   dx, 1, theta)
-    Piyy_dy  = getGradient(Piyy,   dx, 1, theta)
+    Pixy_dy  = getGradient(Pixy,   dy, 1, theta)
+    Piyx_dy  = getGradient(Piyx,   dy, 1, theta)
+    Piyy_dy  = getGradient(Piyy,   dy, 1, theta)
 
     
     #-----------------------------------------------------------------------------------------------------------------------------------#
@@ -102,7 +102,7 @@ def KTschemeNonRelativisticIS(t, IC, dx, dy, xlin, gamma, zeta, tau_nu, eta, the
     
     # compute fluxes (local Kurganov-Tadmor)
     # getXFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pixx_P, Pixx_M, Pixy_P,
-    #          Pixy_M, Piyx_P,Piyx_M, Piyy_P, Piyy_M, P_P, P_M, gamma, eta,
+    #          Pixy_M, Piyx_P, Piyx_M, Piyy_P, Piyy_M, P_P, P_M, gamma, eta,
     #          zeta, tau_nu):
     # getYFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pixx_P, Pixx_M, Pixy_P,
     #          Pixy_M, Piyx_P,Piyx_M, Piyy_P, Piyy_M, P_P, P_M, gamma, eta,
@@ -113,25 +113,25 @@ def KTschemeNonRelativisticIS(t, IC, dx, dy, xlin, gamma, zeta, tau_nu, eta, the
     
 
     flux_Mass_XR, flux_Momx_XR, flux_Momy_XR, flux_Pixx_vxR, flux_Pixy_vxR, flux_Piyx_vxR, flux_Piyy_vxR = getXFlux(rhoP_XR, rhoM_XR, vxP_XR, vxM_XR,
-                                            vxP_XR, vxM_XR, PixxP_XR, PixxM_XR,
+                                            vyP_XR, vyM_XR, PixxP_XR, PixxM_XR,
                                             PixyP_XR, PixyM_XR, PiyxP_XR, PiyxM_XR,
                                             PiyyP_XR, PiyyM_XR, PP_XR, PM_XR, gamma,
                                             eta, zeta, tau_nu)
 
     flux_Mass_XL, flux_Momx_XL, flux_Momy_XL, flux_Pixx_vxL, flux_Pixy_vxL,flux_Piyx_vxL, flux_Piyy_vxL = getXFlux(rhoP_XL, rhoM_XL, vxP_XL, vxM_XL,
-                                            vxP_XL, vxM_XL, PixxP_XL, PixxM_XL,
+                                            vyP_XL, vyM_XL, PixxP_XL, PixxM_XL,
                                             PixyP_XL, PixyM_XL, PiyxP_XL, PiyxM_XL,
                                             PiyyP_XL, PiyyM_XL, PP_XL, PM_XL, gamma,
                                             eta, zeta, tau_nu)
 
     flux_Mass_YR, flux_Momx_YR, flux_Momy_YR, flux_Pixx_vyR, flux_Pixy_vyR, flux_Piyx_vyR, flux_Piyy_vyR = getYFlux(rhoP_YR, rhoM_YR, vxP_YR, vxM_YR,
-                                            vxP_YR, vxM_YR, PixxP_YR, PixxM_YR,
+                                            vyP_YR, vyM_YR, PixxP_YR, PixxM_YR,
                                             PixyP_YR, PixyM_YR, PiyxP_YR, PiyxM_YR,
                                             PiyyP_YR, PiyyM_YR, PP_YR, PM_YR, gamma,
                                             eta, zeta, tau_nu)
 
     flux_Mass_YL, flux_Momx_YL, flux_Momy_YL, flux_Pixx_vyL, flux_Pixy_vyL, flux_Piyx_vyL, flux_Piyy_vyL = getYFlux(rhoP_YL, rhoM_YL, vxP_YL, vxM_YL,
-                                            vxP_YL, vxM_YL, PixxP_YL, PixxM_YL,
+                                            vyP_YL, vyM_YL, PixxP_YL, PixxM_YL,
                                             PixyP_YL, PixyM_YL, PiyxP_YL, PiyxM_YL,
                                             PiyyP_YL, PiyyM_YL, PP_YL, PM_YL, gamma,
                                             eta, zeta, tau_nu)
@@ -145,6 +145,7 @@ def KTschemeNonRelativisticIS(t, IC, dx, dy, xlin, gamma, zeta, tau_nu, eta, the
     Jyx = - Piyx/tau_nu
     Jyy = - Piyy/tau_nu
 
+    # input applyFluxes(flux_H1_X, flux_H2_X, flux_H1_Y, flux_H2_Y, dx, dy, J = 0)
 
     timederivative_rho = applyFluxes( flux_Mass_XR,   flux_Mass_XL, flux_Mass_YR,   flux_Mass_YL,  dx, dy)
     timederivative_Momx = applyFluxes( flux_Momx_XR,   flux_Momx_XL, flux_Momx_YR,   flux_Momx_YL, dx, dy) 
@@ -204,8 +205,8 @@ def integrator(scheme, time, q0, dtmax, method = "Heuns", args=None):
 
     # condition to ensure that the time steps are small enough so that
     # waves do not interfere with each other 
-    courant_number = np.divide(dx,np.max(local_propagation_speed(q[0:N],q[N:2*N],q[2*N:3*N],args[-3],args[4],args[5],cs)),out=np.array([10.0]),
-                               where=np.max(local_propagation_speed(q[0:N],q[N:2*N],q[2*N:3*N],args[-3],args[4],args[5],cs))!=0)
+    courant_number = np.divide(dx,np.max(local_propagation_speed(q[0:N],args[-3],args[4],args[5],cs)),out=np.array([10.0]),
+                               where=np.max(local_propagation_speed(q[0:N],args[-3],args[4],args[5],cs))!=0)
     
     # if courant number becomes zero then the program will not proceed
     if (np.finfo(float).eps > courant_number):
@@ -233,9 +234,9 @@ def integrator(scheme, time, q0, dtmax, method = "Heuns", args=None):
 
 t                      = 0   # s 
 tEnd                   = 0.1   # time at the end
-tOut                   = 0.01 # time of each output
+tmax                   = 0.01 # time of each output
 
-N                      = 200 # resolution
+N                      = 100 # resolution
 boxsize                = 1.  # in some unit system l
 gamma                  = 2 # adiabatic index
 zeta                   = 1 # bulk viscosity coefficient
@@ -281,6 +282,33 @@ IC = np.vstack((rho, rho*vx, rho*vy, Pixx, Pixy, Piyx, Piyy)) # here the initial
 
 # dx, dy, xlin, gamma, zeta, tau_nu, BC, theta=1
 
-solution = integrator(KTschemeNonRelativisticIS, (t, tEnd), IC, 0.01, method="RK4", args=(dx, dy, xlin, gamma, zeta, tau_nu, eta, theta))
+solution = integrator(KTschemeNonRelativisticIS, (t, tEnd), IC, tmax, method = "RK4", args=(dx, dy, xlin, gamma, zeta, tau_nu, eta, theta))
 
 
+
+i=0
+while i < len(solution):
+  plt.imshow(solution[i][:N])
+  plt.show()
+  rho1 = solution[i][:N][int(N/2)]
+  ux1 = solution[i][N:2*N][int(N/2)]
+  uy1 = solution[i][2*N:3*N][int(N/2)]
+  ur1 = np.sqrt(ux1**2 + uy1**2)
+  uphy1 = (X[:][int(N/2)]*uy1 - Y[:][int(N/2)]*ux1)/(R[:][int(N/2)]**2)
+  plt.plot(rho1)
+  plt.show()
+  plt.plot(uphy1)
+  plt.show()
+  rho2 = solution[i][int(N/2)][0:N]
+  ux2 = solution[i][int(N/2)][N:2*N]
+  uy2 = solution[i][int(N/2)][2*N:3*N]
+  ur2 = np.sqrt(ux1**2 + uy1**2)
+  uphy2 = (X[int(N/2)][:]*uy2 - Y[int(N/2)][:]*ux2)/(R[int(N/2)][:]**2)
+  plt.plot(rho2)
+  plt.show()
+  plt.plot(uphy2)
+  plt.show()
+  assimetryerr = ur1 - ur2
+  plt.plot(assimetryerr)
+  plt.show()
+  i += 10

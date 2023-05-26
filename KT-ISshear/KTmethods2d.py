@@ -128,7 +128,7 @@ def extrapolateInSpaceToFace(q, q_dx, dx, axis=0):
     return qM_XL, qP_XL, qM_XR, qP_XR
 
 
-def local_propagation_speed(rho, vx, vy, eta, zeta, tau_nu, cs): 
+def local_propagation_speed(rho, eta, zeta, tau_nu, cs): 
   
    '''
     Get the local propagation speeds using the eigenvalues 
@@ -141,9 +141,11 @@ def local_propagation_speed(rho, vx, vy, eta, zeta, tau_nu, cs):
     cs           is the speed of sound
     '''
 
-   C1 = np.sqrt(np.divide(eta*tau_nu, rho, out=np.zeros_like(np.ones(rho.shape)), where=rho!=0))
+   eps= 10**(-6)
 
-   C2 = np.sqrt(np.divide(cs**2 * (zeta + 4/3 * tau_nu), rho*tau_nu, out=np.zeros_like(np.ones(rho.shape)), where=rho!=0))
+   C1 = np.sqrt(eta*tau_nu / (rho + eps))
+
+   C2 = np.sqrt(cs**2 * (zeta + 4/3 * tau_nu)/ (rho*tau_nu + eps))
 
    return np.maximum(C1,C2)
 
@@ -189,7 +191,7 @@ def getXFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pixx_P, Pixx_M, Pixy_P,
     A = zeta/tau_nu
 
     flux_Mass   = momx_av  
-    flux_Momx   = 0.5*(rho_P*(vx_P)**2 + rho_M*(vx_M)**2) + (P_av + Pixx_av)/gamma
+    flux_Momx   = 0.5*(rho_P*(vx_P)**2 + rho_M*(vx_M)**2) + P_av + (Pixx_av)/gamma
     flux_Momy   = 0.5*(rho_P*(vx_P*vy_P) + rho_M*(vx_M*vy_M)) + (Piyx_av)/gamma
     flux_Pixx_vx   = Pixx_vx_av + B * (vx_P + vx_M) + (A - 2/3 * B) * (vx_P + vx_M) * 0.5
     flux_Pixy_vx   = Pixy_vx_av + B * (vy_P + vy_M) * 0.5
@@ -200,11 +202,11 @@ def getXFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pixx_P, Pixx_M, Pixy_P,
 
     cs_P = getSpeedOfSound(rho_P,gamma)
 
-    C_P = local_propagation_speed(rho_P , vx_P , vy_P, eta, zeta, tau_nu, cs_P) # max propagation speed from the left
+    C_P = local_propagation_speed(rho_P , eta, zeta, tau_nu, cs_P) # max propagation speed from the left
 
     cs_M = getSpeedOfSound(rho_M,gamma)
 
-    C_M = local_propagation_speed(rho_M , vx_M , vy_M, eta, zeta, tau_nu, cs_M) # max propagation speed from the right
+    C_M = local_propagation_speed(rho_M , eta, zeta, tau_nu, cs_M) # max propagation speed from the right
 
     C = np.maximum(C_M, C_P)
 
@@ -263,22 +265,22 @@ def getYFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pixx_P, Pixx_M, Pixy_P,
 
   flux_Mass   = momy_av 
   flux_Momx   = 0.5*(rho_P*(vx_P*vy_P) + rho_M*(vx_M*vy_M)) + (Pixy_av)/gamma
-  flux_Momy   = 0.5*(rho_P*(vy_P)**2 + rho_M*(vy_M)**2) + (P_av + Piyy_av)/gamma
+  flux_Momy   = 0.5*(rho_P*(vy_P)**2 + rho_M*(vy_M)**2) + (P_av) + (Piyy_av)/gamma
   flux_Pixx_vy   = Pixx_vy_av + (A - 2/3 * B) * (vy_P + vy_M) * 0.5
-  flux_Pixy_vy   = Pixy_vy_av + B * (vy_P + vy_M) * 0.5
-  flux_Piyx_vy   = Piyx_vy_av + B * (vy_P + vy_M) * 0.5
-  flux_Piyy_vy   = Piyy_vy_av + B * (vx_P + vx_M) + (A - 2/3 * B) * (vy_P + vy_M) * 0.5
+  flux_Pixy_vy   = Pixy_vy_av + B * (vx_P + vx_M) * 0.5
+  flux_Piyx_vy   = Piyx_vy_av + B * (vx_P + vx_M) * 0.5
+  flux_Piyy_vy   = Piyy_vy_av + B * (vy_P + vy_M) + (A - 2/3 * B) * (vy_P + vy_M) * 0.5
 
   
   # find wavespeeds
 
-  cs_P = getSpeedOfSound(rho_P,gamma)
+  cs_P = getSpeedOfSound(rho_P, gamma)
 
-  C_P = local_propagation_speed(rho_P , vx_P , vy_P, eta, zeta, tau_nu, cs_P) # max propagation speed from the left
+  C_P = local_propagation_speed(rho_P , eta, zeta, tau_nu, cs_P) # max propagation speed from the left
 
-  cs_M = getSpeedOfSound(rho_M,gamma)
+  cs_M = getSpeedOfSound(rho_M, gamma)
 
-  C_M = local_propagation_speed(rho_M , vx_M , vy_M, eta, zeta, tau_nu, cs_M) # max propagation speed from the right
+  C_M = local_propagation_speed(rho_M , eta, zeta, tau_nu, cs_M) # max propagation speed from the right
 
   C = np.maximum(C_M, C_P)
 

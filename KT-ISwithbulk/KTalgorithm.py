@@ -27,16 +27,12 @@ def local_propagation_speed(rho, vx, Pi, gamma, B):
   
    C1 = np.abs(vx)
    cs = getSpeedOfSound(rho, gamma)
-
    try:
-     C2 = np.abs(vx/(2) - np.emath.sqrt(cs**2/gamma - vx**2 / 4 + np.divide((Pi+B)*np.ones(rho.shape)/gamma,rho,out(zeros_like(rho.shape)),where=rho!=0)))
-                                      
+     C2 = np.abs(vx - np.sqrt((cs**2 +(Pi+B)/ rho)/gamma))
    except:
      C2 = np.zeros(vx.shape)
-
    try:
-     C3 = np.abs(vx/(2) + np.emath.sqrt(cs**2/gamma - vx**2 / 4 + np.divide((Pi+B)*np.ones(rho.shape)/gamma,rho,out(zeros_like(rho.shape)),where=rho!=0)))
- 
+     C3 = np.abs(vx + np.sqrt((cs**2 + (Pi+B)/rho)/gamma))
    except:
      C3 = np.zeros(vx.shape)
 
