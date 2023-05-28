@@ -4,7 +4,7 @@ import matplotlib as mpl
 from scipy import integrate
 
 
-def getConserved( rho, vx, vy, gamma, vol ):
+def getConserved( rho, vx, vy, vol ):
 
     """
     Calculate the conserved variable from the primitive
@@ -24,7 +24,7 @@ def getConserved( rho, vx, vy, gamma, vol ):
     
     return Mass, Momx, Momy
 
-def getPrimitive( Mass, Momx, Momy, gamma, vol):
+def getPrimitive( Mass, Momx, Momy, vol):
   """
   Calculate the primitive variable from the conservative
   Mass     is matrix of mass in cells
@@ -37,22 +37,44 @@ def getPrimitive( Mass, Momx, Momy, gamma, vol):
   vy       is matrix of cell y-velocity
   P        is matrix of cell pressures
   """
+
   rho = Mass / vol
   vx  = np.divide(Momx , rho, out=np.zeros_like(Momx), where=rho!=0)
   vy  = np.divide(Momy , rho, out=np.zeros_like(Momy), where=rho!=0)
-  P   = (np.abs(rho))**gamma
   
-  return rho, vx, vy, P
+  return rho, vx, vy
+
+
+def IsentropicEos(rho, gamma):
+
+  '''
+  Equation of state
+
+  P(rho) = k * rho ^ gamma
+
+  gamma    is ideal gas gamma
+  rho      is matrix of cell densities
+  P        is matrix of cell pressures
+  '''
+   
+  P  = (np.abs(rho))**gamma
+
+  return P
 
 def getSpeedOfSound(rho, gamma):
   '''
-  find the speed of sound in the fluid
-  rho
+  find the speed of sound in the isentropic fluid
+
+  gamma    is ideal gas gamma
+  rho      is matrix of cell densities
+  cs       is matrix of cell speeds of sound
 
   '''
   cs = np.sqrt((gamma)*np.abs(rho)**(gamma-1))
 
   return cs
+
+  
 '''
 These are auxiliary functions in for the gradient 
 '''
@@ -191,7 +213,7 @@ def getXFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pixx_P, Pixx_M, Pixy_P,
     A = zeta/tau_nu
 
     flux_Mass   = momx_av  
-    flux_Momx   = 0.5*(rho_P*(vx_P)**2 + rho_M*(vx_M)**2) + P_av + (Pixx_av)/gamma
+    flux_Momx   = 0.5*(rho_P*(vx_P)**2 + rho_M*(vx_M)**2) + (P_av) + (Pixx_av)/gamma
     flux_Momy   = 0.5*(rho_P*(vx_P*vy_P) + rho_M*(vx_M*vy_M)) + (Piyx_av)/gamma
     flux_Pixx_vx   = Pixx_vx_av + B * (vx_P + vx_M) + (A - 2/3 * B) * (vx_P + vx_M) * 0.5
     flux_Pixy_vx   = Pixy_vx_av + B * (vy_P + vy_M) * 0.5
@@ -222,7 +244,7 @@ def getXFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pixx_P, Pixx_M, Pixy_P,
     return flux_Mass, flux_Momx, flux_Momy, flux_Pixx_vx, flux_Pixy_vx, flux_Piyx_vx, flux_Piyy_vx
 
 def getYFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pixx_P, Pixx_M, Pixy_P,
-              Pixy_M, Piyx_P,Piyx_M, Piyy_P, Piyy_M, P_P, P_M, gamma, eta,
+              Pixy_M, Piyx_P, Piyx_M, Piyy_P, Piyy_M, P_P, P_M, gamma, eta,
               zeta, tau_nu):
   
 

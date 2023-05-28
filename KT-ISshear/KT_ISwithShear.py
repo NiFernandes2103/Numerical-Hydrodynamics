@@ -1,8 +1,7 @@
 import numpy as np
-from scipy import integrate
 from KTmethods2d import *
 
-def KTschemeNonRelativisticIS(t, IC, dx, dy, xlin, gamma, zeta, tau_nu, eta, theta=1):
+def KTschemeNonRelativisticIS(t, IC, dx, dy, xlin, gamma, zeta, tau_nu, eta, theta=1, Eos = IsentropicEos):
 
     """ Finite Volume simulation """
   
@@ -22,7 +21,8 @@ def KTschemeNonRelativisticIS(t, IC, dx, dy, xlin, gamma, zeta, tau_nu, eta, the
 
 
     ''' Pressure due to equation of state '''
-    P = (np.abs(rho))**gamma
+    if Eos == IsentropicEos:
+      P = Eos(rho,gamma)
 
     ''' B Constant '''
     B = zeta/tau_nu
@@ -42,7 +42,7 @@ def KTschemeNonRelativisticIS(t, IC, dx, dy, xlin, gamma, zeta, tau_nu, eta, the
 
     # get Conserved variables
     vol = dx*dx
-    Mass, Momx, Momy = getConserved(rho, vx, vy, gamma, vol)
+    Mass, Momx, Momy = getConserved(rho, vx, vy, vol)
 
     # get Primitive variables
     #rho, vx, vy, P = getPrimitive( Mass, Momx, Momy, gamma, vol )
@@ -239,9 +239,9 @@ tmax                   = 0.01 # time of each output
 N                      = 100 # resolution
 boxsize                = 1.  # in some unit system l
 gamma                  = 2 # adiabatic index
-zeta                   = 1 # bulk viscosity coefficient
+zeta                   = 2 # bulk viscosity coefficient
 eta                    = 1
-tau_nu                 = 1
+tau_nu                 = 2
 theta                  = 1
 
 
@@ -299,11 +299,11 @@ while i < len(solution):
   plt.show()
   plt.plot(uphy1)
   plt.show()
-  rho2 = solution[i][int(N/2)][0:N]
-  ux2 = solution[i][int(N/2)][N:2*N]
-  uy2 = solution[i][int(N/2)][2*N:3*N]
-  ur2 = np.sqrt(ux1**2 + uy1**2)
-  uphy2 = (X[int(N/2)][:]*uy2 - Y[int(N/2)][:]*ux2)/(R[int(N/2)][:]**2)
+  rho2 = (solution[i][:N].T)[int(N/2)]
+  ux2 = (solution[i][N:2*N].T)[int(N/2)]
+  uy2 = (solution[i][2*N:3*N].T)[int(N/2)]
+  ur2 = np.sqrt(ux2**2 + uy2**2)
+  uphy2 = (X[int(N/2),:]*uy2 - Y[int(N/2),:]*ux2)/(R[int(N/2),:]**2)
   plt.plot(rho2)
   plt.show()
   plt.plot(uphy2)
