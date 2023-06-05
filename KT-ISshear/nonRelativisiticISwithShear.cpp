@@ -29,7 +29,7 @@ State KTschemeNonRelativisticIS(double t, const State& IC, double dx, double dy,
     vector<vector<double>> Piyx(N,vector<double>(N,0.0));
     vector<vector<double>> Piyy(N,vector<double>(N,0.0));
 
-    tie(rho,Momx,Momy,Pixx,Pixy,Piyx,Piyy) = IC;
+    IC.tie(rho,Momx,Momy,Pixx,Pixy,Piyx,Piyy);
     
    
     for (int i = 0; i < N; i++) {
@@ -164,7 +164,7 @@ State KTschemeNonRelativisticIS(double t, const State& IC, double dx, double dy,
 }
 
 
-Solution integrator(State (*scheme)(double, State, double, double, int, double, double, double, double, double), double time[2], State q0, double dtmax,  tuple<double, double, int, double, double, double, double, double> args, string method = "Heuns")
+Solution integrator(State (*scheme)(double, State, double, double, int, double, double, double, double, double), tuple<double,double> time, State q0, double dtmax,  tuple<double, double, int, double, double, double, double, double> args, string method = "Heuns")
 {
     /*
     This is an integrator that evolves a
@@ -178,9 +178,9 @@ Solution integrator(State (*scheme)(double, State, double, double, int, double, 
     args       are additional arguments for scheme
     */
 
-    double t = time[0];
-    double tEnd = time[1];
-    int outCount = 0;
+    double t = get<0>(time);
+    double tEnd = get<1>(time);
+    int outCount = 1;
     
     
 
@@ -199,12 +199,12 @@ Solution integrator(State (*scheme)(double, State, double, double, int, double, 
     while (t < tEnd) {
         cout << t << endl;
 
-        vector<vector<double>> rho = get<0>(q);
-        vector<vector<double>> vx  = get<1>(q);
-        vector<vector<double>> vy  = get<2>(q);
+        vector<vector<double>> rho = q.get(0);
+        vector<vector<double>> Momx  = q.get(1);
+        vector<vector<double>> Momy  = q.get(2);
         vector<vector<double>> cs  = getSpeedOfSound(rho, gamma);
 
-        
+
 
         // condition to ensure that the time steps are small enough so that
         // waves do not interfere with each other
@@ -231,9 +231,7 @@ Solution integrator(State (*scheme)(double, State, double, double, int, double, 
 
 
             q = Heuns(q, C, dt, t);
-        } else if (method == "RK4") {
-            q = RK4(q, C, dt, t);
-        }
+        } 
 
         // BC(q);/
 
@@ -241,6 +239,7 @@ Solution integrator(State (*scheme)(double, State, double, double, int, double, 
 
         if (t > outCount*dtmax) {
             Q.push_back(q); 
+            Q.push_back(t);
             ++outCount;
         }
     }
@@ -250,7 +249,88 @@ Solution integrator(State (*scheme)(double, State, double, double, int, double, 
 
 
  
-void main(){
-    return
+int main() {
+    double t = 0.0;  // s 
+    double tEnd = 2.0;  // time at the end
+    double tOut = 0.01;  // time of each output
+
+    int N = 400;  // resolution
+    double boxsize = 1.0;  // in some unit system l
+    double gamma = 2.0;  // adiabatic index
+    double zeta = 1.0;  // bulk viscosity coefficient
+    double eta = 10.0;  // shear viscosity coefficient
+    double tau_nu = 1.0;  // relaxation time
+    double theta = 1.0;  // flux limiter parameter
+
+    double dx = boxsize / N;  // box size
+    double dy = dx;
+    double vol = dx * dx;  // volume of each box
+    vector<double> xlin(N);
+    for (int i = 0; i < N; i++) {
+        xlin[i] = 0.5 * dx + (boxsize - 0.5 * dx) * i / (N - 1);  // simulation limits
+    }
+    vector<vector<double>> Y(N, vector<double>(N, 0.0));
+    vector<vector<double>> X(N, vector<double>(N, 0.0));
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            Y[i][j] = xlin[j];
+            X[i][j] = xlin[i];
+        }
+    }
+    int s = X.size();
+    vector<vector<double>> R(s, vector<double>(s, 0.0));
+    for (int i = 0; i < s; i++) {
+        for (int j = 0; j < s; j++) {
+            R[i][j] = sqrt(X[i][j] * X[i][j] + Y[i][j] * Y[i][j]);
+        }
+    }
+
+    /* initial condition of density */
+
+    //rho = (1.5*(R <= 0.25) + 1*(R > 0.25))
+    //rho = ((1 - ((R - (boxsize-0.5*dx)*0.5)**2)/0.25 )**4 )*(R < 0.5) + 0.1*np.ones(R.shape) // Mauricio`s funtion advice    
+    //rho = 1*(X < 0) + 0.125*(X >= 0)
+
+    /* initial condition of velocity */
+    //vx = np.zeros(s)
+    //vx = 0.5*np.ones(xlin.shape)
+    //vx = 3*(Y < 0) - 0*(Y >= 0)
+    //vx = np.abs((xlin - (boxsize-0.5*dx)*0.5)/16)
+
+    //vy = np.zeros(s)
+    //vy = 0.5*np.ones(xlin.shape)
+
+    double w0 = 0.1;
+    double sigma = 0.05 / sqrt(2.0);
+    vector<vector<double>> rho(s, vector<double>(s, 0.0));
+    vector<vector<double>> vx(s, vector<double>(s, 0.0));
+    vector<vector<double>> vy(s, vector<double>(s, 0.0));
+    vector<vector<double>> Pixx(s, vector<double>(s, 0.0));
+    vector<vector<double>> Pixy(s, vector<double>(s, 0.0));
+    vector<vector<double>> Piyx(s, vector<double>(s, 0.0));
+    vector<vector<double>> Piyy(s, vector<double>(s, 0.0));
+
+    for (int i = 0; i < s; i++) {
+        for (int j = 0; j < s; j++) {
+            rho[i][j] = 1.0 + (abs(Y[i][j] - 0.5) < 0.25);
+            vx[i][j] = -0.5 + (abs(Y[i][j] - 0.5) < 0.25);
+            vy[i][j] = w0 * sin(4 * M_PI * X[i][j]) * (exp(-(Y[i][j] - 0.25) * (Y[i][j] - 0.25) / (2 * sigma * sigma)) + exp(-(Y[i][j] - 0.75) * (Y[i][j] - 0.75) / (2 * sigma * sigma)));
+        }
+    }
+
+    vector<vector<double>> IC = { rho, vx, vy, Pixx, Pixy, Piyx, Piyy };
+
+    // input (dx, dy, xlin, gamma, zeta, tau_nu, BC, theta=1)
+    // output solution list of arrays that are 7N x N in the order (rho,rho*vx,rho*vy,Pixx,Pixy,Piyx,Piyy)
+    Solution solution = integrator(KTschemeNonRelativisticIS, make_tuple(t, tEnd), IC, tOut, "Heuns", make_tuple(dx, dy, N, gamma, zeta, tau_nu, eta, theta));
+
+    int i = 0;
+    while (i < solution.size()) {
+        // Plot the solution or perform any desired operations
+        // ...
+        i += 10;
+    }
+
+    return 0;
 }
 
