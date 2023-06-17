@@ -18,6 +18,16 @@ class State {
     vector<vector<double>> Piyx;
     vector<vector<double>> Piyy;
 
+    State() : rho(), Momx(), Momy(), Pixx(), Pixy(), Piyx(), Piyy() {}
+
+    State(vector<vector<double>> v1,
+     vector<vector<double>> v2,
+     vector<vector<double>> v3,
+     vector<vector<double>> v4,
+     vector<vector<double>> v5,
+     vector<vector<double>> v6,
+     vector<vector<double>> v7) : rho(v1), Momx(v2), Momy(v3), Pixx(v4), Pixy(v5), Piyx(v6), Piyy(v7) {}
+
     vector<vector<double>> get(int n) {
         if (n == 0){
             return rho;
@@ -39,6 +49,9 @@ class State {
         }
         if (n == 6){
             return Piyy;
+        }
+        else { 
+            return vector<vector<double>>();
         } 
         
     }
@@ -68,13 +81,9 @@ class State {
         }
     }
 
-    template <typename... Args>
-    auto tie(Args&... args) noexcept {
-    return std::tie(args...) = std::tie(rho, Momx, Momy, Pixx, Pixy, Piyx, Piyy);
-}
+    
+
 };
-
-
 
 typedef struct {
     list<State> y;
@@ -87,9 +96,31 @@ typedef struct {
     void push_back(double t) {
         time.push_back(t);
     }
+
+    int size() {
+        return y.size();
+    }
 } Solution;
 
 
+double max(vector<vector<double>> value)
+{  
+    int rows,cols;
+    rows = value.size();
+    cols = value[0].size();
+
+    double max = value[0][0];
+
+    for (int i = 0; i < value.size(); i++){
+        for (int j = 0; j < value[0].size(); j++){
+            if (value[i][j] > max){
+                max = value[i][j];
+            }
+        }
+    }
+    return max;
+
+}
 
  vector<vector<double>> sign(vector<vector<double>> value)
 {   
@@ -187,7 +218,7 @@ vector<vector<double>> abs(vector<vector<double>>& v) {
 
 }
 
-vector<vector<double>> minmod2(vector<vector<double>>& x, vector<vector<double>>& y) {
+vector<vector<double>> minmod2(vector<vector<double>> x, vector<vector<double>> y) {
 
     int rows = x.size();
     int cols = x[0].size();
@@ -208,7 +239,7 @@ vector<vector<double>> minmod2(vector<vector<double>>& x, vector<vector<double>>
     return mm2;
 }
 
-vector<vector<double>> minmod3(vector<vector<double>>& x, vector<vector<double>>& y, vector<vector<double>>& z) {
+vector<vector<double>> minmod3(vector<vector<double>> x, vector<vector<double>> y, vector<vector<double>> z) {
     return minmod2(x, minmod2(y, z));
 }
 

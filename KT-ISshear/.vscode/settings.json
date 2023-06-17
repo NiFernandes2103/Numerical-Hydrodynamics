@@ -45,5 +45,6 @@
         "numbers": "cpp",
         "stdexcept": "cpp",
         "typeinfo": "cpp"
-    }
+    },
+    "C_Cpp.default.compilerPath": "c:\\Users\\Usuario\\Downloads\\msys2-x86_64-20230526.exe"
 }
