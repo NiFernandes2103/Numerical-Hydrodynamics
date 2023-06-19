@@ -1,9 +1,10 @@
 #include <iostream>
 #include <cmath>
 #include <tuple>
+#include <list>
 #include <algorithm>
 #include <vector>
-//#include <Ktmethods2d.h>
+//#include <Ktmethods2d.hpp>
 using namespace std;
 
 typedef tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, vector<vector<double>>,
@@ -418,8 +419,8 @@ State (*f)(double,State), double dt, double t) {
 
     C = f(t,q);
     for (int n = 0; n < tuple_size<decltype(C)>::value; ++n){
-        c = get<n>(C);
-        y = get<n>(q);
+        c = C.get(n);
+        y = q.get(n);
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 k1[i][j] = dt * c[i][j];
@@ -447,39 +448,6 @@ State (*f)(double,State), double dt, double t) {
     return qprime;
 }
 
-vector<vector<double>> HeunsExplicit (
-vector<vector<double>>& q, 
-vector<vector<double>> (*f)(double,vector<vector<double>>), double dt, double t) {
-    
-    int rows = q.size();
-    int cols = q[0].size();
-
-    vector<vector<double>> k1(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> k2(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> qprime(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> E(rows, vector<double>(cols, 0.0));
-    
-    
-
-    E = f(t,q);
-
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            k1[i][j] = dt * E[i][j];
-            qprime[i][j] = q[i][j] + k1[i][j];
-        }
-    }
-
-    E = f(t,qprime);
-
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            k2[i][j] = qprime[i][j] + dt * E[i][j];
-            qprime[i][j] = q[i][j] + 0.5*(k1[i][j] + k2[i][j]);
-        }
-    }
-    return qprime;
-}
 
 // Runge-Kutta 4th order method
 vector<vector<double>> RK4 (
