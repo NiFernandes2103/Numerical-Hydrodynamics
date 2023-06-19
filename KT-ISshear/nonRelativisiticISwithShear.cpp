@@ -9,6 +9,7 @@
 using namespace std;
 
 State KTschemeNonRelativisticIS(double t,  State& IC, double dx, double dy, int N, double gamma, double zeta, double tau_nu, double eta, double theta = 1) {
+State KTschemeNonRelativisticIS(double t,  State& IC, double dx, double dy, int N, double gamma, double zeta, double tau_nu, double eta, double theta = 1) {
    
     /* Finite Volume simulation */
 
@@ -30,6 +31,13 @@ State KTschemeNonRelativisticIS(double t,  State& IC, double dx, double dy, int 
     vector<vector<double>> Piyx(N,vector<double>(N,0.0));
     vector<vector<double>> Piyy(N,vector<double>(N,0.0));
 
+    rho  = IC.get(0);
+    Momx = IC.get(1);
+    Momy = IC.get(2);
+    Pixx = IC.get(3);
+    Pixy = IC.get(4);
+    Piyx = IC.get(5);
+    Piyy = IC.get(6);
     rho  = IC.get(0);
     Momx = IC.get(1);
     Momy = IC.get(2);
@@ -150,6 +158,8 @@ State KTschemeNonRelativisticIS(double t,  State& IC, double dx, double dy, int 
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
              Jxx[i][j] = -Pixx[i][j]/tau_nu;
+        for (int j = 0; j < N; j++) {
+             Jxx[i][j] = -Pixx[i][j]/tau_nu;
             Jxy[i][j] = -Pixy[i][j]/tau_nu;
             Jyx[i][j] = -Piyx[i][j]/tau_nu;
             Jyy[i][j] = -Piyy[i][j]/tau_nu;
@@ -169,9 +179,12 @@ State KTschemeNonRelativisticIS(double t,  State& IC, double dx, double dy, int 
 
     return {timederivative_rho,timederivative_Momx,timederivative_Momy,timederivative_Pixx,timederivative_Pixy,timederivative_Piyx,timederivative_Piyy};
     
+    return {timederivative_rho,timederivative_Momx,timederivative_Momy,timederivative_Pixx,timederivative_Pixy,timederivative_Piyx,timederivative_Piyy};
+    
 }
 
 
+Solution integrator(State (*scheme)(double, State&, double, double, int, double, double, double, double, double), tuple<double,double> time, State q0, double dtmax,  tuple<double, double, int, double, double, double, double, double> args, string method = "Heuns")
 Solution integrator(State (*scheme)(double, State&, double, double, int, double, double, double, double, double), tuple<double,double> time, State q0, double dtmax,  tuple<double, double, int, double, double, double, double, double> args, string method = "Heuns")
 {
     /*
@@ -186,6 +199,9 @@ Solution integrator(State (*scheme)(double, State&, double, double, int, double,
     args       are additional arguments for scheme
     */
 
+    double t = get<0>(time);
+    double tEnd = get<1>(time);
+    int outCount = 1;
     double t = get<0>(time);
     double tEnd = get<1>(time);
     int outCount = 1;
@@ -210,11 +226,23 @@ Solution integrator(State (*scheme)(double, State&, double, double, int, double,
     vector<vector<double>> cs(N, vector<double>(N,0.0));
 
 
+    vector<vector<double>> rho(N,vector<double>(N,0.0));
+    vector<vector<double>> vx(N, vector<double>(N,0.0));
+    vector<vector<double>> vy(N, vector<double>(N,0.0));
+    vector<vector<double>> Momx(N, vector<double>(N,0.0));
+    vector<vector<double>> Momy(N, vector<double>(N,0.0));
+    vector<vector<double>> cs(N, vector<double>(N,0.0));
+
+
     auto C = [&](double t, State y) {return scheme(t, q, dx, dy, N, gamma, zeta, tau_nu, eta, theta);};
 
     while (t < tEnd) {
         cout << t << endl;
 
+        rho = q.get(0);
+        Momx  = q.get(1);
+        Momy  = q.get(2);
+        cs  = getSpeedOfSound(rho, gamma);
         rho = q.get(0);
         Momx  = q.get(1);
         Momy  = q.get(2);
@@ -226,6 +254,15 @@ Solution integrator(State (*scheme)(double, State&, double, double, int, double,
             vy[i][j] = Momy[i][j] / rho[i][j];
 
 
+        for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            vx[i][j] = Momx[i][j] / rho[i][j];
+            vy[i][j] = Momy[i][j] / rho[i][j];
+
+
+
+        }
+    }        
 
         }
     }        
@@ -238,12 +275,17 @@ Solution integrator(State (*scheme)(double, State&, double, double, int, double,
         for (int i = 0; i < N; ++i) {
             for (int j = 0; j < N; ++j) {
                 if (propagation_speed[i][j] != 0) {
+                if (propagation_speed[i][j] != 0) {
                     courant_number[i][j] = dx / propagation_speed[i][j];
+                }
+            }
+        }
                 }
             }
         }
 
 
+        double dt = min(dtmax, 0.4 * (max(courant_number)));
         double dt = min(dtmax, 0.4 * (max(courant_number)));
 
         cout << "dt: " << dt << endl;
@@ -253,6 +295,7 @@ Solution integrator(State (*scheme)(double, State&, double, double, int, double,
 
             q = Heuns(q, C, dt, t);
         } 
+        } 
 
         // BC(q);/
 
@@ -260,6 +303,8 @@ Solution integrator(State (*scheme)(double, State&, double, double, int, double,
 
         if (t > outCount*dtmax) {
             Q.push_back(q); 
+            Q.push_back(t);
+            cout << t;
             Q.push_back(t);
             cout << t;
             ++outCount;
