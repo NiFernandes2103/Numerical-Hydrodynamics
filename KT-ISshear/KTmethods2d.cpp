@@ -1,36 +1,149 @@
 #include <iostream>
 #include <cmath>
-#include <tuple>
 #include <list>
+#include <functional>
+#include <tuple>
 #include <algorithm>
 #include <vector>
-//#include <Ktmethods2d.hpp>
+//#include <Ktmethods2d.h>
 using namespace std;
 
-typedef tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, vector<vector<double>>,
- vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> State;
+class State {       
+  public:             
+    vector<vector<double>> rho;        
+    vector<vector<double>> Momx;
+    vector<vector<double>> Momy;
+    vector<vector<double>> Pixx;
+    vector<vector<double>> Pixy;
+    vector<vector<double>> Piyx;
+    vector<vector<double>> Piyy;
+
+    State() : rho(), Momx(), Momy(), Pixx(), Pixy(), Piyx(), Piyy() {}
+
+    State(vector<vector<double>> v1,
+     vector<vector<double>> v2,
+     vector<vector<double>> v3,
+     vector<vector<double>> v4,
+     vector<vector<double>> v5,
+     vector<vector<double>> v6,
+     vector<vector<double>> v7) : rho(v1), Momx(v2), Momy(v3), Pixx(v4), Pixy(v5), Piyx(v6), Piyy(v7) {}
+
+    vector<vector<double>> get(int n) {
+        if (n == 0){
+            return rho;
+        }
+        if (n == 1){
+            return Momx;
+        }
+        if (n == 2){
+            return Momy;
+        }
+        if (n == 3){
+            return Pixx;
+        }
+        if (n == 4){
+            return Pixy;
+        }
+        if (n == 5){
+            return Piyx;
+        }
+        if (n == 6){
+            return Piyy;
+        }
+        else { 
+            return vector<vector<double>>();
+        } 
+        
+    }
+
+    void set(int n , vector<vector<double>> v) {
+
+        if (n == 0){
+            rho = v;
+        }
+        if (n == 1){
+            Momx = v;
+        }
+        if (n == 2){
+            Momy = v;
+        }
+        if (n == 3){
+            Pixx = v;
+        }
+        if (n == 4){
+            Pixy = v;
+        }
+        if (n == 5){
+            Piyx = v;
+        }
+        if (n == 6){
+            Piyy = v;
+        }
+    }
+
+    
+
+};
 
 typedef struct {
     list<State> y;
     list<double> time;
+
+    void push_back(State s) {
+        y.push_back(s);
+    }
+
+    void push_back(double t) {
+        time.push_back(t);
+    }
+
+    int size() {
+        return y.size();
+    }
 } Solution;
 
 
 
-int sign(vector<vector<double>> value)
+
+double max(vector<vector<double>> value)
+{  
+    int rows,cols;
+    rows = value.size();
+    cols = value[0].size();
+
+    double max = value[0][0];
+
+    for (int i = 0; i < value.size(); i++){
+        for (int j = 0; j < value[0].size(); j++){
+            if (value[i][j] > max){
+                max = value[i][j];
+            }
+        }
+    }
+    return max;
+
+}
+
+vector<vector<double>> sign(vector<vector<double>> value)
 {   
+    int rows,cols;
+    rows = value.size();
+    cols = value[0].size();
+
+    vector<vector<double>> sign(rows, vector<double>(cols, 0.0));
 
     for (int i = 0; i < value.size(); i++){
         for (int j = 0; j < value[0].size(); j++){
             if (value[i][j] > 0.0){
-                return 1;
+                sign[i][j] = 1;
             } else if (value[i][j] < 0.0){
-                return -1;
+                sign[i][j] = -1;
             } else {
-                return 0;
+                sign[i][j] = 0;
             }
         }
     }
+    return sign;
 }
 
 tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>> getConserved(vector<vector<double>>& rho,
@@ -88,11 +201,47 @@ vector<vector<double>> getSpeedOfSound(vector<vector<double>>& rho, double gamma
     return cs;
 }
 
-vector<vector<double>> minmod2(vector<vector<double>>& x, vector<vector<double>>& y) {
-    return (sign(x) + sign(y)) * min(abs(x), abs(y)) / 2;
+vector<vector<double>> abs(vector<vector<double>>& v) {
+
+    int rows,cols;
+    rows = v.size();
+    cols = v[0].size();
+
+    vector<vector<double>> absolute(rows, vector<double>(cols, 0.0));
+
+    for (int i=0; i < rows; i++){
+        for (int j=0; j < cols; j++){
+
+            absolute[i][j] = abs(v[i][j]);
+        }
+    }
+
+    return absolute;
+
 }
 
-vector<vector<double>> minmod3(vector<vector<double>>& x, vector<vector<double>>& y, vector<vector<double>>& z) {
+vector<vector<double>> minmod2(vector<vector<double>> x, vector<vector<double>> y) {
+
+    int rows = x.size();
+    int cols = x[0].size();
+    
+    vector<vector<double>> absolute1 = abs(x);
+    vector<vector<double>> absolute2 = abs(y);
+    vector<vector<double>> sign1 = sign(x);
+    vector<vector<double>> sign2 = sign(y);
+
+    vector<vector<double>> mm2;
+
+    for (int i=0; i < rows; i++){
+        for (int j=0; j < cols; j++){
+            mm2[i][j] = (sign1[i][j] + sign2[i][j]) * min(absolute1[i][j], absolute2[i][j]) / 2;
+            
+        }
+    }
+    return mm2;
+}
+
+vector<vector<double>> minmod3(vector<vector<double>> x, vector<vector<double>> y, vector<vector<double>> z) {
     return minmod2(x, minmod2(y, z));
 }
 
@@ -373,7 +522,8 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
             flux_Piyy_vy[i][j] -= C[i][j] * 0.5 * (Piyy_P[i][j] - Piyy_M[i][j]);
             }
         }
-        
+    return make_tuple(flux_Mass, flux_Momx, flux_Momy, flux_Pixx_vy, flux_Pixy_vy, flux_Piyx_vy, flux_Piyy_vy);
+
 }
 // Apply fluxes to conserved variables
 
@@ -399,13 +549,15 @@ vector<vector<double>> applyFluxes(vector<vector<double>>& flux_H1_X, vector<vec
     return C;
 }
 
+
+
 // Heun's method
 State Heuns (
-State& q, 
-State (*f)(double,State), double dt, double t) {
+State q, 
+function<State(double,State)> f, double dt, double t) {
     
-    int rows = get<0>(q).size();
-    int cols = get<0>(q)[0].size();
+    int rows = (q.get(0)).size();
+    int cols = (q.get(0))[0].size();
 
     vector<vector<double>> k1(rows, vector<double>(cols, 0.0));
     vector<vector<double>> k2(rows, vector<double>(cols, 0.0));
@@ -418,7 +570,8 @@ State (*f)(double,State), double dt, double t) {
     State C;
 
     C = f(t,q);
-    for (int n = 0; n < tuple_size<decltype(C)>::value; ++n){
+
+    for (int n = 0; n < 7; ++n){
         c = C.get(n);
         y = q.get(n);
         for (int i = 0; i < rows; i++) {
@@ -427,81 +580,23 @@ State (*f)(double,State), double dt, double t) {
                 yprime[i][j] = y[i][j] + k1[i][j];
             }
         }
-        tuple_cat( qprime, make_tuple(yprime) );
+        qprime.set(n , yprime);
     }
 
     C = f(t,qprime);
 
-    for (int n = 0; n < tuple_size<decltype(C)>::value; ++n){
-        c = get<n>(C);
-        y = get<n>(qprime);
+    for (int n = 0; n < 7; ++n){
+        c = C.get(n);
+        y = qprime.get(n);
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 k2[i][j] = dt * c[i][j];
                 yprime[i][j] =  y[i][j] + 0.5 * (k1[i][j] + k2[i][j]);
             }
         }
-        
+        qprime.set(n , yprime);
     }
 
 
     return qprime;
 }
-
-
-// Runge-Kutta 4th order method
-vector<vector<double>> RK4 (
-vector<vector<double>>& y0, 
-vector<vector<double>> (*f)(double,vector<vector<double>>), double h, double t) {
-
-    int rows = y0.size();
-    int cols = y0[0].size();
-    
-    vector<vector<double>> k1(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> k2(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> k3(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> k4(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> y(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> C(rows, vector<double>(cols, 0.0));
-    
-    
-    C = f(t,y0);
-
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            k1[i][j] = h * C[i][j];
-            y[i][j] = y0[i][j] + 0.5*k1[i][j];
-        }
-    }
-
-    C = f(t,y);
-
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            k2[i][j] = h * C[i][j];
-            y[i][j] =  y0[i][j] + 0.5 * k2[i][j];
-        }
-    }
-
-    C = f(t,y);
-
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            k3[i][j] = h * C[i][j];
-            y[i][j] =  y0[i][j] + 0.5 * k2[i][j];
-        }
-    }
-
-    C = f(t,y);
-
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            k4[i][j] = h * C[i][j];
-            y[i][j] =  y0[i][j] + (k1[i][j] + 2*k2[i][j] + 2*k3[i][j] + k4[i][j]);
-        }
-    }
-
-    return y;
-}
-
-
