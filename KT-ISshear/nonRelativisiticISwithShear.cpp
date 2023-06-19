@@ -350,7 +350,7 @@ int main() {
     // output solution list of arrays that are 7N x N in the order (rho,rho*vx,rho*vy,Pixx,Pixy,Piyx,Piyy)
     Solution solution = integrator(KTschemeNonRelativisticIS, make_tuple(t, tEnd), IC, tOut, make_tuple(dx, dy, N, gamma, zeta, tau_nu, eta, theta));
 
-    create(solution);
+    // create(solution);
     
 }
 
