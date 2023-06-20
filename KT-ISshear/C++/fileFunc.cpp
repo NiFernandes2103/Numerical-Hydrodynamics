@@ -1,4 +1,5 @@
 #include "KTmethods2d.cpp"
+#include "fileFunc.h"
 #include <iostream>
 #include <map>
 #include <fstream>

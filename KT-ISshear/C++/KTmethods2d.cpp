@@ -8,83 +8,6 @@
 #include "KTmethods2d.h"
 using namespace std;
 
-class state {       
-  public:             
-    vector<vector<double>> rho;        
-    vector<vector<double>> Momx;
-    vector<vector<double>> Momy;
-    vector<vector<double>> Pixx;
-    vector<vector<double>> Pixy;
-    vector<vector<double>> Piyx;
-    vector<vector<double>> Piyy;
-
-    state() : rho(), Momx(), Momy(), Pixx(), Pixy(), Piyx(), Piyy() {}
-
-    state(vector<vector<double>> v1,
-     vector<vector<double>> v2,
-     vector<vector<double>> v3,
-     vector<vector<double>> v4,
-     vector<vector<double>> v5,
-     vector<vector<double>> v6,
-     vector<vector<double>> v7) : rho(v1), Momx(v2), Momy(v3), Pixx(v4), Pixy(v5), Piyx(v6), Piyy(v7) {}
-
-    vector<vector<double>> get(int n) {
-        if (n == 0){
-            return rho;
-        }
-        if (n == 1){
-            return Momx;
-        }
-        if (n == 2){
-            return Momy;
-        }
-        if (n == 3){
-            return Pixx;
-        }
-        if (n == 4){
-            return Pixy;
-        }
-        if (n == 5){
-            return Piyx;
-        }
-        if (n == 6){
-            return Piyy;
-        }
-        else { 
-            return vector<vector<double>>();
-        } 
-        
-    }
-
-    void set(int n , vector<vector<double>> v) {
-
-        if (n == 0){
-            rho = v;
-        }
-        if (n == 1){
-            Momx = v;
-        }
-        if (n == 2){
-            Momy = v;
-        }
-        if (n == 3){
-            Pixx = v;
-        }
-        if (n == 4){
-            Pixy = v;
-        }
-        if (n == 5){
-            Piyx = v;
-        }
-        if (n == 6){
-            Piyy = v;
-        }
-    }
-
-};
-
-
-
 double max(vector<vector<double>> value)
 {  
     int rows,cols;
@@ -200,8 +123,6 @@ vector<vector<double>> getSpeedOfSound(vector<vector<double>>& rho, double gamma
     return cs;
 }
 
-
-
 vector<vector<double>> minmod2(vector<vector<double>> x, vector<vector<double>> y) {
     int rows,cols;
     rows = x.size();
@@ -267,7 +188,6 @@ vector<vector<double>> getGradient (vector<vector<double>>& f, double dx, int ax
 
     return df_dx;
 }
-
 
 tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> extrapolateInSpaceToFace (vector<vector<double>>& q, vector<vector<double>>& q_dx, double dx, int axis) {
     int n = q.size();
@@ -534,8 +454,7 @@ vector<vector<double>> applyFluxes(vector<vector<double>>& flux_H1_X, vector<vec
 }
 
 // Heun's method
-state Heuns (
-state& q, function<state(double,state)> f, double dt, double t) {
+state Heuns (state& q, function<state(double,state)> f, double dt, double t) {
     
     int rows = (q.get(0)).size();
     int cols = (q.get(0))[0].size();

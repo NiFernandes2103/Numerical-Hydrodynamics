@@ -91,9 +91,9 @@ int main() {
 
     map<double, state> initial_state = {{t, IC}};
 
-    // map<double, state> solution = integrator(KTschemeNonRelativisticIS, make_tuple(t, tEnd), initial_state, tOut, make_tuple(dx, dy, N, gamma, zeta, tau_nu, eta, theta));
+    map<double, state> solution = integrator(KTschemeNonRelativisticIS, make_tuple(t, tEnd), initial_state, tOut, make_tuple(dx, dy, N, gamma, zeta, tau_nu, eta, theta));
 
-    // create(solution);
+    create(solution);
     
 }
 
