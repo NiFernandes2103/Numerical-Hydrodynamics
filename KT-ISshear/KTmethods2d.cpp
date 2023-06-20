@@ -103,6 +103,8 @@ typedef struct {
 } Solution;
 
 
+
+
 double max(vector<vector<double>> value)
 {  
     int rows,cols;
@@ -122,7 +124,7 @@ double max(vector<vector<double>> value)
 
 }
 
- vector<vector<double>> sign(vector<vector<double>> value)
+vector<vector<double>> sign(vector<vector<double>> value)
 {   
     int rows,cols;
     rows = value.size();
@@ -551,7 +553,7 @@ vector<vector<double>> applyFluxes(vector<vector<double>>& flux_H1_X, vector<vec
 
 // Heun's method
 State Heuns (
-State& q, 
+State q, 
 function<State(double,State)> f, double dt, double t) {
     
     int rows = (q.get(0)).size();
