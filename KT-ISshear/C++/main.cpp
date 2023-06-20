@@ -23,9 +23,9 @@ int main() {
     double tEnd = 0.1;  // time at the end
     double tOut = 0.01;  // time of each output
 
-    int N = 100;  // resolution
+    int N = 128;  // resolution
     double boxsize = 1.0;  // in some unit system l
-    double gamma = 2.0;  // adiabatic index
+    double gamma = 5/3;  // adiabatic index
     double zeta = 1.0;  // bulk viscosity coefficient
     double eta = 1.0;  // shear viscosity coefficient
     double tau_nu = 1.0;  // relaxation time
@@ -93,9 +93,9 @@ int main() {
 
     state IC = {rho, Momx, Momy, Pixx, Pixy, Piyx, Piyy};
 
-    map<double, state> initial_state = {{t, IC}};
+    create(IC, "initial_state.csv");
 
-    create(initial_state[0], "initial_state.csv");
+    map<double, state> initial_state = {{t, IC}};
 
     map<double, state> solution = integrator(KTschemeNonRelativisticIS, make_tuple(t, tEnd), initial_state, tOut, make_tuple(dx, dy, N, gamma, zeta, tau_nu, eta, theta));
 
