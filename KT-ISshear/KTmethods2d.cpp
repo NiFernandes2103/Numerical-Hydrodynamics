@@ -5,6 +5,7 @@
 #include <tuple>
 #include <algorithm>
 #include <vector>
+#include <map>
 //#include <Ktmethods2d.h>
 using namespace std;
 
@@ -85,22 +86,7 @@ class State {
 
 };
 
-typedef struct {
-    list<State> y;
-    list<double> time;
 
-    void push_back(State s) {
-        y.push_back(s);
-    }
-
-    void push_back(double t) {
-        time.push_back(t);
-    }
-
-    int size() {
-        return y.size();
-    }
-} Solution;
 
 
 

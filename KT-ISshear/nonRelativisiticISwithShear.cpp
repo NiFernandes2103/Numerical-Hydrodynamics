@@ -4,6 +4,8 @@
 #include <tuple>
 #include <list>
 #include <iostream>
+#include <map> 
+#include "fileFunc.cpp"
 #include "KTmethods2d.cpp"
 using namespace std;
 
@@ -171,7 +173,7 @@ State KTschemeNonRelativisticIS(double t,  State& IC, double dx, double dy, int 
 }
 
 
-Solution integrator(State (*scheme)(double, State&, double, double, int, double, double, double, double, double), tuple<double,double> time, State q0, double dtmax,  tuple<double, double, int, double, double, double, double, double> args, string method = "Heuns")
+map<double,State> integrator(State (*scheme)(double, State&, double, double, int, double, double, double, double, double), tuple<double,double> time, map<double, State> Q, double dtmax,  tuple<double, double, int, double, double, double, double, double> args, string method = "Heuns")
 {
     /*
     This is an integrator that evolves a
@@ -188,14 +190,8 @@ Solution integrator(State (*scheme)(double, State&, double, double, int, double,
     double t = get<0>(time);
     double tEnd = get<1>(time);
     int outCount = 1;
-    
-    
 
-    Solution Q;
-    Q.y.push_back(q0);
-    Q.time.push_back(t);
-
-    State q = q0;
+    State q = Q[t];
 
     int N;
     double dx, dy, gamma, zeta, tau_nu, eta, theta;
@@ -248,8 +244,6 @@ Solution integrator(State (*scheme)(double, State&, double, double, int, double,
         cout << "dt: " << dt << endl;
 
         if (method == "Heuns") {
-
-
             q = Heuns(q, C, dt, t);
         } 
 
@@ -258,8 +252,7 @@ Solution integrator(State (*scheme)(double, State&, double, double, int, double,
         t = t + dt;
 
         if (t > outCount*dtmax) {
-            Q.push_back(q); 
-            Q.push_back(t);
+            Q[t] = q;
             cout << t;
             ++outCount;
         }
@@ -275,7 +268,7 @@ int main() {
     double tEnd = 2.0;  // time at the end
     double tOut = 0.01;  // time of each output
 
-    int N = 400;  // resolution
+    int N = 100;  // resolution
     double boxsize = 1.0;  // in some unit system l
     double gamma = 2.0;  // adiabatic index
     double zeta = 1.0;  // bulk viscosity coefficient
@@ -345,10 +338,11 @@ int main() {
 
     State IC = {rho, Momx, Momy, Pixx, Pixy, Piyx, Piyy};
 
-    // input (dx, dy, xlin, gamma, zeta, tau_nu, BC, theta=1)
-    // output solution list of arrays that are 7N x N in the order (rho,rho*vx,rho*vy,Pixx,Pixy,Piyx,Piyy)
-    Solution solution = integrator(KTschemeNonRelativisticIS, make_tuple(t, tEnd), IC, tOut, make_tuple(dx, dy, N, gamma, zeta, tau_nu, eta, theta));
+    map<double, State> initial_state = {{t, IC}}
 
+    map<double, State> solution = integrator(KTschemeNonRelativisticIS, make_tuple(t, tEnd), Initial_state, tOut, make_tuple(dx, dy, N, gamma, zeta, tau_nu, eta, theta));
+
+    create(solution);
     
 }
 
