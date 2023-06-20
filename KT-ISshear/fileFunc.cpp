@@ -3,7 +3,7 @@
 #include <map>
 #include <fstream>
 
-void create(map<double, State> &solution)
+void create(map<double, state> &solution)
 {
     // file pointer
     fstream fout;
@@ -13,7 +13,7 @@ void create(map<double, State> &solution)
 
 
     // Iterate over the list using the iterator
-    for (map<double,State>::iterator it = solution.begin(); it != solution.end(); ++it) {
+    for (map<double,state>::iterator it = solution.begin(); it != solution.end(); ++it) {
         vector<vector<double>> rho  = (*it).second.get(1);        
         vector<vector<double>> Momx = (*it).second.get(2);
         vector<vector<double>> Momy = (*it).second.get(3);

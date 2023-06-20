@@ -9,7 +9,7 @@
 #include "KTmethods2d.cpp"
 using namespace std;
 
-State KTschemeNonRelativisticIS(double t,  State& IC, double dx, double dy, int N, double gamma, double zeta, double tau_nu, double eta, double theta = 1) {
+state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int N, double gamma, double zeta, double tau_nu, double eta, double theta = 1) {
    
     /* Finite Volume simulation */
 
@@ -173,7 +173,7 @@ State KTschemeNonRelativisticIS(double t,  State& IC, double dx, double dy, int 
 }
 
 
-map<double,State> integrator(State (*scheme)(double, State&, double, double, int, double, double, double, double, double), tuple<double,double> time, map<double, State> Q, double dtmax,  tuple<double, double, int, double, double, double, double, double> args, string method = "Heuns")
+map<double,state> integrator(state (*scheme)(double, state&, double, double, int, double, double, double, double, double), tuple<double,double> time, map<double, state> Q, double dtmax,  tuple<double, double, int, double, double, double, double, double> args, string method = "Heuns")
 {
     /*
     This is an integrator that evolves a
@@ -191,7 +191,7 @@ map<double,State> integrator(State (*scheme)(double, State&, double, double, int
     double tEnd = get<1>(time);
     int outCount = 1;
 
-    State q = Q[t];
+    state q = Q[t];
 
     int N;
     double dx, dy, gamma, zeta, tau_nu, eta, theta;
@@ -205,7 +205,7 @@ map<double,State> integrator(State (*scheme)(double, State&, double, double, int
     vector<vector<double>> cs(N, vector<double>(N,0.0));
 
 
-    auto C = [&](double t, State y) {return scheme(t, q, dx, dy, N, gamma, zeta, tau_nu, eta, theta);};
+    auto C = [&](double t, state y) {return scheme(t, q, dx, dy, N, gamma, zeta, tau_nu, eta, theta);};
 
     while (t < tEnd) {
         cout << t << endl;
@@ -264,15 +264,16 @@ map<double,State> integrator(State (*scheme)(double, State&, double, double, int
 
  
 int main() {
+
     double t = 0.0;  // s 
     double tEnd = 2.0;  // time at the end
     double tOut = 0.01;  // time of each output
 
-    int N = 100;  // resolution
+    int N = 10;  // resolution
     double boxsize = 1.0;  // in some unit system l
     double gamma = 2.0;  // adiabatic index
     double zeta = 1.0;  // bulk viscosity coefficient
-    double eta = 10.0;  // shear viscosity coefficient
+    double eta = 1.0;  // shear viscosity coefficient
     double tau_nu = 1.0;  // relaxation time
     double theta = 1.0;  // flux limiter parameter
 
@@ -336,11 +337,11 @@ int main() {
         }
     }
 
-    State IC = {rho, Momx, Momy, Pixx, Pixy, Piyx, Piyy};
+    state IC = {rho, Momx, Momy, Pixx, Pixy, Piyx, Piyy};
 
-    map<double, State> initial_state = {{t, IC}};
+    map<double, state> initial_state = {{t, IC}};
 
-    map<double, State> solution = integrator(KTschemeNonRelativisticIS, make_tuple(t, tEnd), initial_state, tOut, make_tuple(dx, dy, N, gamma, zeta, tau_nu, eta, theta));
+    map<double, state> solution = integrator(KTschemeNonRelativisticIS, make_tuple(t, tEnd), initial_state, tOut, make_tuple(dx, dy, N, gamma, zeta, tau_nu, eta, theta));
 
     create(solution);
     

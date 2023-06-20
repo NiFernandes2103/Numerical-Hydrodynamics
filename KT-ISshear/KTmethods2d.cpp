@@ -8,7 +8,7 @@
 //#include <Ktmethods2d.h>
 using namespace std;
 
-class State {       
+class state {       
   public:             
     vector<vector<double>> rho;        
     vector<vector<double>> Momx;
@@ -18,9 +18,9 @@ class State {
     vector<vector<double>> Piyx;
     vector<vector<double>> Piyy;
 
-    State() : rho(), Momx(), Momy(), Pixx(), Pixy(), Piyx(), Piyy() {}
+    state() : rho(), Momx(), Momy(), Pixx(), Pixy(), Piyx(), Piyy() {}
 
-    State(vector<vector<double>> v1,
+    state(vector<vector<double>> v1,
      vector<vector<double>> v2,
      vector<vector<double>> v3,
      vector<vector<double>> v4,
@@ -534,8 +534,8 @@ vector<vector<double>> applyFluxes(vector<vector<double>>& flux_H1_X, vector<vec
 }
 
 // Heun's method
-State Heuns (
-State& q, function<State(double,State)> f, double dt, double t) {
+state Heuns (
+state& q, function<state(double,state)> f, double dt, double t) {
     
     int rows = (q.get(0)).size();
     int cols = (q.get(0))[0].size();
@@ -547,8 +547,8 @@ State& q, function<State(double,State)> f, double dt, double t) {
     vector<vector<double>> yprime(rows, vector<double>(cols, 0.0));
 
 
-    State qprime;
-    State C;
+    state qprime;
+    state C;
 
     C = f(t,q);
 
