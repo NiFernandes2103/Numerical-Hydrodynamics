@@ -6,7 +6,7 @@
 #include <iostream>
 #include <map> 
 #include "KTmethods2d.h"
-#include "nonRelativisiticISwithShear.h"
+#include "nonRelativisticISwithShear.h"
 using namespace std;
 
 state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int N, double gamma, double zeta, double tau_nu, double eta, double theta = 1) {

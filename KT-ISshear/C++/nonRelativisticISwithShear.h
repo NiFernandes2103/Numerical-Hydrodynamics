@@ -1,4 +1,6 @@
+// Purpose: Header file for nonRelativisticISwithShear.cpp
 
+#pragma once
 #include <cmath>
 #include <vector>
 #include <tuple>

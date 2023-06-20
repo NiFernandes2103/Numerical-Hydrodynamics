@@ -6,8 +6,12 @@
 #include <iostream>
 #include <map> 
 #include "fileFunc.h"
+#include "fileFunc.cpp"
 #include "KTmethods2d.h"
-#include "nonRelativisiticISwithShear.h"
+#include "KTmethods2d.cpp"
+#include "nonRelativisticISwithShear.h"
+#include "nonRelativisticISwithShear.cpp"
+
 
 using namespace std;
 
@@ -91,9 +95,11 @@ int main() {
 
     map<double, state> initial_state = {{t, IC}};
 
+    create(initial_state[0], "initial_state.csv");
+
     map<double, state> solution = integrator(KTschemeNonRelativisticIS, make_tuple(t, tEnd), initial_state, tOut, make_tuple(dx, dy, N, gamma, zeta, tau_nu, eta, theta));
 
-    create(solution);
+    write(solution, "solution.csv");
     
 }
 
