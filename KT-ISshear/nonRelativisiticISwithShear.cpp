@@ -269,6 +269,7 @@ int main() {
     double tOut = 0.01;  // time of each output
 
     int N = 100;  // resolution
+    int N = 100;  // resolution
     double boxsize = 1.0;  // in some unit system l
     double gamma = 2.0;  // adiabatic index
     double zeta = 1.0;  // bulk viscosity coefficient

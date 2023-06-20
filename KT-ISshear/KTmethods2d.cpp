@@ -1,7 +1,5 @@
 #include <iostream>
 #include <cmath>
-#include <list>
-#include <functional>
 #include <tuple>
 #include <algorithm>
 #include <vector>
@@ -117,19 +115,23 @@ vector<vector<double>> sign(vector<vector<double>> value)
     cols = value[0].size();
 
     vector<vector<double>> sign(rows, vector<double>(cols, 0.0));
+    int rows,cols;
+    rows = value.size();
+    cols = value[0].size();
+
+    vector<vector<double>> sign(rows, vector<double>(cols, 0.0));
 
     for (int i = 0; i < value.size(); i++){
         for (int j = 0; j < value[0].size(); j++){
             if (value[i][j] > 0.0){
-                sign[i][j] = 1;
+                return 1;
             } else if (value[i][j] < 0.0){
-                sign[i][j] = -1;
+                return -1;
             } else {
-                sign[i][j] = 0;
+                return 0;
             }
         }
     }
-    return sign;
 }
 
 tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>> getConserved(vector<vector<double>>& rho,
@@ -187,47 +189,11 @@ vector<vector<double>> getSpeedOfSound(vector<vector<double>>& rho, double gamma
     return cs;
 }
 
-vector<vector<double>> abs(vector<vector<double>>& v) {
-
-    int rows,cols;
-    rows = v.size();
-    cols = v[0].size();
-
-    vector<vector<double>> absolute(rows, vector<double>(cols, 0.0));
-
-    for (int i=0; i < rows; i++){
-        for (int j=0; j < cols; j++){
-
-            absolute[i][j] = abs(v[i][j]);
-        }
-    }
-
-    return absolute;
-
+vector<vector<double>> minmod2(vector<vector<double>>& x, vector<vector<double>>& y) {
+    return (sign(x) + sign(y)) * min(abs(x), abs(y)) / 2;
 }
 
-vector<vector<double>> minmod2(vector<vector<double>> x, vector<vector<double>> y) {
-
-    int rows = x.size();
-    int cols = x[0].size();
-    
-    vector<vector<double>> absolute1 = abs(x);
-    vector<vector<double>> absolute2 = abs(y);
-    vector<vector<double>> sign1 = sign(x);
-    vector<vector<double>> sign2 = sign(y);
-
-    vector<vector<double>> mm2;
-
-    for (int i=0; i < rows; i++){
-        for (int j=0; j < cols; j++){
-            mm2[i][j] = (sign1[i][j] + sign2[i][j]) * min(absolute1[i][j], absolute2[i][j]) / 2;
-            
-        }
-    }
-    return mm2;
-}
-
-vector<vector<double>> minmod3(vector<vector<double>> x, vector<vector<double>> y, vector<vector<double>> z) {
+vector<vector<double>> minmod3(vector<vector<double>>& x, vector<vector<double>>& y, vector<vector<double>>& z) {
     return minmod2(x, minmod2(y, z));
 }
 
@@ -508,8 +474,7 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
             flux_Piyy_vy[i][j] -= C[i][j] * 0.5 * (Piyy_P[i][j] - Piyy_M[i][j]);
             }
         }
-    return make_tuple(flux_Mass, flux_Momx, flux_Momy, flux_Pixx_vy, flux_Pixy_vy, flux_Piyx_vy, flux_Piyy_vy);
-
+        
 }
 // Apply fluxes to conserved variables
 
@@ -535,13 +500,13 @@ vector<vector<double>> applyFluxes(vector<vector<double>>& flux_H1_X, vector<vec
     return C;
 }
 
-
-
 // Heun's method
 State Heuns (
-State q, 
+State& q, 
 function<State(double,State)> f, double dt, double t) {
     
+    int rows = (q.get(0)).size();
+    int cols = (q.get(0))[0].size();
     int rows = (q.get(0)).size();
     int cols = (q.get(0))[0].size();
 
@@ -556,8 +521,7 @@ function<State(double,State)> f, double dt, double t) {
     State C;
 
     C = f(t,q);
-
-    for (int n = 0; n < 7; ++n){
+    for (int n = 0; n < tuple_size<decltype(C)>::value; ++n){
         c = C.get(n);
         y = q.get(n);
         for (int i = 0; i < rows; i++) {
@@ -566,22 +530,10 @@ function<State(double,State)> f, double dt, double t) {
                 yprime[i][j] = y[i][j] + k1[i][j];
             }
         }
-        qprime.set(n , yprime);
+        tuple_cat( qprime, make_tuple(yprime) );
     }
 
     C = f(t,qprime);
-
-    for (int n = 0; n < 7; ++n){
-        c = C.get(n);
-        y = qprime.get(n);
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                k2[i][j] = dt * c[i][j];
-                yprime[i][j] =  y[i][j] + 0.5 * (k1[i][j] + k2[i][j]);
-            }
-        }
-        qprime.set(n , yprime);
-    }
 
 
     return qprime;
