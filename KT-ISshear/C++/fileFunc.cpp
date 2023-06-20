@@ -3,7 +3,7 @@
 #include <map>
 #include <fstream>
 
-void create(map<double, state> &solution)
+void create(map<double, state> solution)
 {
     // file pointer
     fstream fout;
