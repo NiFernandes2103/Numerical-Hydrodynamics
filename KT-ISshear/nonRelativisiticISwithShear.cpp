@@ -269,7 +269,6 @@ int main() {
     double tOut = 0.01;  // time of each output
 
     int N = 100;  // resolution
-    int N = 100;  // resolution
     double boxsize = 1.0;  // in some unit system l
     double gamma = 2.0;  // adiabatic index
     double zeta = 1.0;  // bulk viscosity coefficient
@@ -339,9 +338,9 @@ int main() {
 
     State IC = {rho, Momx, Momy, Pixx, Pixy, Piyx, Piyy};
 
-    map<double, State> initial_state = {{t, IC}}
+    map<double, State> initial_state = {{t, IC}};
 
-    map<double, State> solution = integrator(KTschemeNonRelativisticIS, make_tuple(t, tEnd), Initial_state, tOut, make_tuple(dx, dy, N, gamma, zeta, tau_nu, eta, theta));
+    map<double, State> solution = integrator(KTschemeNonRelativisticIS, make_tuple(t, tEnd), initial_state, tOut, make_tuple(dx, dy, N, gamma, zeta, tau_nu, eta, theta));
 
     create(solution);
     
