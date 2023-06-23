@@ -7,7 +7,8 @@
 #include "KTmethods2d.cpp"
 using namespace std;
 
-State KTschemeNonRelativisticIS(double t, const State& IC, double dx, double dy, int N, double gamma, double zeta, double tau_nu, double eta, double theta = 1) {
+tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>,vector<vector<double>>,vector<vector<double>>,vector<vector<double>>,vector<vector<double>>> 
+    KTschemeNonRelativisticIS(double t,  State& IC, double dx, double dy, int N, double gamma, double zeta, double tau_nu, double eta, double theta = 1) {
    
     /* Finite Volume simulation */
 
@@ -29,7 +30,13 @@ State KTschemeNonRelativisticIS(double t, const State& IC, double dx, double dy,
     vector<vector<double>> Piyx(N,vector<double>(N,0.0));
     vector<vector<double>> Piyy(N,vector<double>(N,0.0));
 
-    IC.tie(rho,Momx,Momy,Pixx,Pixy,Piyx,Piyy);
+    rho  = IC.get(0);
+    Momx = IC.get(1);
+    Momy = IC.get(2);
+    Pixx = IC.get(3);
+    Pixy = IC.get(4);
+    Piyx = IC.get(5);
+    Piyy = IC.get(6);
     
    
     for (int i = 0; i < N; i++) {
@@ -160,7 +167,8 @@ State KTschemeNonRelativisticIS(double t, const State& IC, double dx, double dy,
     timederivative_Piyx  = applyFluxes( flux_Piyx_vxR,    flux_Piyx_vxL, flux_Piyx_vyR,    flux_Piyx_vyL, dx, dy, Jyx);
     timederivative_Piyy  = applyFluxes( flux_Piyy_vxR,    flux_Piyy_vxL, flux_Piyy_vyR,    flux_Piyy_vyL, dx, dy, Jyy);
 
-    return make_tuple(timederivative_rho,timederivative_Momx,timederivative_Momy,timederivative_Pixx,timederivative_Pixy,timederivative_Piyx,timederivative_Piyy);    
+    return {timederivative_rho,timederivative_Momx,timederivative_Momy,timederivative_Pixx,timederivative_Pixy,timederivative_Piyx,timederivative_Piyy};
+    
 }
 
 
@@ -194,36 +202,50 @@ Solution integrator(State (*scheme)(double, State, double, double, int, double, 
     double dx, dy, gamma, zeta, tau_nu, eta, theta;
     tie(dx, dy, N, gamma, zeta, tau_nu, eta, theta) = args;
 
+    vector<vector<double>> rho(N,vector<double>(N,0.0));
+    vector<vector<double>> vx(N, vector<double>(N,0.0));
+    vector<vector<double>> vy(N, vector<double>(N,0.0));
+    vector<vector<double>> Momx(N, vector<double>(N,0.0));
+    vector<vector<double>> Momy(N, vector<double>(N,0.0));
+    vector<vector<double>> cs(N, vector<double>(N,0.0));
+
+
     auto C = [&](double t, State y) {return scheme(t, q, dx, dy, N, gamma, zeta, tau_nu, eta, theta);};
 
     while (t < tEnd) {
         cout << t << endl;
 
-        vector<vector<double>> rho = q.get(0);
-        vector<vector<double>> Momx  = q.get(1);
-        vector<vector<double>> Momy  = q.get(2);
-        vector<vector<double>> cs  = getSpeedOfSound(rho, gamma);
+        rho = q.get(0);
+        Momx  = q.get(1);
+        Momy  = q.get(2);
+        cs  = getSpeedOfSound(rho, gamma);
+
+        for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            vx[i][j] = Momx[i][j] / rho[i][j];
+            vy[i][j] = Momy[i][j] / rho[i][j];
 
 
+
+        }
+    }        
 
         // condition to ensure that the time steps are small enough so that
         // waves do not interfere with each other
         vector<vector<double>> propagation_speed = local_propagation_speed(rho, vx, vy, eta, zeta, tau_nu, cs);
         vector<vector<double>> courant_number(N, vector<double>(N, 0.0));
 
-        vector<vector<double>> courant_number(N);
         for (int i = 0; i < N; ++i) {
             for (int j = 0; j < N; ++j) {
-                if (propagation_speed[i][j] != 0)
+                if (propagation_speed[i][j] != 0) {
                     courant_number[i][j] = dx / propagation_speed[i][j];
+                }
             }
         }
 
-        //if (numeric_limits<double>::epsilon() > *max_element(courant_number.begin(), courant_number.end())) {
-        //    cout << "slow update" << endl;
-        //}
+        list<double> cnum = matrix2list(courant_number);
 
-        double dt = min(dtmax, 0.4 * (max(courant_number.begin(), courant_number.end())));
+        double dt = min(dtmax, 0.4 * (max(cnum)));
 
         cout << "dt: " << dt << endl;
 
@@ -305,6 +327,8 @@ int main() {
     vector<vector<double>> rho(s, vector<double>(s, 0.0));
     vector<vector<double>> vx(s, vector<double>(s, 0.0));
     vector<vector<double>> vy(s, vector<double>(s, 0.0));
+    vector<vector<double>> Momx(s, vector<double>(s, 0.0));
+    vector<vector<double>> Momy(s, vector<double>(s, 0.0));
     vector<vector<double>> Pixx(s, vector<double>(s, 0.0));
     vector<vector<double>> Pixy(s, vector<double>(s, 0.0));
     vector<vector<double>> Piyx(s, vector<double>(s, 0.0));
@@ -315,14 +339,16 @@ int main() {
             rho[i][j] = 1.0 + (abs(Y[i][j] - 0.5) < 0.25);
             vx[i][j] = -0.5 + (abs(Y[i][j] - 0.5) < 0.25);
             vy[i][j] = w0 * sin(4 * M_PI * X[i][j]) * (exp(-(Y[i][j] - 0.25) * (Y[i][j] - 0.25) / (2 * sigma * sigma)) + exp(-(Y[i][j] - 0.75) * (Y[i][j] - 0.75) / (2 * sigma * sigma)));
+            Momx[i][j] = vx[i][j]*rho[i][j];
+            Momy[i][j] = vy[i][j]*rho[i][j];
         }
     }
 
-    vector<vector<double>> IC = { rho, vx, vy, Pixx, Pixy, Piyx, Piyy };
+    State IC = {rho, Momx, Momy, Pixx, Pixy, Piyx, Piyy};
 
     // input (dx, dy, xlin, gamma, zeta, tau_nu, BC, theta=1)
     // output solution list of arrays that are 7N x N in the order (rho,rho*vx,rho*vy,Pixx,Pixy,Piyx,Piyy)
-    Solution solution = integrator(KTschemeNonRelativisticIS, make_tuple(t, tEnd), IC, tOut, "Heuns", make_tuple(dx, dy, N, gamma, zeta, tau_nu, eta, theta));
+    Solution solution = integrator(KTschemeNonRelativisticIS, make_tuple(t, tEnd), IC, tOut, make_tuple(dx, dy, N, gamma, zeta, tau_nu, eta, theta));
 
     int i = 0;
     while (i < solution.size()) {
