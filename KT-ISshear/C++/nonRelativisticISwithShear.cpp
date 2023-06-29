@@ -10,7 +10,7 @@
 using namespace std;
 
 state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int N, double gamma, double zeta, double tau_nu, double eta, double theta = 1) {
-   
+     
     /* Finite Volume simulation */
 
     // Generate Initial Conditions
@@ -208,7 +208,6 @@ map<double,state> integrator(state (*scheme)(double, state&, double, double, int
     auto C = [&](double t, state y) {return scheme(t, q, dx, dy, N, gamma, zeta, tau_nu, eta, theta);};
 
     while (t < tEnd) {
-        cout << t << endl;
 
         rho = q.get(0);
         Momx  = q.get(1);
@@ -253,7 +252,7 @@ map<double,state> integrator(state (*scheme)(double, state&, double, double, int
 
         if (t > outCount*dtmax) {
             Q[t] = q;
-            cout << t;
+            cout << t << endl;
             ++outCount;
         }
     }

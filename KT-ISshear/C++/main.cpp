@@ -23,7 +23,7 @@ int main() {
     double tEnd = 0.1;  // time at the end
     double tOut = 0.01;  // time of each output
 
-    int N = 128;  // resolution
+    int N = 200;  // resolution
     double boxsize = 1.0;  // in some unit system l
     double gamma = 5/3;  // adiabatic index
     double zeta = 1.0;  // bulk viscosity coefficient
@@ -31,13 +31,19 @@ int main() {
     double tau_nu = 1.0;  // relaxation time
     double theta = 1.0;  // flux limiter parameter
 
+    parameters_csv(t,tEnd,tOut,N,boxsize,gamma,zeta,eta,tau_nu,theta,"parameters.csv");
+
     double dx = boxsize / N;  // box size
     double dy = dx;
     double vol = dx * dx;  // volume of each box
     vector<double> xlin(N);
     for (int i = 0; i < N; i++) {
-        xlin[i] = 0.5 * dx + (boxsize - 0.5 * dx) * i / (N - 1);  // simulation limits
+        // xlin[i] = 0.5 * dx + (boxsize - 0.5 * dx) * i / (N - 1);  // simulation limits
+
+        xlin[i] = 0.5*(0.5 * dx - boxsize) +  (boxsize - 0.5 * dx) * i / (N - 1);
     }
+
+
     vector<vector<double>> Y(N, vector<double>(N, 0.0));
     vector<vector<double>> X(N, vector<double>(N, 0.0));
     for (int i = 0; i < N; i++) {
@@ -54,21 +60,6 @@ int main() {
         }
     }
 
-    /* initial condition of density */
-
-    //rho = (1.5*(R <= 0.25) + 1*(R > 0.25))
-    //rho = ((1 - ((R - (boxsize-0.5*dx)*0.5)**2)/0.25 )**4 )*(R < 0.5) + 0.1*np.ones(R.shape) // Mauricio`s funtion advice    
-    //rho = 1*(X < 0) + 0.125*(X >= 0)
-
-    /* initial condition of velocity */
-    //vx = np.zeros(s)
-    //vx = 0.5*np.ones(xlin.shape)
-    //vx = 3*(Y < 0) - 0*(Y >= 0)
-    //vx = np.abs((xlin - (boxsize-0.5*dx)*0.5)/16)
-
-    //vy = np.zeros(s)
-    //vy = 0.5*np.ones(xlin.shape)
-
     double w0 = 0.1;
     double sigma = 0.05 / sqrt(2.0);
     vector<vector<double>> rho(s, vector<double>(s, 0.0));
@@ -83,11 +74,14 @@ int main() {
 
     for (int i = 0; i < s; i++) {
         for (int j = 0; j < s; j++) {
-            rho[i][j] = 1.0 + (abs(Y[i][j] - 0.5) < 0.25);
-            vx[i][j] = -0.5 + (abs(Y[i][j] - 0.5) < 0.25);
-            vy[i][j] = w0 * sin(4 * M_PI * X[i][j]) * (exp(-(Y[i][j] - 0.25) * (Y[i][j] - 0.25) / (2 * sigma * sigma)) + exp(-(Y[i][j] - 0.75) * (Y[i][j] - 0.75) / (2 * sigma * sigma)));
-            Momx[i][j] = vx[i][j]*rho[i][j];
-            Momy[i][j] = vy[i][j]*rho[i][j];
+            //rho[i][j] = 1.0 + (abs(Y[i][j] - 0.5) < 0.25);
+            //vx[i][j] = -0.5 + (abs(Y[i][j] - 0.5) < 0.25);
+            //vy[i][j] = w0 * sin(4 * M_PI * X[i][j]) * (exp(-(Y[i][j] - 0.25) * (Y[i][j] - 0.25) / (2 * sigma * sigma)) + exp(-(Y[i][j] - 0.75) * (Y[i][j] - 0.75) / (2 * sigma * sigma)));
+            //Momx[i][j] = vx[i][j]*rho[i][j];
+            //Momy[i][j] = vy[i][j]*rho[i][j];
+
+            rho[i][j] = (pow((1 - (R[i][j])*(R[i][j])),4))*(R[i][j] < 1) + 1; // Mauricio's function advice
+
         }
     }
 
@@ -99,7 +93,7 @@ int main() {
 
     map<double, state> solution = integrator(KTschemeNonRelativisticIS, make_tuple(t, tEnd), initial_state, tOut, make_tuple(dx, dy, N, gamma, zeta, tau_nu, eta, theta));
 
-    write(solution, "solution.csv");
+    write_each(solution, "density_solution.csv", 0);
     
 }
 

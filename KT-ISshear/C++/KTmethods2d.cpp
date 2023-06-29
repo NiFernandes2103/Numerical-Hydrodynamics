@@ -99,7 +99,7 @@ tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>,vecto
             rho[i][j] = Mass[i][j] / vol;
             vx[i][j] = (rho[i][j] != 0) ? Momx[i][j] / rho[i][j] : 0;
             vy[i][j] = (rho[i][j] != 0) ? Momy[i][j] / rho[i][j] : 0;
-            P[i][j] = pow(abs(rho[i][j]), gamma);
+            P[i][j] = pow(rho[i][j], gamma);
         }
     }
 
@@ -116,7 +116,7 @@ vector<vector<double>> getSpeedOfSound(vector<vector<double>>& rho, double gamma
 
     for (int i=0; i < rows; i++){
         for (int j=0; j < cols; j++){
-            cs[i][j] = sqrt(gamma * pow(abs(rho[i][j]), gamma - 1));
+            cs[i][j] = sqrt(gamma * pow(rho[i][j], gamma - 1));
         }
     }
 
@@ -414,9 +414,9 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
             flux_Momx[i][j] = 0.5 * (rho_P[i][j] * vx_P[i][j] * vy_P[i][j] + rho_M[i][j] * vx_M[i][j] * vy_M[i][j]) + Pixy_av[i][j] / gamma;
             flux_Momy[i][j] = 0.5 * (rho_P[i][j] * vy_P[i][j] * vy_P[i][j] + rho_M[i][j] * vy_M[i][j] * vy_M[i][j]) + (P_av[i][j]) + (Piyy_av[i][j]) / gamma;
             flux_Pixx_vy[i][j] = Pixx_vy_av[i][j] + (A - 2.0 / 3.0 * B) * (vx_P[i][j] + vx_M[i][j]) * 0.5;
-            flux_Pixy_vy[i][j] = Pixy_vy_av[i][j] + B * (vy_P[i][j] + vy_M[i][j]) * 0.5;
-            flux_Piyx_vy[i][j] = Piyx_vy_av[i][j] + B * (vy_P[i][j] + vy_M[i][j]) * 0.5;
-            flux_Piyy_vy[i][j] = Piyy_vy_av[i][j] + B * (vx_P[i][j] + vx_M[i][j]) + (A - 2.0 / 3.0 * B) * (vx_P[i][j] + vx_M[i][j]) * 0.5;
+            flux_Pixy_vy[i][j] = Pixy_vy_av[i][j] + B * (vx_P[i][j] + vx_M[i][j]) * 0.5;
+            flux_Piyx_vy[i][j] = Piyx_vy_av[i][j] + B * (vx_P[i][j] + vx_M[i][j]) * 0.5;
+            flux_Piyy_vy[i][j] = Piyy_vy_av[i][j] + B * (vy_P[i][j] + vy_M[i][j]) + (A - 2.0 / 3.0 * B) * (vy_P[i][j] + vy_M[i][j]) * 0.5;
             flux_Mass[i][j] -= C[i][j] * 0.5 * (rho_P[i][j] - rho_M[i][j]);
             flux_Momx[i][j] -= C[i][j] * 0.5 * (rho_P[i][j] * vx_P[i][j] - rho_M[i][j] * vx_M[i][j]);
             flux_Momy[i][j] -= C[i][j] * 0.5 * (rho_P[i][j] * vy_P[i][j] - rho_M[i][j] * vy_M[i][j]);
