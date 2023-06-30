@@ -1,4 +1,3 @@
-
 #include <cmath>
 #include <vector>
 #include <tuple>
@@ -150,7 +149,7 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
 
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
-             Jxx[i][j] = -Pixx[i][j]/tau_nu;
+            Jxx[i][j] = -Pixx[i][j]/tau_nu;
             Jxy[i][j] = -Pixy[i][j]/tau_nu;
             Jyx[i][j] = -Piyx[i][j]/tau_nu;
             Jyy[i][j] = -Piyy[i][j]/tau_nu;

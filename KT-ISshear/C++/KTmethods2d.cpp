@@ -281,63 +281,57 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
     vector<vector<double>> flux_Piyx_vx(rows, vector<double>(cols, 0.0));
     vector<vector<double>> flux_Piyy_vx(rows, vector<double>(cols, 0.0));
 
-    vector<vector<double>> rho_av(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> momx_av(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> Pixx_av(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> Piyx_av(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> Pixx_vx_av(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> Pixy_vx_av(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> Piyx_vx_av(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> Piyy_vx_av(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> P_av(rows, vector<double>(cols, 0.0));
-
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            rho_av[i][j] = 0.5 * (rho_P[i][j] + rho_M[i][j]);
-            momx_av[i][j] = 0.5 * (rho_P[i][j] * vx_P[i][j] + rho_M[i][j] * vx_M[i][j]);
-            Pixx_av[i][j] = 0.5 * (Pixx_P[i][j] + Pixx_M[i][j]);
-            Piyx_av[i][j] = 0.5 * (Piyx_P[i][j] + Piyx_M[i][j]);
-            Pixx_vx_av[i][j] = 0.5 * (Pixx_P[i][j] * vx_P[i][j] + Pixx_M[i][j] * vx_M[i][j]);
-            Pixy_vx_av[i][j] = 0.5 * (Pixy_P[i][j] * vx_P[i][j] + Piyx_M[i][j] * vx_M[i][j]);
-            Piyx_vx_av[i][j] = 0.5 * (Piyx_P[i][j] * vx_P[i][j] + Pixy_M[i][j] * vx_M[i][j]);
-            Piyy_vx_av[i][j] = 0.5 * (Piyy_P[i][j] * vx_P[i][j] + Piyy_M[i][j] * vx_M[i][j]);
-            P_av[i][j] = 0.5 * (P_P[i][j] + P_M[i][j]);
-
-            double B = eta / tau_nu;
-            double A = zeta / tau_nu;
-
-            flux_Mass[i][j] = momx_av[i][j];
-            flux_Momx[i][j] = 0.5 * (rho_P[i][j] * pow(vx_P[i][j], 2) + rho_M[i][j] * pow(vx_M[i][j], 2)) + (P_av[i][j]) + (Pixx_av[i][j]) / gamma;
-            flux_Momy[i][j] = 0.5 * (rho_P[i][j] * (vx_P[i][j] * vy_P[i][j]) + rho_M[i][j] * (vx_M[i][j] * vy_M[i][j])) + (Piyx_av[i][j]) / gamma;
-            flux_Pixx_vx[i][j] = Pixx_vx_av[i][j] + B * (vx_P[i][j] + vx_M[i][j]) + (A - 2.0 / 3.0 * B) * (vx_P[i][j] + vx_M[i][j]) * 0.5;
-            flux_Pixy_vx[i][j] = Pixy_vx_av[i][j] + B * (vy_P[i][j] + vy_M[i][j]) * 0.5;
-            flux_Piyx_vx[i][j] = Piyx_vx_av[i][j] + B * (vy_P[i][j] + vy_M[i][j]) * 0.5;
-            flux_Piyy_vx[i][j] = Piyy_vx_av[i][j] + (A - 2.0 / 3.0 * B) * (vx_P[i][j] + vx_M[i][j]) * 0.5;
-            }
-            }
+    double rho_av;
+    double momx_av;
+    double Pixx_av;
+    double Piyx_av;
+    double Pixx_vx_av;
+    double Pixy_vx_av;
+    double Piyx_vx_av;
+    double Piyy_vx_av;
+    double P_av;
 
     vector<vector<double>> cs_P = getSpeedOfSound(rho_P, gamma);
     vector<vector<double>> C_P = local_propagation_speed(rho_P, vx_P, vy_P, eta, zeta, tau_nu, cs_P);
     vector<vector<double>> cs_M = getSpeedOfSound(rho_M, gamma);
     vector<vector<double>> C_M = local_propagation_speed(rho_M, vx_M, vy_M, eta, zeta, tau_nu, cs_M);
 
-    vector<vector<double>> C(rows, vector<double>(cols, 0.0));
+    double C;
+
+    double B = eta / tau_nu;
+    double A = zeta / tau_nu;
 
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
-            C[i][j] = max(C_M[i][j], C_P[i][j]);
-        }
-    }
+            momx_av = 0.5 * (rho_P[i][j] * vx_P[i][j] + rho_M[i][j] * vx_M[i][j]);
+            Pixx_av = 0.5 * (Pixx_P[i][j] + Pixx_M[i][j]);
+            Piyx_av = 0.5 * (Piyx_P[i][j] + Piyx_M[i][j]);
+            Pixx_vx_av = 0.5 * (Pixx_P[i][j] * vx_P[i][j] + Pixx_M[i][j] * vx_M[i][j]);
+            Pixy_vx_av = 0.5 * (Pixy_P[i][j] * vx_P[i][j] + Piyx_M[i][j] * vx_M[i][j]);
+            Piyx_vx_av = 0.5 * (Piyx_P[i][j] * vx_P[i][j] + Pixy_M[i][j] * vx_M[i][j]);
+            Piyy_vx_av = 0.5 * (Piyy_P[i][j] * vx_P[i][j] + Piyy_M[i][j] * vx_M[i][j]);
+            P_av = 0.5 * (P_P[i][j] + P_M[i][j]);
 
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            flux_Mass[i][j] -= C[i][j] * 0.5 * (rho_P[i][j] - rho_M[i][j]);
-            flux_Momx[i][j] -= C[i][j] * 0.5 * (rho_P[i][j] * vx_P[i][j] - rho_M[i][j] * vx_M[i][j]);
-            flux_Momy[i][j] -= C[i][j] * 0.5 * (rho_P[i][j] * vy_P[i][j] - rho_M[i][j] * vy_M[i][j]);
-            flux_Pixx_vx[i][j] -= C[i][j] * 0.5 * (Pixx_P[i][j] - Pixx_M[i][j]);
-            flux_Pixy_vx[i][j] -= C[i][j] * 0.5 * (Pixy_P[i][j] - Pixy_M[i][j]);
-            flux_Piyx_vx[i][j] -= C[i][j] * 0.5 * (Piyx_P[i][j] - Piyx_M[i][j]);
-            flux_Piyy_vx[i][j] -= C[i][j] * 0.5 * (Piyy_P[i][j] - Piyy_M[i][j]);
+            
+
+            flux_Mass[i][j] = momx_av;
+            flux_Momx[i][j] = 0.5 * (rho_P[i][j] * pow(vx_P[i][j], 2) + rho_M[i][j] * pow(vx_M[i][j], 2)) + (P_av) + (Pixx_av) / gamma;
+            flux_Momy[i][j] = 0.5 * (rho_P[i][j] * (vx_P[i][j] * vy_P[i][j]) + rho_M[i][j] * (vx_M[i][j] * vy_M[i][j])) + (Piyx_av) / gamma;
+            flux_Pixx_vx[i][j] = Pixx_vx_av + B * (vx_P[i][j] + vx_M[i][j]) + (A - 2.0 / 3.0 * B) * (vx_P[i][j] + vx_M[i][j]) * 0.5;
+            flux_Pixy_vx[i][j] = Pixy_vx_av + B * (vy_P[i][j] + vy_M[i][j]) * 0.5;
+            flux_Piyx_vx[i][j] = Piyx_vx_av + B * (vy_P[i][j] + vy_M[i][j]) * 0.5;
+            flux_Piyy_vx[i][j] = Piyy_vx_av + (A - 2.0 / 3.0 * B) * (vx_P[i][j] + vx_M[i][j]) * 0.5;
+
+            C = max(C_M[i][j], C_P[i][j]);
+
+            flux_Mass[i][j] -= C * 0.5 * (rho_P[i][j] - rho_M[i][j]);
+            flux_Momx[i][j] -= C * 0.5 * (rho_P[i][j] * vx_P[i][j] - rho_M[i][j] * vx_M[i][j]);
+            flux_Momy[i][j] -= C * 0.5 * (rho_P[i][j] * vy_P[i][j] - rho_M[i][j] * vy_M[i][j]);
+            flux_Pixx_vx[i][j] -= C * 0.5 * (Pixx_P[i][j] - Pixx_M[i][j]);
+            flux_Pixy_vx[i][j] -= C * 0.5 * (Pixy_P[i][j] - Pixy_M[i][j]);
+            flux_Piyx_vx[i][j] -= C * 0.5 * (Piyx_P[i][j] - Piyx_M[i][j]);
+            flux_Piyy_vx[i][j] -= C * 0.5 * (Piyy_P[i][j] - Piyy_M[i][j]);
+
         }
     }
 
@@ -367,29 +361,15 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
     vector<vector<double>> flux_Piyx_vy(rows, vector<double>(cols, 0.0));
     vector<vector<double>> flux_Piyy_vy(rows, vector<double>(cols, 0.0));
 
-    vector<vector<double>> rho_av(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> momy_av(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> Piyy_av(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> Pixy_av(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> Pixx_vy_av(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> Pixy_vy_av(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> Piyx_vy_av(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> Piyy_vy_av(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> P_av(rows, vector<double>(cols, 0.0));
-
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            rho_av[i][j] = 0.5 * (rho_P[i][j] + rho_M[i][j]);
-            momy_av[i][j] = 0.5 * (rho_P[i][j] * vy_P[i][j] + rho_M[i][j] * vy_M[i][j]);
-            Piyy_av[i][j] = 0.5 * (Piyy_P[i][j] + Piyy_M[i][j]);
-            Pixy_av[i][j] = 0.5 * (Pixy_P[i][j] + Pixy_M[i][j]);
-            Pixx_vy_av[i][j] = 0.5 * (Pixx_P[i][j] * vy_P[i][j] + Pixx_M[i][j] * vy_M[i][j]);
-            Pixy_vy_av[i][j] = 0.5 * (Pixy_P[i][j] * vy_P[i][j] + Piyx_M[i][j] * vy_M[i][j]);
-            Piyx_vy_av[i][j] = 0.5 * (Piyx_P[i][j] * vy_P[i][j] + Pixy_M[i][j] * vy_M[i][j]);
-            Piyy_vy_av[i][j] = 0.5 * (Piyy_P[i][j] * vy_P[i][j] + Piyy_M[i][j] * vy_M[i][j]);
-            P_av[i][j] = 0.5 * (P_P[i][j] + P_M[i][j]);
-        }
-    }
+    double rho_av;
+    double momy_av;
+    double Piyy_av;
+    double Pixy_av;
+    double Pixx_vy_av;
+    double Pixy_vy_av;
+    double Piyx_vy_av;
+    double Piyy_vy_av;
+    double P_av;
 
     vector<vector<double>> cs_P = getSpeedOfSound(rho_P, gamma);
     vector<vector<double>> C_P = local_propagation_speed(rho_P, vx_P, vy_P, eta, zeta, tau_nu, cs_P);
@@ -397,35 +377,46 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
     vector<vector<double>> cs_M = getSpeedOfSound(rho_M, gamma);
     vector<vector<double>> C_M = local_propagation_speed(rho_M, vx_M, vy_M, eta, zeta, tau_nu, cs_M);
 
-    vector<vector<double>> C(rows, vector<double>(cols, 0.0));
-
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            C[i][j] = max(C_M[i][j], C_P[i][j]);
-        }
-    }
+    double C;
 
     double B = eta / tau_nu;
     double A = zeta/ tau_nu;
 
+
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
-            flux_Mass[i][j] = momy_av[i][j];
-            flux_Momx[i][j] = 0.5 * (rho_P[i][j] * vx_P[i][j] * vy_P[i][j] + rho_M[i][j] * vx_M[i][j] * vy_M[i][j]) + Pixy_av[i][j] / gamma;
-            flux_Momy[i][j] = 0.5 * (rho_P[i][j] * vy_P[i][j] * vy_P[i][j] + rho_M[i][j] * vy_M[i][j] * vy_M[i][j]) + (P_av[i][j]) + (Piyy_av[i][j]) / gamma;
-            flux_Pixx_vy[i][j] = Pixx_vy_av[i][j] + (A - 2.0 / 3.0 * B) * (vx_P[i][j] + vx_M[i][j]) * 0.5;
-            flux_Pixy_vy[i][j] = Pixy_vy_av[i][j] + B * (vx_P[i][j] + vx_M[i][j]) * 0.5;
-            flux_Piyx_vy[i][j] = Piyx_vy_av[i][j] + B * (vx_P[i][j] + vx_M[i][j]) * 0.5;
-            flux_Piyy_vy[i][j] = Piyy_vy_av[i][j] + B * (vy_P[i][j] + vy_M[i][j]) + (A - 2.0 / 3.0 * B) * (vy_P[i][j] + vy_M[i][j]) * 0.5;
-            flux_Mass[i][j] -= C[i][j] * 0.5 * (rho_P[i][j] - rho_M[i][j]);
-            flux_Momx[i][j] -= C[i][j] * 0.5 * (rho_P[i][j] * vx_P[i][j] - rho_M[i][j] * vx_M[i][j]);
-            flux_Momy[i][j] -= C[i][j] * 0.5 * (rho_P[i][j] * vy_P[i][j] - rho_M[i][j] * vy_M[i][j]);
-            flux_Pixx_vy[i][j] -= C[i][j] * 0.5 * (Pixx_P[i][j] - Pixx_M[i][j]);
-            flux_Pixy_vy[i][j] -= C[i][j] * 0.5 * (Pixy_P[i][j] - Pixy_M[i][j]);
-            flux_Piyx_vy[i][j] -= C[i][j] * 0.5 * (Piyx_P[i][j] - Piyx_M[i][j]);
-            flux_Piyy_vy[i][j] -= C[i][j] * 0.5 * (Piyy_P[i][j] - Piyy_M[i][j]);
-            }
+            
+            momy_av = 0.5 * (rho_P[i][j] * vy_P[i][j] + rho_M[i][j] * vy_M[i][j]);
+            Piyy_av = 0.5 * (Piyy_P[i][j] + Piyy_M[i][j]);
+            Pixy_av = 0.5 * (Pixy_P[i][j] + Pixy_M[i][j]);
+            Pixx_vy_av = 0.5 * (Pixx_P[i][j] * vy_P[i][j] + Pixx_M[i][j] * vy_M[i][j]);
+            Pixy_vy_av = 0.5 * (Pixy_P[i][j] * vy_P[i][j] + Piyx_M[i][j] * vy_M[i][j]);
+            Piyx_vy_av = 0.5 * (Piyx_P[i][j] * vy_P[i][j] + Pixy_M[i][j] * vy_M[i][j]);
+            Piyy_vy_av = 0.5 * (Piyy_P[i][j] * vy_P[i][j] + Piyy_M[i][j] * vy_M[i][j]);
+            P_av = 0.5 * (P_P[i][j] + P_M[i][j]);
+
+
+            flux_Mass[i][j] = momy_av;
+            flux_Momx[i][j] = 0.5 * (rho_P[i][j] * vx_P[i][j] * vy_P[i][j] + rho_M[i][j] * vx_M[i][j] * vy_M[i][j]) + Pixy_av / gamma;
+            flux_Momy[i][j] = 0.5 * (rho_P[i][j] * vy_P[i][j] * vy_P[i][j] + rho_M[i][j] * vy_M[i][j] * vy_M[i][j]) + (P_av) + (Piyy_av) / gamma;
+            flux_Pixx_vy[i][j] = Pixx_vy_av + (A - 2.0 / 3.0 * B) * (vy_P[i][j] + vy_M[i][j]) * 0.5;
+            flux_Pixy_vy[i][j] = Pixy_vy_av + B * (vx_P[i][j] + vx_M[i][j]) * 0.5;
+            flux_Piyx_vy[i][j] = Piyx_vy_av + B * (vx_P[i][j] + vx_M[i][j]) * 0.5;
+            flux_Piyy_vy[i][j] = Piyy_vy_av + B * (vy_P[i][j] + vy_M[i][j]) + (A - 2.0 / 3.0 * B) * (vy_P[i][j] + vy_M[i][j]) * 0.5;
+
+            C = max(C_M[i][j], C_P[i][j]);
+
+            flux_Mass[i][j] -= C * 0.5 * (rho_P[i][j] - rho_M[i][j]);
+            flux_Momx[i][j] -= C * 0.5 * (rho_P[i][j] * vx_P[i][j] - rho_M[i][j] * vx_M[i][j]);
+            flux_Momy[i][j] -= C * 0.5 * (rho_P[i][j] * vy_P[i][j] - rho_M[i][j] * vy_M[i][j]);
+            flux_Pixx_vy[i][j] -= C * 0.5 * (Pixx_P[i][j] - Pixx_M[i][j]);
+            flux_Pixy_vy[i][j] -= C * 0.5 * (Pixy_P[i][j] - Pixy_M[i][j]);
+            flux_Piyx_vy[i][j] -= C * 0.5 * (Piyx_P[i][j] - Piyx_M[i][j]);
+            flux_Piyy_vy[i][j] -= C * 0.5 * (Piyy_P[i][j] - Piyy_M[i][j]);
+
         }
+    }
+
     return make_tuple(flux_Mass, flux_Momx, flux_Momy, flux_Pixx_vy, flux_Pixy_vy, flux_Piyx_vy, flux_Piyy_vy);
         
 }
