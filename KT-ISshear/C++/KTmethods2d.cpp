@@ -190,6 +190,7 @@ vector<vector<double>> getGradient (vector<vector<double>>& f, double dx, int ax
 }
 
 tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> extrapolateInSpaceToFace (vector<vector<double>>& q, vector<vector<double>>& q_dx, double dx, int axis) {
+    
     int n = q.size();
 
     vector<int> K(n);
@@ -385,7 +386,7 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
 
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
-            
+
             momy_av = 0.5 * (rho_P[i][j] * vy_P[i][j] + rho_M[i][j] * vy_M[i][j]);
             Piyy_av = 0.5 * (Piyy_P[i][j] + Piyy_M[i][j]);
             Pixy_av = 0.5 * (Pixy_P[i][j] + Pixy_M[i][j]);

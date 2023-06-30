@@ -12,9 +12,8 @@ void parameters_csv(double t, double tEnd, double tOut,int N, double boxsize, do
     fstream fout;
   
     // opens an existing csv file or creates a new file.
-    fout.open(filename, ios::out | ios::app);
+    fout.open(filename, ios::out | ios::trunc);
 
-    fout.flush();
 
     fout << "t" << ",";
     fout << "tEnd" << ",";
@@ -49,9 +48,8 @@ void create(state initial,string filename) {
     fstream fout;
   
     // opens an existing csv file or creates a new file.
-    fout.open(filename, ios::out | ios::app);
+    fout.open(filename, ios::out | ios::trunc);
 
-    fout.flush();
 
     vector<vector<double>> rhoIC  = initial.get(0);        
     vector<vector<double>> MomxIC = initial.get(1);
@@ -88,9 +86,8 @@ void write(map<double, state> solution, string filename)
 
   
     // opens an existing csv file or creates a new file.
-    fout.open(filename, ios::out | ios::app);
+    fout.open(filename, ios::out | ios::trunc);
 
-    fout.flush();
 
     // Iterate over the list using the iterator
     // Read the input
@@ -134,9 +131,8 @@ void write_each(map<double, state> solution, string filename, int n)
 
   
     // opens an existing csv file or creates a new file.
-    fout.open(filename, ios::out | ios::app);
+    fout.open(filename, ios::out | ios::trunc);
 
-    fout.flush();
 
     // Iterate over the list using the iterator
     // Read the input

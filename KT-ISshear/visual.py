@@ -87,4 +87,41 @@ def plot_solution_csv(file):
 
 
 
-plot_solution_csv('C++\solution.csv')
+
+def plot_each_csv(file):
+    
+    N = 200
+    boxsize = 1
+    dx = boxsize/N
+    xlin = np.linspace(0.5*dx, boxsize-0.5*dx,N)
+
+    Y, X = np.meshgrid( xlin, xlin ) # define the mesh grid
+    S = X.shape
+    R = np.sqrt(X**2 + Y**2)
+
+    v = np.zeros(S)
+    
+
+    print("starting...")
+    solution = pd.read_csv(file, header=None)
+    print("solution Dataframe created")
+
+    sol = solution.to_numpy
+
+    s = 0
+    outputcount = 0
+    print("reading solution...")
+    while s < sol.shape[1]:
+        for i in range(N):
+            for j in range(N):
+                v[i][j]  = float(sol[(N*i + j)][s])
+
+
+        plt.imshow(v.T)
+        plt.show()
+        outputcount += 1
+        print(outputcount)
+        s +=1 
+
+
+plot_each_csv('./density_solution.csv')
