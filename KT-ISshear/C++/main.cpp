@@ -20,7 +20,7 @@ using namespace std;
 int main() {
 
     double t = 0.0;  // s 
-    double tEnd = 0.1;  // time at the end
+    double tEnd = 2;  // time at the end
     double tOut = 0.01;  // time of each output
 
     int N = 200;  // resolution
@@ -35,7 +35,7 @@ int main() {
 
     double dx = boxsize / N;  // box size
     double dy = dx;
-    double vol = dx * dx;  // volume of each box
+    //double vol = dx * dx;  // volume of each box
     vector<double> xlin(N);
     for (int i = 0; i < N; i++) {
         // xlin[i] = 0.5 * dx + (boxsize - 0.5 * dx) * i / (N - 1);  // simulation limits
@@ -74,13 +74,13 @@ int main() {
 
     for (int i = 0; i < s; i++) {
         for (int j = 0; j < s; j++) {
-            //rho[i][j] = 1.0 + (abs(Y[i][j] - 0.5) < 0.25);
-            //vx[i][j] = -0.5 + (abs(Y[i][j] - 0.5) < 0.25);
-            //vy[i][j] = w0 * sin(4 * M_PI * X[i][j]) * (exp(-(Y[i][j] - 0.25) * (Y[i][j] - 0.25) / (2 * sigma * sigma)) + exp(-(Y[i][j] - 0.75) * (Y[i][j] - 0.75) / (2 * sigma * sigma)));
-            //Momx[i][j] = vx[i][j]*rho[i][j];
-            //Momy[i][j] = vy[i][j]*rho[i][j];
+            rho[i][j] = 1.0 + (abs(Y[i][j] - 0.5) < 0.25);
+            vx[i][j] = -0.5 + (abs(Y[i][j] - 0.5) < 0.25);
+            vy[i][j] = w0 * sin(4 * M_PI * X[i][j]) * (exp(-(Y[i][j] - 0.25) * (Y[i][j] - 0.25) / (2 * sigma * sigma)) + exp(-(Y[i][j] - 0.75) * (Y[i][j] - 0.75) / (2 * sigma * sigma)));
+            Momx[i][j] = vx[i][j]*rho[i][j];
+            Momy[i][j] = vy[i][j]*rho[i][j];
 
-            rho[i][j] = (pow((1 - (R[i][j])*(R[i][j])),4))*(R[i][j] < 1) + 1; // Mauricio's function advice
+            //rho[i][j] = (pow((1 - (R[i][j])*(R[i][j])),4))*(R[i][j] < 1) + 1; // Mauricio's function advice
 
         }
     }
@@ -94,6 +94,12 @@ int main() {
     map<double, state> solution = integrator(KTschemeNonRelativisticIS, make_tuple(t, tEnd), initial_state, tOut, make_tuple(dx, dy, N, gamma, zeta, tau_nu, eta, theta));
 
     write_each(solution, "density_solution.csv", 0);
+    write_each(solution, "momentx_solution.csv", 1);
+    write_each(solution, "momenty_solution.csv", 2);
+    write_each(solution, "Pixx_solution.csv", 3);
+    write_each(solution, "Pixy_solution.csv", 4);
+    write_each(solution, "Piyx_solution.csv", 5);
+    write_each(solution, "Piyy_solution.csv", 6);
     
 }
 

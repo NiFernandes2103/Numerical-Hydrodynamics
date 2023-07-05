@@ -176,6 +176,7 @@ def integrator(scheme, time, q0, dtmax, method = "Heuns", args=None):
   Q = [q0]
   q = q0
   N = int(args[2])  
+  outputCount = 1
   gamma   = args[3]
   zeta    = args[4]
   tau_nu  = args[5]
@@ -183,7 +184,6 @@ def integrator(scheme, time, q0, dtmax, method = "Heuns", args=None):
 
   while t < tEnd: 
 
-    print(t)
     C = scheme
 
     # compute density to get necessary stability conditions met
@@ -201,7 +201,6 @@ def integrator(scheme, time, q0, dtmax, method = "Heuns", args=None):
       print("slow update")
 
     dt  =  np.minimum(dtmax, 0.4*courant_number) 
-    print("dt: ", dt)
 
     # choose the scheme to integrate(evolve over time) the system 
     if method == "Heuns":
@@ -216,11 +215,16 @@ def integrator(scheme, time, q0, dtmax, method = "Heuns", args=None):
 
     # BC(q)
 
-    Q.append(q)
-
 
     t = t+dt
     
+    if t >= dtmax*outputCount:
+      Q.append(q)
+      #M.append(np.sum(rho*args[0]*args[0]))
+      print('{:.2f}/{:.2f}'.format(t,tEnd))
+      outputCount += 1
+
+
   return Q
 
 
@@ -231,7 +235,7 @@ t                      = 0   # s
 tEnd                   = 2  # time at the end
 tOut                   = 0.01 # time of each output
 
-N                      = 400 # resolution
+N                      = 200 # resolution
 boxsize                = 1.  # in some unit system l
 gamma                  = 2 # adiabatic index
 zeta                   = 1  # bulk viscosity coefficient
@@ -244,8 +248,11 @@ theta                  = 1  # flux limiter parameter
 dx = boxsize / N   # box size
 dy = dx
 vol = dx**2        # volume of each box
-xlin = np.linspace(0.5*dx, (boxsize-0.5*dx), N)# simulation limits
-#xlin = np.linspace(-0.5*(boxsize-0.5*dx),0.5*(boxsize-0.5*dx), N)# simulation limits
+a = 0.5*dx
+b = (boxsize-0.5*dx)
+xlin = np.linspace(a, b, N)# simulation limits
+
+parameters = [t,tEnd,tOut,N,boxsize,gamma,zeta,eta,tau_nu,theta,a,b]
 
 Y, X = np.meshgrid( xlin, xlin ) # define the mesh grid
 s = X.shape
@@ -285,15 +292,5 @@ IC = np.vstack((rho,rho*vx,rho*vy,Pixx,Pixy,Piyx,Piyy)) # here the initial condi
 # output solution list of arrays that are 7N x N in the order (rho,rho*vx,rho*vy,Pixx,Pixy,Piyx,Piyy)
 solution = integrator(KTschemeNonRelativisticIS, (t, tEnd), IC, 0.01, method="Heuns", args=(dx, dy, N, gamma, zeta, tau_nu, eta, theta))
 
-
-import plotly.express as px
-
-i=0
-while i < len(solution):
-  density   = px.imshow(solution[i][0:N].T, color_continuous_scale='plasma', origin='lower')
-  density.show()
-  #xvelocity = px.imshow(solution[i][N:2*N].T)
-  #xvelocity.show()
-  #yvelocity = px.imshow(solution[i][2*N:3*N].T)
-  #yvelocity.show()
-  i+=10
+np.savetxt('ShearKelvinHelmholtz_parameters',parameters)
+np.save('ShearKelvinHelmholtz',solution)

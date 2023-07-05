@@ -50,8 +50,6 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
         }
     }        
 
-    /* B Constant */
-    double B = zeta / tau_nu;
 
      // getSpeedOfSound(rho, gamma)
     vector<vector<double>> cs = getSpeedOfSound(rho, gamma);
@@ -76,7 +74,7 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
     vector<vector<double>> Piyy_dy = getGradient(Piyy, dy, 1, theta);
 
     // extrapolate fluxes
-    
+
     vector<vector<double>> rhoM_XL, rhoP_XL, rhoM_XR, rhoP_XR;
     tie(rhoM_XL, rhoP_XL, rhoM_XR, rhoP_XR) = extrapolateInSpaceToFace(rho, rho_dx, dx, 0);
     vector<vector<double>> vxM_XL,  vxP_XL,  vxM_XR,  vxP_XR;   
@@ -186,6 +184,8 @@ map<double,state> integrator(state (*scheme)(double, state&, double, double, int
     args       are additional arguments for scheme
     */
 
+    cout.precision(2);
+
     double t = get<0>(time);
     double tEnd = get<1>(time);
     int outCount = 1;
@@ -237,12 +237,11 @@ map<double,state> integrator(state (*scheme)(double, state&, double, double, int
         }
 
 
-        double dt = min(dtmax, 0.4 * (max(courant_number)));
+        double dt = std::min(dtmax, 0.4 * (max_value(courant_number)));
 
-        cout << "dt: " << dt << endl;
 
         if (method == "Heuns") {
-            q = Heuns(q, C, dt, t);
+            q = heuns(q, C, dt, t);
         } 
 
         // BC(q);/
@@ -251,7 +250,7 @@ map<double,state> integrator(state (*scheme)(double, state&, double, double, int
 
         if (t > outCount*dtmax) {
             Q[t] = q;
-            cout << t << endl;
+            cout << t << '/' << tEnd << endl;
             ++outCount;
         }
     }

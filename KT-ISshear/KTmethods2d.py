@@ -259,7 +259,6 @@ def getYFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pixx_P, Pixx_M, Pixy_P,
   B = eta/tau_nu
   A = zeta/tau_nu
 
-  eps = 10**-8
 
   flux_Mass   = momy_av 
   flux_Momx   = 0.5*(rho_P*(vx_P*vy_P) + rho_M*(vx_M*vy_M)) + (Pixy_av)/gamma

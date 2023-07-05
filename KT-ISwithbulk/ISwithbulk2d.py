@@ -6,8 +6,6 @@ def KTschemeNonRelativisticIS(t, IC, dx, dy, xlin, gamma, zeta, tau_nu, theta=1)
 
     """ Finite Volume simulation """
 
-   
-  
     #-----------------------------------------------------------------------------------------------------------------------------------#
 
     # Generate Initial Conditions  

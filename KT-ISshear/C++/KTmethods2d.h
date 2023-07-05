@@ -90,11 +90,9 @@ public:
 };
 
 
-double max(vector<vector<double>> value);
+double max_value(vector<vector<double>> value);
 
 vector<vector<double>> sign(vector<vector<double>> value);
-
-vector<vector<double>> abs(vector<vector<double>> value);
 
 tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>> getConserved(vector<vector<double>>& rho,
  vector<vector<double>>& vx, vector<vector<double>>& vy, double vol);
@@ -142,7 +140,7 @@ vector<vector<double>> applyFluxes(vector<vector<double>>& flux_H1_X, vector<vec
    double dx, double dy, vector<vector<double>>& J);
 
 // Heun's method
-state Heuns (state& q, function<state(double,state)> f, double dt, double t);
+state heuns (state& q, function<state(double,state)> f, double dt, double t);
 
 
 
