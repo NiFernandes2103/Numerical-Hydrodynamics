@@ -2,6 +2,7 @@
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 import numpy as np
 
 def plot_ic_csv(file, parameters_file):
@@ -121,6 +122,7 @@ def plot_each_csv(file, parameters_file):
 
 
         plt.imshow(v.T)
+        plt.clim(0.8,2.2)
         plt.show()
         outputcount += 1
         print(outputcount)
@@ -129,81 +131,111 @@ def plot_each_csv(file, parameters_file):
 
 
 #plot_ic_csv('KT-ISshear\C++\initial_state.csv','KT-ISshear\C++\parameters.csv')
-#plot_each_csv('KT-ISshear\C++\density_solution.csv','KT-ISshear\C++\parameters.csv')
+#plot_each_csv('KT-ISshear\C++\Pixx_solution.csv','KT-ISshear\C++\parameters.csv')
+#plot_each_csv('KT-ISshear\C++\Piyy_solution.csv','KT-ISshear\C++\parameters.csv')
 
-sol = np.array(np.load("ShearKelvinHelmholtz.npy"))
 
-print(sol.shape)
+def show_2dsolution_static(file,parameters_file,i,n):
 
-t,tEnd,tOut,N,boxsize,gamma,zeta,eta,tau_nu,theta,a,b = np.loadtxt("ShearKelvinHelmholtz_parameters", delimiter=',', unpack=True)
+    sol = np.load(file)
 
-plotfinalstate = 1
-N = int(N)
-xlin = np.linspace(float(a),float(b),N)
-#plt.imshow(sol[0][3*N:4*N].T)
-#plt.show()
+    t,tEnd,tOut,N,boxsize,gamma,zeta,eta,tau_nu,theta,a,b = np.loadtxt(parameters_file,delimiter=',',unpack=True)
 
-figure, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
+    N = int(N)
+    a = sol[i][n*N:(n+1)*N].T
+    
+    plt.imshow(a)
+    plt.show()
+    
 
-# set ax boundaries
-#ax1.set_xlim((4,6))
-#ax1.set_ylim((0, 3))
-line1, = ax1.plot([], [], lw=2)
-ax1.set_ylabel('rho/rho_0')
-ax1.set_title('Density')
+def show_solution_static_slice(file,parameters_file,i,n):
 
-#ax2.set_xlim((4,6))
-#ax2.set_ylim((-1, 2))
-line2, = ax2.plot([], [], lw=2)
-ax2.set_title('Velocity')
+    sol = np.load(file)
 
-#ax3.set_xlim((4,6))
-#ax3.set_ylim((-1.5, 1.5))
+    t,tEnd,tOut,N,boxsize,gamma,zeta,eta,tau_nu,theta,a,b = np.loadtxt(parameters_file,delimiter=',',unpack=True)
 
-line3, = ax3.plot([], [], lw=2)
-ax3.set_xlabel('x/x_0')
-ax3.set_ylabel('Pi/P_0')
+    N = int(N)
+    a = sol[i][n*N:(n+1)*N].T
+    
+    plt.imshow(a[int(N/2)])
+    plt.show()
 
-line4, = ax4.plot([], [], lw=2)
-ax4.set_xlabel('x/x_0')
-ax4.set_ylabel('P/P_0')
+def animate_solution_gif(file,parameters_file,gif_file):
 
-if plotfinalstate == 1:
-    x = xlin
-    a = sol[-1][:N]
-    b = sol[-1][N:2*N]
-    c = sol[-1][2*N:3*N]
-    d = (a)**gamma
-    line1.set_data(x, a)
-    line2.set_data(x, b)
-    line3.set_data(x, c)
-    line4.set_data(x, d)
-    filename = "FinalStatenonRelativisticISwithShear.png"
-    plt.savefig(str(filename))
+    sol = np.load(file)
 
+    t,tEnd,tOut,N,boxsize,gamma,zeta,eta,tau_nu,theta,a,b = np.loadtxt(parameters_file,delimiter=',',unpack=True)
+
+    N = int(N)
+
+    # First set up the figure, the axis, and the plot element we want to animate
+    fig = plt.figure()
+    ax = plt.axes()
+    #line, = ax.plot([], [], lw=2)
+    a = sol[0][n*N:(n+1)*N].T
+
+    im=plt.imshow(a,interpolation='none')
+
+    # initialization function: plot the background of each frame
+    def init():
+        im.set_data(a)
+        return [im]
+
+    # animation function.  This is called sequentially
+    def animate(i):
+        im.set_array(sol[i][n*N:(n+1)*N].T)
+        return [im]
+
+
+    anim = animation.FuncAnimation(fig, animate, init_func=init,
+                                frames=1000, interval=20, blit=True)
+
+
+    anim.save(gif_file, fps=30)
+
+
+
+sol = np.load("NonRelativisticIS.npy")
+
+i=10
+rho = sol[i][:400].T
+vx = sol[i][400:2*400].T
+vy = sol[i][2*400:3*400].T
+
+plt.imshow(rho)
+plt.show()
+plt.plot(rho[int(400/2)])
+plt.show()
+plt.imshow(vx)
+plt.show()
+plt.plot(vx[int(400/2)])
+plt.show()
+plt.imshow(vy)
+plt.show()
+plt.plot(vy[int(400/2)])
+plt.show()
+
+# First set up the figure, the axis, and the plot element we want to animate
+fig = plt.figure()
+ax = plt.axes()
+#line, = ax.plot([], [], lw=2)
+im=plt.imshow(sol[0][:400].T,interpolation='none')
+
+# initialization function: plot the background of each frame
 def init():
-    line1.set_data([], [])
-    line2.set_data([], [])
-    line3.set_data([], [])
-    line4.set_data([], [])
-    return (line1,line2,line3,line4)
+    im.set_data(sol[0][:400].T)
+    return [im]
 
+# animation function.  This is called sequentially
 def animate(i):
-    x = xlin
-    a = sol[i][:N]
-    b = sol[i][N:2*N]
-    c = sol[i][2*N:3*N]
-    d = (a)**gamma
-    line1.set_data(x, a)
-    line2.set_data(x, b)
-    line3.set_data(x, c)
-    line4.set_data(x, d)
-    return (line1,line2,line3,line4)
+    im.set_array(sol[i][:400].T)
+    return [im]
 
 
-ani = animation.FuncAnimation(figure, animate, init_func=init,
-                                frames=200, interval=20, blit=True)
+anim = animation.FuncAnimation(fig, animate, init_func=init,
+                               frames=2000, interval=20, blit=True)
 
-filename = "nonRelativisticISwithShear.gif"
-plt.save(str(filename))
 
+anim.save('NonRelativisticISgamma1.gif', fps=30)
+
+plt.show()

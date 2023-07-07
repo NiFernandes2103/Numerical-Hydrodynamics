@@ -20,7 +20,7 @@ using namespace std;
 int main() {
 
     double t = 0.0;  // s 
-    double tEnd = 2;  // time at the end
+    double tEnd = 0.5;  // time at the end
     double tOut = 0.01;  // time of each output
 
     int N = 200;  // resolution
@@ -38,9 +38,9 @@ int main() {
     //double vol = dx * dx;  // volume of each box
     vector<double> xlin(N);
     for (int i = 0; i < N; i++) {
-        // xlin[i] = 0.5 * dx + (boxsize - 0.5 * dx) * i / (N - 1);  // simulation limits
+        xlin[i] = 0.5 * dx + (boxsize - 0.5 * dx) * i / (N - 1);  // simulation limits
 
-        xlin[i] = 0.5*(0.5 * dx - boxsize) +  (boxsize - 0.5 * dx) * i / (N - 1);
+        //xlin[i] = 0.5*(0.5 * dx - boxsize) +  (boxsize - 0.5 * dx) * i / (N - 1);
     }
 
 

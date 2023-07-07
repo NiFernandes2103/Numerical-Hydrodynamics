@@ -265,7 +265,7 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
             
 
             flux_Mass[i][j] = momx_av;
-            flux_Momx[i][j] = 0.5 * (rho_P[i][j] * pow(vx_P[i][j], 2) + rho_M[i][j] * pow(vx_M[i][j], 2)) + (P_av) + (Pixx_av) / gamma;
+            flux_Momx[i][j] = 0.5 * (rho_P[i][j] * pow(vx_P[i][j], 2) + rho_M[i][j] * pow(vx_M[i][j], 2)) + ((P_av) + (Pixx_av)) / gamma;
             flux_Momy[i][j] = 0.5 * (rho_P[i][j] * (vx_P[i][j] * vy_P[i][j]) + rho_M[i][j] * (vx_M[i][j] * vy_M[i][j])) + (Piyx_av) / gamma;
             flux_Pixx_vx[i][j] = Pixx_vx_av + B * (vx_P[i][j] + vx_M[i][j]) + (A - 2.0 / 3.0 * B) * (vx_P[i][j] + vx_M[i][j]) * 0.5;
             flux_Pixy_vx[i][j] = Pixy_vx_av + B * (vy_P[i][j] + vy_M[i][j]) * 0.5;
@@ -347,7 +347,7 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
 
             flux_Mass[i][j] = momy_av;
             flux_Momx[i][j] = 0.5 * (rho_P[i][j] * vx_P[i][j] * vy_P[i][j] + rho_M[i][j] * vx_M[i][j] * vy_M[i][j]) + Pixy_av / gamma;
-            flux_Momy[i][j] = 0.5 * (rho_P[i][j] * vy_P[i][j] * vy_P[i][j] + rho_M[i][j] * vy_M[i][j] * vy_M[i][j]) + (P_av) + (Piyy_av) / gamma;
+            flux_Momy[i][j] = 0.5 * (rho_P[i][j] * vy_P[i][j] * vy_P[i][j] + rho_M[i][j] * vy_M[i][j] * vy_M[i][j]) + ((P_av)  + (Piyy_av)) / gamma;
             flux_Pixx_vy[i][j] = Pixx_vy_av + (A - 2.0 / 3.0 * B) * (vy_P[i][j] + vy_M[i][j]) * 0.5;
             flux_Pixy_vy[i][j] = Pixy_vy_av + B * (vx_P[i][j] + vx_M[i][j]) * 0.5;
             flux_Piyx_vy[i][j] = Piyx_vy_av + B * (vx_P[i][j] + vx_M[i][j]) * 0.5;

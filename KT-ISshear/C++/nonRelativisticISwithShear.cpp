@@ -239,9 +239,10 @@ map<double,state> integrator(state (*scheme)(double, state&, double, double, int
 
         double dt = std::min(dtmax, 0.4 * (max_value(courant_number)));
 
+        state qprime;
 
         if (method == "Heuns") {
-            q = heuns(q, C, dt, t);
+            qprime = heuns(q, C, dt, t);
         } 
 
         // BC(q);/
@@ -249,7 +250,7 @@ map<double,state> integrator(state (*scheme)(double, state&, double, double, int
         t = t + dt;
 
         if (t > outCount*dtmax) {
-            Q[t] = q;
+            Q[t] = qprime;
             cout << t << '/' << tEnd << endl;
             ++outCount;
         }

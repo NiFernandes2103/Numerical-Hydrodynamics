@@ -200,7 +200,7 @@ def integrator(scheme, time, q0, dtmax, method = "Heuns", args=None):
     if (np.finfo(float).eps > courant_number):
       print("slow update")
 
-    dt  =  np.minimum(dtmax, 0.4*courant_number) 
+    dt  =  np.minimum(dtmax, 0.2*courant_number) 
 
     # choose the scheme to integrate(evolve over time) the system 
     if method == "Heuns":
@@ -231,25 +231,25 @@ def integrator(scheme, time, q0, dtmax, method = "Heuns", args=None):
 
 
 
-t                      = 0   # s 
-tEnd                   = 2  # time at the end
+t                      = 0    # s 
+tEnd                   = 0.5  # time at the end
 tOut                   = 0.01 # time of each output
 
-N                      = 200 # resolution
-boxsize                = 1.  # in some unit system l
-gamma                  = 2 # adiabatic index
-zeta                   = 1  # bulk viscosity coefficient
-eta                    = 10 # shear viscosity coefficient
-tau_nu                 = 1  # relaxation time
-theta                  = 1  # flux limiter parameter
+N                      = 400  # resolution
+boxsize                = 4.   # in some unit system l
+gamma                  = 1    # adiabatic index
+zeta                   = 1    # bulk viscosity coefficient
+eta                    = 1    # shear viscosity coefficient
+tau_nu                 = 1    # relaxation time
+theta                  = 1    # flux limiter parameter
 
 
 # Define Mesh
 dx = boxsize / N   # box size
 dy = dx
 vol = dx**2        # volume of each box
-a = 0.5*dx
-b = (boxsize-0.5*dx)
+a = (boxsize-0.5*dx)*(-0.5)
+b = (boxsize-0.5*dx)*(0.5)
 xlin = np.linspace(a, b, N)# simulation limits
 
 parameters = [t,tEnd,tOut,N,boxsize,gamma,zeta,eta,tau_nu,theta,a,b]
@@ -257,27 +257,34 @@ parameters = [t,tEnd,tOut,N,boxsize,gamma,zeta,eta,tau_nu,theta,a,b]
 Y, X = np.meshgrid( xlin, xlin ) # define the mesh grid
 s = X.shape
 R = np.sqrt(X**2 + Y**2)
+Theta = np.arctan(Y/X)*(X>=0)*(Y>=0) + (np.pi/2 + np.arctan(Y/np.abs(X)))*(X<0)*(Y>=0) + (np.pi + np.arctan(Y/X))*(X<=0)*(Y<0) + (3*np.pi/2 + np.arctan(np.abs(Y)/X))*(X>0)*(Y<0)
 
 ''' initial condition of density'''
 
 #rho = (1.5*(R <= 0.25) + 1*(R > 0.25))
-#rho = ((1 - ((R - (boxsize-0.5*dx)*0.5)**2)/0.25 )**4 )*(R < 0.5) + 0.1*np.ones(R.shape) # Mauricio`s funtion advice    
+rho = ((1 - ((R)**2) )**4 )*(R < 1) + 0.5*np.ones(R.shape) # Mauricio`s funtion advice    
+
 #rho = 1*(X < 0) + 0.125*(X >= 0)
 
 ''' initial condition of velocity '''
-#vx = np.zeros(s)
+vx = np.zeros(s)
+#vx = -np.sin(Theta)*(R < 1)
 #vx = 0.5*np.ones(xlin.shape)
 #vx = 3*(Y < 0) - 0*(Y >= 0)
 #vx = np.abs((xlin - (boxsize-0.5*dx)*0.5)/16)
 
-#vy = np.zeros(s)
+vy = np.zeros(s)
+#vy = np.cos(Theta)*(R < 1)
 #vy = 0.5*np.ones(xlin.shape)
 
+'''
 w0 = 0.1
 sigma = 0.05/np.sqrt(2.)
 rho = 1. + (np.abs(Y-0.5) < 0.25)
 vx = -0.5 + (np.abs(Y-0.5) < 0.25)
 vy = w0*np.sin(4*np.pi*X) * ( np.exp(-(Y-0.25)**2/(2 * sigma**2)) + np.exp(-(Y-0.75)**2/(2*sigma**2)) )
+'''
+
 
 ''' initial condition of Pi tensor '''
 Pixx = np.zeros(s)
@@ -290,7 +297,7 @@ IC = np.vstack((rho,rho*vx,rho*vy,Pixx,Pixy,Piyx,Piyy)) # here the initial condi
 
 # input (dx, dy, xlin, gamma, zeta, tau_nu, BC, theta=1)
 # output solution list of arrays that are 7N x N in the order (rho,rho*vx,rho*vy,Pixx,Pixy,Piyx,Piyy)
-solution = integrator(KTschemeNonRelativisticIS, (t, tEnd), IC, 0.01, method="Heuns", args=(dx, dy, N, gamma, zeta, tau_nu, eta, theta))
+solution = integrator(KTschemeNonRelativisticIS, (t, tEnd), IC, 0.01, method="HeunswithFowardEuler", args=(dx, dy, N, gamma, zeta, tau_nu, eta, theta))
 
-np.savetxt('ShearKelvinHelmholtz_parameters',parameters)
-np.save('ShearKelvinHelmholtz',solution)
+np.savetxt('NonRelativisticISgamma1_parameters',parameters)
+np.save('NonRelativisticISgamma1',solution)

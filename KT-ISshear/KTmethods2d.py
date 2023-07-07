@@ -187,10 +187,9 @@ def getXFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pixx_P, Pixx_M, Pixy_P,
     B = eta/tau_nu
     A = zeta/tau_nu
 
-    eps = 10**-8
 
     flux_Mass   = momx_av  
-    flux_Momx   = 0.5*(rho_P*(vx_P)**2 + rho_M*(vx_M)**2) + (rho_P**gamma + rho_M**gamma)*0.5 + (Pixx_av)/gamma
+    flux_Momx   = 0.5*(rho_P*(vx_P)**2 + rho_M*(vx_M)**2) + ((rho_P**gamma + rho_M**gamma)*0.5 + (Pixx_av))/gamma
     flux_Momy   = 0.5*(rho_P*(vx_P*vy_P) + rho_M*(vx_M*vy_M)) + (Piyx_av)/gamma
     flux_Pixx_vx   = Pixx_vx_av + B * (vx_P + vx_M) + (A - 2/3 * B) * (vx_P + vx_M) * 0.5
     flux_Pixy_vx   = Pixy_vx_av + B * (vy_P + vy_M) * 0.5
@@ -262,7 +261,7 @@ def getYFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pixx_P, Pixx_M, Pixy_P,
 
   flux_Mass   = momy_av 
   flux_Momx   = 0.5*(rho_P*(vx_P*vy_P) + rho_M*(vx_M*vy_M)) + (Pixy_av)/gamma
-  flux_Momy   = 0.5*(rho_P*(vy_P)**2 + rho_M*(vy_M)**2) + (rho_P**gamma + rho_M**gamma)*0.5 + (Piyy_av)/gamma
+  flux_Momy   = 0.5*(rho_P*(vy_P)**2 + rho_M*(vy_M)**2) + ((rho_P**gamma + rho_M**gamma)*0.5 + (Piyy_av))/gamma
   flux_Pixx_vy   = Pixx_vy_av + (A - 2/3 * B) * (vy_P + vy_M) * 0.5
   flux_Pixy_vy   = Pixy_vy_av + B * (vx_P + vx_M) * 0.5
   flux_Piyx_vy   = Piyx_vy_av + B * (vx_P + vx_M) * 0.5
@@ -323,7 +322,7 @@ def Heuns(q,f,dt,t):
 def HeunswithFowardEuler(q,f,dt,t):
 
   k1 = dt*f(t,q)
-  k2 = dt*(q + k1 +  dt*f(t,q + k1))
+  k2 = dt*(f(t,q) +  dt*f(t,q + k1))
 
   return q + 0.5 * (k1 + k2)
 
