@@ -232,15 +232,15 @@ def integrator(scheme, time, q0, dtmax, method = "Heuns", args=None):
 
 
 t                      = 0    # s 
-tEnd                   = 0.5  # time at the end
+tEnd                   = 2  # time at the end
 tOut                   = 0.01 # time of each output
 
-N                      = 400  # resolution
+N                      = 200  # resolution
 boxsize                = 4.   # in some unit system l
-gamma                  = 1    # adiabatic index
-zeta                   = 1    # bulk viscosity coefficient
-eta                    = 1    # shear viscosity coefficient
-tau_nu                 = 1    # relaxation time
+gamma                  = 2    # adiabatic index
+zeta                   = 2    # bulk viscosity coefficient
+eta                    = 2    # shear viscosity coefficient
+tau_nu                 = 2    # relaxation time
 theta                  = 1    # flux limiter parameter
 
 
@@ -299,5 +299,5 @@ IC = np.vstack((rho,rho*vx,rho*vy,Pixx,Pixy,Piyx,Piyy)) # here the initial condi
 # output solution list of arrays that are 7N x N in the order (rho,rho*vx,rho*vy,Pixx,Pixy,Piyx,Piyy)
 solution = integrator(KTschemeNonRelativisticIS, (t, tEnd), IC, 0.01, method="HeunswithFowardEuler", args=(dx, dy, N, gamma, zeta, tau_nu, eta, theta))
 
-np.savetxt('NonRelativisticISgamma1_parameters',parameters)
-np.save('NonRelativisticISgamma1',solution)
+np.savetxt('NonRelativisticISgamma2_parameters',parameters)
+np.save('NonRelativisticISgamma2',solution)

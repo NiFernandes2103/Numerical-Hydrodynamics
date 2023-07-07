@@ -195,40 +195,40 @@ def animate_solution_gif(file,parameters_file,gif_file):
 
 
 
-sol = np.load("NonRelativisticIS.npy")
+sol = np.load("NonRelativisticISgamma1.npy")
 
 i=10
-rho = sol[i][:400].T
-vx = sol[i][400:2*400].T
-vy = sol[i][2*400:3*400].T
+rho = sol[i][:200].T
+vx = sol[i][200:2*200].T
+vy = sol[i][2*200:3*200].T
 
 plt.imshow(rho)
 plt.show()
-plt.plot(rho[int(400/2)])
+plt.plot(rho[int(200/2)])
 plt.show()
 plt.imshow(vx)
 plt.show()
-plt.plot(vx[int(400/2)])
+plt.plot(vx[int(200/2)])
 plt.show()
 plt.imshow(vy)
 plt.show()
-plt.plot(vy[int(400/2)])
+plt.plot(vy[int(200/2)])
 plt.show()
 
 # First set up the figure, the axis, and the plot element we want to animate
 fig = plt.figure()
 ax = plt.axes()
 #line, = ax.plot([], [], lw=2)
-im=plt.imshow(sol[0][:400].T,interpolation='none')
+im=plt.imshow(sol[0][:200].T,interpolation='none')
 
 # initialization function: plot the background of each frame
 def init():
-    im.set_data(sol[0][:400].T)
+    im.set_data(sol[0][:200].T)
     return [im]
 
 # animation function.  This is called sequentially
 def animate(i):
-    im.set_array(sol[i][:400].T)
+    im.set_array(sol[i][:200].T)
     return [im]
 
 
