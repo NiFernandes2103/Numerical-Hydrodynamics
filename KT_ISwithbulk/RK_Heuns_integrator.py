@@ -36,12 +36,7 @@ def Heuns(q,f,dt,t):
 
   return q + 1/2 * (k1 + k2)
 
-def HeunswithFowardEuler(q,f,dt,t):
 
-  k1 = dt*f(t,q)
-  k2 = dt*(f(t,q) +  dt*f(t,q + k1))
-
-  return q + 0.5 * (k1 + k2)
 
 def RK4(y0,f,h,t):
   

@@ -19,7 +19,7 @@ def getConserved( rho, vx, vy, gamma, vol ):
     
     return Mass, Momx, Momy
 
-def getPrimitive( Mass, Momx, Momy, gamma, vol):
+def getPrimitive( Mass, Momx, Momy, gamma, P0, vol):
   """
   Calculate the primitive variable from the conservative
   Mass     is matrix of mass in cells
@@ -35,17 +35,17 @@ def getPrimitive( Mass, Momx, Momy, gamma, vol):
   rho = Mass / vol
   vx  = Momx / rho
   vy  = Momy / rho
-  P   = (rho)**gamma
+  P   = P0*(rho)**gamma
   
   return rho, vx, vy, P
 
-def getSpeedOfSound(rho, gamma):
+def getSpeedOfSound(rho, gamma, P0):
   '''
   find the speed of sound in the fluid
   rho
 
   '''
-  cs = np.sqrt((gamma)*(rho)**(gamma-1))
+  cs = np.sqrt(P0*(gamma)*(rho)**(gamma-1))
 
   return cs
 '''
@@ -139,17 +139,17 @@ def local_propagation_speed(rho, eta, zeta, tau_nu, cs):
   
 
 
-   C3 = np.sqrt(eta*tau_nu/rho)
+   C1 = np.sqrt(eta*tau_nu/rho)
 
-   C4 = cs*np.sqrt((zeta + 4/3 * tau_nu)/(rho*tau_nu))
+   C2 = cs*np.sqrt((zeta + 4/3 * tau_nu)/(rho*tau_nu))
 
-   C = np.maximum(C3,C4)
+   C = np.maximum(C1,C2)
 
    return C
 
 def getXFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pixx_P, Pixx_M, Pixy_P,
               Pixy_M, Piyx_P, Piyx_M, Piyy_P, Piyy_M, gamma, eta,
-              zeta, tau_nu):
+              zeta, tau_nu, P0):
 
     """
 
@@ -189,7 +189,7 @@ def getXFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pixx_P, Pixx_M, Pixy_P,
 
 
     flux_Mass   = momx_av  
-    flux_Momx   = 0.5*(rho_P*(vx_P)**2 + rho_M*(vx_M)**2) + ((rho_P**gamma + rho_M**gamma)*0.5 + (Pixx_av))/gamma
+    flux_Momx   = 0.5*(rho_P*(vx_P)**2 + rho_M*(vx_M)**2) + (P0*(rho_P**gamma + rho_M**gamma)*0.5 + (Pixx_av))/gamma
     flux_Momy   = 0.5*(rho_P*(vx_P*vy_P) + rho_M*(vx_M*vy_M)) + (Piyx_av)/gamma
     flux_Pixx_vx   = Pixx_vx_av + B * (vx_P + vx_M) + (A - 2/3 * B) * (vx_P + vx_M) * 0.5
     flux_Pixy_vx   = Pixy_vx_av + B * (vy_P + vy_M) * 0.5
@@ -198,11 +198,11 @@ def getXFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pixx_P, Pixx_M, Pixy_P,
     
     # find wavespeeds
 
-    cs_P = getSpeedOfSound(rho_P,gamma)
+    cs_P = getSpeedOfSound(rho_P,gamma,P0)
 
     C_P = local_propagation_speed(rho_P , eta, zeta, tau_nu, cs_P) # max propagation speed from the left
 
-    cs_M = getSpeedOfSound(rho_M,gamma)
+    cs_M = getSpeedOfSound(rho_M,gamma,P0)
 
     C_M = local_propagation_speed(rho_M , eta, zeta, tau_nu, cs_M) # max propagation speed from the right
 
@@ -221,7 +221,7 @@ def getXFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pixx_P, Pixx_M, Pixy_P,
 
 def getYFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pixx_P, Pixx_M, Pixy_P,
               Pixy_M, Piyx_P, Piyx_M, Piyy_P, Piyy_M, gamma, eta,
-              zeta, tau_nu):
+              zeta, tau_nu, P0):
   
 
   """
@@ -261,7 +261,7 @@ def getYFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pixx_P, Pixx_M, Pixy_P,
 
   flux_Mass   = momy_av 
   flux_Momx   = 0.5*(rho_P*(vx_P*vy_P) + rho_M*(vx_M*vy_M)) + (Pixy_av)/gamma
-  flux_Momy   = 0.5*(rho_P*(vy_P)**2 + rho_M*(vy_M)**2) + ((rho_P**gamma + rho_M**gamma)*0.5 + (Piyy_av))/gamma
+  flux_Momy   = 0.5*(rho_P*(vy_P)**2 + rho_M*(vy_M)**2) + (P0*(rho_P**gamma + rho_M**gamma)*0.5 + (Piyy_av))/gamma
   flux_Pixx_vy   = Pixx_vy_av + (A - 2/3 * B) * (vy_P + vy_M) * 0.5
   flux_Pixy_vy   = Pixy_vy_av + B * (vx_P + vx_M) * 0.5
   flux_Piyx_vy   = Piyx_vy_av + B * (vx_P + vx_M) * 0.5
@@ -270,11 +270,11 @@ def getYFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pixx_P, Pixx_M, Pixy_P,
   
   # find wavespeeds
 
-  cs_P = getSpeedOfSound(rho_P,gamma)
+  cs_P = getSpeedOfSound(rho_P,gamma,P0)
 
   C_P = local_propagation_speed(rho_P , eta, zeta, tau_nu, cs_P) # max propagation speed from the left
 
-  cs_M = getSpeedOfSound(rho_M,gamma)
+  cs_M = getSpeedOfSound(rho_M,gamma,P0)
 
   C_M = local_propagation_speed(rho_M , eta, zeta, tau_nu, cs_M) # max propagation speed from the right
 
@@ -319,12 +319,7 @@ def Heuns(q,f,dt,t):
 
   return q + 0.5 * (k1 + k2)
 
-def HeunswithFowardEuler(q,f,dt,t):
 
-  k1 = dt*f(t,q)
-  k2 = dt*(f(t,q) +  dt*f(t,q + k1))
-
-  return q + 0.5 * (k1 + k2)
 
 def RK4(y0,f,h,t):
   

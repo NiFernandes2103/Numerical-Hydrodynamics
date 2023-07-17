@@ -19,7 +19,7 @@ def KTschemeNonRelativisticIS(t, IC, dx, dy, xlin, gamma, zeta, tau_nu, theta=1)
     vy = np.divide(IC[2*N:3*N] , rho, out=np.zeros_like(IC[2*N:3*N]), where=rho!=0)
 
     ''' Pressure due to equation of state '''
-    P = (np.abs(rho))**gamma
+    P = (rho)**gamma
 
     ''' B Constant '''
     B = zeta/tau_nu
@@ -114,12 +114,6 @@ def Heuns(q,f,dt,t):
 
   return q + 1/2 * (k1 + k2)
 
-def HeunswithFowardEuler(q,f,dt,t):
-
-  k1 = dt*f(t,q)
-  k2 = dt*(f(t,q) +  dt*f(t,q + k1))
-
-  return q + 0.5 * (k1 + k2)
 
 def RK4(y0,f,h,t):
   
@@ -206,15 +200,13 @@ def integrator(scheme, time, y0, dtmax, BC, method = "Heuns", args=None):
       y = Heuns(y,C,dt,t)
     if method == "RK4":
       y = RK4(y,C,dt,t)
-    if method ==  "modified_RungeKutta":
-      y = modified_RungeKutta(y,C(t,y),dt)
+    
 
     #Apply Boundary conditions
 
     BC(y)
 
     Y.append(y)
-    print('t=',t)
     t = t + dt
     
   return Y
@@ -269,8 +261,6 @@ R = np.sqrt(X**2 + Y**2)
 # initial condition of density
 
 rho = (1*(R <= 1*0.25) + 0.25*(R > 1*0.25))
-plt.imshow(rho)
-plt.show()
 #rho = 1*(X < boxsize*0.5) + 0.125*(X >= boxsize*0.5)
 
 # initial condition of velocity
@@ -298,16 +288,3 @@ solution = integrator(KTschemeNonRelativisticIS, (t,tEnd), IC, tOut, applyBC, ar
 
 
 
-i=0
-while i < len(solution):
-  rho = solution[i][:N][int(N/2)]
-  ux = solution[i][N:2*N][int(N/2)]
-  uy = solution[i][2*N:3*N][int(N/2)]
-  Pi = solution[i][3*N:][int(N/2)]
-  ur = np.sqrt(ux**2 + uy**2)
-  uphy = (X[:][int(N/2)]*uy - Y[:][int(N/2)]*ux)/(R[:][int(N/2)]**2)
-  plt.plot(rho)
-  plt.show()
-  plt.plot(uphy)
-  plt.show()
-  i += 10

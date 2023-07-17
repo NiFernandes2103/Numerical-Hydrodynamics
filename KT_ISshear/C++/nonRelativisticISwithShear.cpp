@@ -45,7 +45,7 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
             vy[i][j] = Momy[i][j] / rho[i][j];
 
              /* Pressure from equation of state */
-            P[i][j] = pow(fabs(rho[i][j]), gamma);
+            P[i][j] = pow(rho[i][j], gamma);
 
         }
     }        
@@ -73,6 +73,9 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
     vector<vector<double>> Piyx_dy = getGradient(Piyx, dy, 1, theta);
     vector<vector<double>> Piyy_dy = getGradient(Piyy, dy, 1, theta);
 
+    
+    
+    
     // extrapolate fluxes
 
     vector<vector<double>> rhoM_XL, rhoP_XL, rhoM_XR, rhoP_XR;
@@ -138,8 +141,9 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
                                             PixyP_YL, PixyM_YL, PiyxP_YL, PiyxM_YL,
                                             PiyyP_YL, PiyyM_YL, PP_YL, PM_YL, gamma,
                                             eta, zeta, tau_nu);
-
-
+    
+    
+    
     // Update conservative variables
 
     vector<vector<double>> J(N,vector<double>(N,0.0));
@@ -165,6 +169,8 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
     timederivative_Piyx  = applyFluxes( flux_Piyx_vxR,    flux_Piyx_vxL, flux_Piyx_vyR,    flux_Piyx_vyL, dx, dy, Jyx);
     timederivative_Piyy  = applyFluxes( flux_Piyy_vxR,    flux_Piyy_vxL, flux_Piyy_vyR,    flux_Piyy_vyL, dx, dy, Jyy);
 
+   
+    
     return {timederivative_rho,timederivative_Momx,timederivative_Momy,timederivative_Pixx,timederivative_Pixy,timederivative_Piyx,timederivative_Piyy};
     
 }
@@ -184,13 +190,14 @@ map<double,state> integrator(state (*scheme)(double, state&, double, double, int
     args       are additional arguments for scheme
     */
 
-    cout.precision(2);
+    //cout.precision(2);
 
     double t = get<0>(time);
     double tEnd = get<1>(time);
     int outCount = 1;
 
     state q = Q[t];
+    state qprime;
 
     int N;
     double dx, dy, gamma, zeta, tau_nu, eta, theta;
@@ -202,7 +209,6 @@ map<double,state> integrator(state (*scheme)(double, state&, double, double, int
     vector<vector<double>> Momx(N, vector<double>(N,0.0));
     vector<vector<double>> Momy(N, vector<double>(N,0.0));
     vector<vector<double>> cs(N, vector<double>(N,0.0));
-
 
     auto C = [&](double t, state y) {return scheme(t, q, dx, dy, N, gamma, zeta, tau_nu, eta, theta);};
 
@@ -226,28 +232,26 @@ map<double,state> integrator(state (*scheme)(double, state&, double, double, int
         // condition to ensure that the time steps are small enough so that
         // waves do not interfere with each other
         vector<vector<double>> propagation_speed = local_propagation_speed(rho, vx, vy, eta, zeta, tau_nu, cs);
-        vector<vector<double>> courant_number(N, vector<double>(N, 0.0));
+        double courant_number;
 
-        for (int i = 0; i < N; ++i) {
-            for (int j = 0; j < N; ++j) {
-                if (propagation_speed[i][j] != 0) {
-                    courant_number[i][j] = dx / propagation_speed[i][j];
-                }
-            }
-        }
+        
+        courant_number = dx / max_value(propagation_speed);
+            
 
 
-        double dt = std::min(dtmax, 0.4 * (max_value(courant_number)));
+        double dt = std::min(dtmax, 0.4 * (courant_number));
 
-        state qprime;
+        
 
         if (method == "Heuns") {
             qprime = heuns(q, C, dt, t);
         } 
 
-        // BC(q);/
-
+        
+        
+        //cout << dt << endl;
         t = t + dt;
+        q = qprime;
 
         if (t > outCount*dtmax) {
             Q[t] = qprime;

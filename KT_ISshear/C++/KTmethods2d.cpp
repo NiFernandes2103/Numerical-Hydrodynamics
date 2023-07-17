@@ -29,10 +29,10 @@ double max_value(vector<vector<double>> value)
 
 double sign(double value){   
     
-    if (value > 0)
+    if (value > 0.0)
     {
         return 1.0;
-    } else if (value < 0)
+    } else if (value < 0.0)
     {
         return -1.0;
     } else 
@@ -44,6 +44,10 @@ double sign(double value){
     
 }
 
+double absolute(double value) {
+
+    return sign(value)*value;
+}
 
 
 tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>> getConserved(vector<vector<double>>& rho,
@@ -75,8 +79,8 @@ tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>,vecto
     for (unsigned int i = 0; i < Mass.size(); i++) {
         for (unsigned int j = 0; j < Mass[0].size(); j++) {
             rho[i][j] = Mass[i][j] / vol;
-            vx[i][j] = (rho[i][j] != 0) ? Momx[i][j] / rho[i][j] : 0;
-            vy[i][j] = (rho[i][j] != 0) ? Momy[i][j] / rho[i][j] : 0;
+            vx[i][j] = Momx[i][j] / rho[i][j];
+            vy[i][j] = Momy[i][j] / rho[i][j];
             P[i][j] = pow(rho[i][j], gamma);
         }
     }
@@ -106,17 +110,105 @@ double minmod(double a, double b) {
 
     double sign1 = sign(a);
     double sign2 = sign(b);
-    double abs1 = std::abs(a);
-    double abs2 = std::abs(b);
+    double abs1 = absolute(a);
+    double abs2 = absolute(b);
 
-    return (sign1 + sign2) * min(abs1, abs2) / 2;
+    double mmod = (sign1 + sign2) * min(abs1, abs2) / 2;
+
+    return mmod;
        
 }
 
 double minmod3(double x, double y, double z) {
-    return minmod(z,minmod(x,y));
+    return minmod(x,minmod(y,z));
 }
 
+/*
+
+vector<vector<double>> getGradient (vector<vector<double>>& f, double dx, int axis, double theta = 1) {
+    vector<vector<double>> df_dx(f.size(), vector<double>(f[0].size(), 0.0));
+    int n = f[axis].size();
+
+    vector<int> K(n);
+    for (int i = 0; i < n; i++) {
+        K[i] = i;
+    }
+
+    vector<int> Kp1(K);
+    rotate(Kp1.begin(), Kp1.begin() + 1, Kp1.end());
+
+    vector<int> Km1(K);
+    rotate(Km1.rbegin(), Km1.rbegin() + 1, Km1.rend());
+
+
+    if (axis == 0) {
+        for (int i = 0; i < f.size(); i++) {
+            for (int j = 0; j < f[i].size(); j++) {
+                double term1 = theta * (f[i][j] - f[Km1[i]][j]) / dx;
+                double term2 = (f[Kp1[i]][j] - f[Km1[i]][j]) / (2 * dx);
+                double term3 = theta * (f[Kp1[i]][j] - f[i][j]) / dx;
+                df_dx[i][j] = minmod3(term1, term2, term3);
+            }
+        }
+    }
+    else if (axis == 1) {
+        for (int i = 0; i < f.size(); i++) {
+            for (int j = 0; j < f[i].size(); j++) {
+                double term1 = theta * (f[i][j] - f[i][Km1[j]]) / dx;
+                double term2 = (f[i][Kp1[j]] - f[i][Km1[j]]) / (2 * dx);
+                double term3 = theta * (f[i][Kp1[j]] - f[i][j]) / dx;
+                df_dx[i][j] = minmod3(term1, term2, term3);
+            }
+        }
+    }
+
+
+    return df_dx;
+}
+tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> extrapolateInSpaceToFace (vector<vector<double>>& q, vector<vector<double>>& q_dx, double dx, int axis) {
+
+    int n = q.size();
+
+    vector<int> K(n);
+    for (int i = 0; i < n; i++) {
+        K[i] = i;
+    }
+
+    vector<int> Kp1(K);
+    rotate(Kp1.begin(), Kp1.begin() + 1, Kp1.end());
+
+    vector<int> Km1(K);
+    rotate(Km1.rbegin(), Km1.rbegin() + 1, Km1.rend());
+
+    vector<vector<double>> qP_XL(q.size(), vector<double>(q[0].size(), 0.0));
+    vector<vector<double>> qP_XR(q.size(), vector<double>(q[0].size(), 0.0));
+    vector<vector<double>> qM_XR(q.size(), vector<double>(q[0].size(), 0.0));
+    vector<vector<double>> qM_XL(q.size(), vector<double>(q[0].size(), 0.0));
+
+    if (axis == 0) {
+        for (int i = 0; i < q.size(); i++) {
+            for (int j = 0; j < q[i].size(); j++) {
+                qP_XL[i][j] = q[i][j] - q_dx[i][j] * dx / 2;
+                qP_XR[i][j] = q[Kp1[i]][j] - q_dx[Kp1[i]][j] * dx / 2;
+                qM_XR[i][j] = q[i][j] + q_dx[i][j] * dx / 2;
+                qM_XL[i][j] = q[Km1[i]][j] + q_dx[Km1[i]][j] * dx / 2;
+            }
+        }
+    }
+    else if (axis == 1) {
+        for (int i = 0; i < q.size(); i++) {
+            for (int j = 0; j < q[i].size(); j++) {
+                qP_XL[i][j] = q[i][j] - q_dx[i][j] * dx / 2;
+                qP_XR[i][j] = q[i][Kp1[j]] - q_dx[i][Kp1[j]] * dx / 2;
+                qM_XR[i][j] = q[i][j] + q_dx[i][j] * dx / 2;
+                qM_XL[i][j] = q[i][Km1[j]] + q_dx[i][Km1[j]] * dx / 2;
+            }
+        }
+    }
+
+    return make_tuple(qM_XL, qP_XL, qM_XR, qP_XR);
+}
+*/
 
 vector<vector<double>> getGradient (vector<vector<double>>& f, double dx, int axis, double theta = 1) {
     int n = f.size();
@@ -182,7 +274,6 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
 
     return make_tuple(qM_XL, qP_XL, qM_XR, qP_XR);
 }
-
 
 vector<vector<double>> local_propagation_speed (vector<vector<double>>& rho, vector<vector<double>>& vx, vector<vector<double>>& vy, double eta, double zeta, double tau_nu, vector<vector<double>>& cs) {
    
@@ -379,7 +470,6 @@ vector<vector<double>> applyFluxes(vector<vector<double>>& flux_H1_X, vector<vec
     int cols = flux_H1_X[0].size();
 
 
-
     vector<vector<double>> C(rows, vector<double>(cols, 0.0));
     
     for (int i = 0; i < rows; i++) {
@@ -401,42 +491,44 @@ state heuns (state& q, function<state(double,state)> f, double dt, double t) {
 
     vector<vector<double>> k1(rows, vector<double>(cols, 0.0));
     vector<vector<double>> k2(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> c(rows, vector<double>(cols, 0.0));
+    vector<vector<double>> c1(rows, vector<double>(cols, 0.0));
+    vector<vector<double>> c2(rows, vector<double>(cols, 0.0));
     vector<vector<double>> y(rows, vector<double>(cols, 0.0));
     vector<vector<double>> yprime(rows, vector<double>(cols, 0.0));
 
 
     state qprime;
-    state C;
+    state C1,C2;
 
-    C = f(t,q);
+    C1 = f(t,q);
 
     for (int n = 0; n < 7; ++n){
-        c = C.get(n);
+        c1 = C1.get(n);
         y = q.get(n);
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                k1[i][j] = dt * c[i][j];
+                k1[i][j] = dt * c1[i][j];
                 yprime[i][j] = y[i][j] + k1[i][j];
             }
         }
         qprime.set(n , yprime);
     }
     
-    C = f(t,qprime);
+    C2 = f(t+dt,qprime);
 
     for (int n = 0; n < 7; ++n){
-        c = C.get(n);
+        c1 = C1.get(n);
+        c2 = C2.get(n);
         y = q.get(n);
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                k2[i][j] = dt * c[i][j];
+                k2[i][j] = dt * (c2[i][j]);
                 yprime[i][j] = y[i][j] + 0.5*(k1[i][j] + k2[i][j]);
             }
         }
         qprime.set(n , yprime);
     }
-
+    
 
     return qprime;
 }

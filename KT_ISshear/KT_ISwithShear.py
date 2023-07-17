@@ -1,7 +1,7 @@
 import numpy as np
 from KTmethods2d import *
 
-def KTschemeNonRelativisticIS(t,IC, dx, dy, N, gamma, zeta, tau_nu, eta, theta=1):
+def KTschemeNonRelativisticIS(t,IC, dx, dy, N, gamma, zeta, tau_nu, eta, P0, theta=1):
 
     """ Finite Volume simulation """
   
@@ -22,7 +22,7 @@ def KTschemeNonRelativisticIS(t,IC, dx, dy, N, gamma, zeta, tau_nu, eta, theta=1
 
 
     ''' Pressure due to equation of state '''
-    P = rho**gamma
+    P = P0*rho**gamma
     
 
     ''' Pi initial condition '''
@@ -33,7 +33,7 @@ def KTschemeNonRelativisticIS(t,IC, dx, dy, N, gamma, zeta, tau_nu, eta, theta=1
 
 
     # get Speed of sound
-    cs = getSpeedOfSound(rho, gamma)
+    cs = getSpeedOfSound(rho, gamma, P0)
 
     #-----------------------------------------------------------------------------------------------------------------------------------#
     
@@ -98,22 +98,22 @@ def KTschemeNonRelativisticIS(t,IC, dx, dy, N, gamma, zeta, tau_nu, eta, theta=1
     flux_Mass_XR, flux_Momx_XR, flux_Momy_XR, flux_Pixx_vxR, flux_Pixy_vxR, flux_Piyx_vxR, flux_Piyy_vxR = getXFlux(rhoP_XR, rhoM_XR, vxP_XR, vxM_XR,
                                             vyP_XR, vyM_XR, PixxP_XR, PixxM_XR,
                                             PixyP_XR, PixyM_XR, PiyxP_XR, PiyxM_XR,
-                                            PiyyP_XR, PiyyM_XR, gamma, eta, zeta, tau_nu)
+                                            PiyyP_XR, PiyyM_XR, gamma, eta, zeta, tau_nu, P0)
 
     flux_Mass_XL, flux_Momx_XL, flux_Momy_XL, flux_Pixx_vxL, flux_Pixy_vxL, flux_Piyx_vxL, flux_Piyy_vxL = getXFlux(rhoP_XL, rhoM_XL, vxP_XL, vxM_XL,
                                             vyP_XL, vyM_XL, PixxP_XL, PixxM_XL,
                                             PixyP_XL, PixyM_XL, PiyxP_XL, PiyxM_XL,
-                                            PiyyP_XL, PiyyM_XL, gamma, eta, zeta, tau_nu)
+                                            PiyyP_XL, PiyyM_XL, gamma, eta, zeta, tau_nu, P0)
 
     flux_Mass_YR, flux_Momx_YR, flux_Momy_YR, flux_Pixx_vyR, flux_Pixy_vyR, flux_Piyx_vyR, flux_Piyy_vyR = getYFlux(rhoP_YR, rhoM_YR, vxP_YR, vxM_YR,
                                             vyP_YR, vyM_YR, PixxP_YR, PixxM_YR,
                                             PixyP_YR, PixyM_YR, PiyxP_YR, PiyxM_YR,
-                                            PiyyP_YR, PiyyM_YR, gamma, eta, zeta, tau_nu)
+                                            PiyyP_YR, PiyyM_YR, gamma, eta, zeta, tau_nu, P0)
 
     flux_Mass_YL, flux_Momx_YL, flux_Momy_YL, flux_Pixx_vyL, flux_Pixy_vyL, flux_Piyx_vyL, flux_Piyy_vyL = getYFlux(rhoP_YL, rhoM_YL, vxP_YL, vxM_YL,
                                             vyP_YL, vyM_YL, PixxP_YL, PixxM_YL,
                                             PixyP_YL, PixyM_YL, PiyxP_YL, PiyxM_YL,
-                                            PiyyP_YL, PiyyM_YL, gamma, eta, zeta, tau_nu)
+                                            PiyyP_YL, PiyyM_YL, gamma, eta, zeta, tau_nu, P0)
     
     #-----------------------------------------------------------------------------------------------------------------------------------#
     
@@ -181,6 +181,7 @@ def integrator(scheme, time, q0, dtmax, method = "Heuns", args=None):
   zeta    = args[4]
   tau_nu  = args[5]
   eta     = args[6]
+  P0      = args[7]
 
   while t < tEnd: 
 
@@ -190,7 +191,7 @@ def integrator(scheme, time, q0, dtmax, method = "Heuns", args=None):
     rho = q[0:N]
 
     #get speed of sound
-    cs = getSpeedOfSound(rho,gamma)
+    cs = getSpeedOfSound(rho,gamma, P0)
 
     # condition to ensure that the time steps are small enough so that
     # waves do not interfere with each other 
@@ -200,17 +201,15 @@ def integrator(scheme, time, q0, dtmax, method = "Heuns", args=None):
     if (np.finfo(float).eps > courant_number):
       print("slow update")
 
-    dt  =  np.minimum(dtmax, 0.2*courant_number) 
+    dt  =  np.minimum(dtmax, 0.4*courant_number) 
 
     # choose the scheme to integrate(evolve over time) the system 
     if method == "Heuns":
       q = Heuns(q,C,dt,t)
     if method == "RK4":
       q = RK4(q,C,dt,t)
-    if method == "HeunswithFowardEuler":
-      q = HeunswithFowardEuler(q,C,dt,t)
-
     
+
     #Apply Boundary conditions
 
     # BC(q)
@@ -236,11 +235,12 @@ tEnd                   = 2  # time at the end
 tOut                   = 0.01 # time of each output
 
 N                      = 200  # resolution
-boxsize                = 4.   # in some unit system l
-gamma                  = 2    # adiabatic index
-zeta                   = 2    # bulk viscosity coefficient
-eta                    = 2    # shear viscosity coefficient
-tau_nu                 = 2    # relaxation time
+boxsize                = 2.   # in some unit system l
+gamma                  = 5/3  # adiabatic index
+P0                     = 1    # pressure constant
+zeta                   = 1    # bulk viscosity coefficient
+eta                    = 1    # shear viscosity coefficient
+tau_nu                 = 0.1    # relaxation time
 theta                  = 1    # flux limiter parameter
 
 
@@ -261,20 +261,20 @@ Theta = np.arctan(Y/X)*(X>=0)*(Y>=0) + (np.pi/2 + np.arctan(Y/np.abs(X)))*(X<0)*
 
 ''' initial condition of density'''
 
-#rho = (1.5*(R <= 0.25) + 1*(R > 0.25))
-rho = ((1 - ((R)**2) )**4 )*(R < 1) + 0.5*np.ones(R.shape) # Mauricio`s funtion advice    
-
+#rho = (1.5*(R <= 1) + 1*(R > 1))
+#rho = ((1 - ((R)**2) )**4 )*(R < 1) + 0.5*np.ones(s) # Mauricio`s funtion advice    
+rho = (1/(R))*(R>0)*(R<1) + 0.1*np.ones(s)
 #rho = 1*(X < 0) + 0.125*(X >= 0)
 
 ''' initial condition of velocity '''
 vx = np.zeros(s)
-#vx = -np.sin(Theta)*(R < 1)
+#vx = -0.1*np.sin(Theta)*(R < 1)
 #vx = 0.5*np.ones(xlin.shape)
 #vx = 3*(Y < 0) - 0*(Y >= 0)
 #vx = np.abs((xlin - (boxsize-0.5*dx)*0.5)/16)
 
 vy = np.zeros(s)
-#vy = np.cos(Theta)*(R < 1)
+#vy = 0.1*np.cos(Theta)*(R < 1)
 #vy = 0.5*np.ones(xlin.shape)
 
 '''
@@ -297,7 +297,7 @@ IC = np.vstack((rho,rho*vx,rho*vy,Pixx,Pixy,Piyx,Piyy)) # here the initial condi
 
 # input (dx, dy, xlin, gamma, zeta, tau_nu, BC, theta=1)
 # output solution list of arrays that are 7N x N in the order (rho,rho*vx,rho*vy,Pixx,Pixy,Piyx,Piyy)
-solution = integrator(KTschemeNonRelativisticIS, (t, tEnd), IC, 0.01, method="HeunswithFowardEuler", args=(dx, dy, N, gamma, zeta, tau_nu, eta, theta))
+solution = integrator(KTschemeNonRelativisticIS, (t, tEnd), IC, 0.01, method="RK4", args=(dx, dy, N, gamma, zeta, tau_nu, eta, P0, theta))
 
-np.savetxt('NonRelativisticISgamma2_parameters',parameters)
-np.save('NonRelativisticISgamma2',solution)
+np.savetxt('NonRelativisticIS_parameters',parameters)
+np.save('NonRelativisticIS',solution)

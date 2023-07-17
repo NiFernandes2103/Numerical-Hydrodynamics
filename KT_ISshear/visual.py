@@ -124,16 +124,17 @@ def plot_each_csv(file, parameters_file):
         plt.imshow(v.T)
         plt.clim(0.8,2.2)
         plt.show()
+        plt.plot(v[int(N/2)].T)
+        plt.show()
         outputcount += 1
         print(outputcount)
-        s +=1 
+        s +=1
 
 
 
-#plot_ic_csv('KT-ISshear\C++\initial_state.csv','KT-ISshear\C++\parameters.csv')
-#plot_each_csv('KT-ISshear\C++\Pixx_solution.csv','KT-ISshear\C++\parameters.csv')
-#plot_each_csv('KT-ISshear\C++\Piyy_solution.csv','KT-ISshear\C++\parameters.csv')
-
+#plot_ic_csv('KT_ISshear\C++\initial_state.csv','KT_ISshear\C++\parameters.csv')
+plot_each_csv('KT_ISshear\C++\density_solution.csv','KT_ISshear\C++\parameters.csv')
+#plot_each_csv('KT_ISshear\C++\momentx_solution.csv','KT_ISshear\C++\parameters.csv')
 
 def show_2dsolution_static(file,parameters_file,i,n):
 
@@ -194,8 +195,112 @@ def animate_solution_gif(file,parameters_file,gif_file):
     anim.save(gif_file, fps=30)
 
 
+def animate_numpy_solution_gif(sol,N):
 
-sol = np.load("NonRelativisticISgamma1.npy")
+
+    # First set up the figure, the axis, and the plot element we want to animate
+    fig = plt.figure()
+    ax = plt.axes()
+    #line, = ax.plot([], [], lw=2)
+    s = 0
+    outputcount = 0
+
+    b = []
+    print("reading solution...")
+    while s < sol.shape[0]:
+        for i in range(N):
+            for j in range(N):
+                v[i][j]  = sol[s][(N*i + j)]
+
+        b.append(v)
+        s += 1
+    print("finished reading")
+
+    b = np.array(b)
+    a = b[0].T
+
+    im=plt.imshow(a,interpolation='none')
+
+    # initialization function: plot the background of each frame
+    def init():
+        im.set_data(a)
+        return [im]
+
+    # animation function.  This is called sequentially
+    def animate(i):
+        im.set_array(b[i].T)
+        return [im]
+
+
+    return animation.FuncAnimation(fig, animate, init_func=init,
+                                frames=50, interval=20, blit=True)
+
+
+def animate_numpy_solution_slice_gif(sol,N,xlin):
+
+
+    # First set up the figure, the axis, and the plot element we want to animate
+    fig = plt.figure()
+    ax = plt.axes()
+    line, = ax.plot([], [], lw=2)
+    s = 0
+    outputcount = 0
+
+    b = []
+    print("reading solution...")
+    while s < sol.shape[0]:
+        for i in range(N):
+            for j in range(N):
+                v[i][j]  = sol[s][(N*i + j)]
+
+        b.append(v)
+        s += 1
+    print("finished reading")
+
+    b = np.array(b)
+    a = b[0][int(N/2)].T
+
+
+    # initialization function: plot the background of each frame
+    def init():
+        line.set_data(xlin,a)
+        return (line,)
+
+    # animation function.  This is called sequentially
+    def animate(i):
+        line.set_data(xlin,b[i][int(N/2)].T)
+        return (line,)
+
+
+    return animation.FuncAnimation(fig, animate, init_func=init,
+                                frames=40, interval=100, blit=True)
+
+
+
+parameters = pd.read_csv('KT_ISshear\C++\parameters.csv')
+N = int(parameters['N'])
+boxsize = int(parameters['boxsize'])
+a = float(parameters['a'])
+b = float(parameters['b'])
+
+dx = boxsize/N
+xlin = np.linspace(a, b, N)
+
+Y, X = np.meshgrid( xlin, xlin ) # define the mesh grid
+S = X.shape
+
+v = np.zeros(S)
+
+solution = (pd.read_csv('KT_ISshear\C++\density_solution.csv', header=None)).to_numpy()
+
+anim = animate_numpy_solution_gif(solution,N)
+
+anim.save('NonRelativisticISC++.gif', fps=30)
+
+
+'''
+sol = np.load("NonRelativisticIS.npy")
+
 
 i=10
 rho = sol[i][:200].T
@@ -215,6 +320,7 @@ plt.show()
 plt.plot(vy[int(200/2)])
 plt.show()
 
+
 # First set up the figure, the axis, and the plot element we want to animate
 fig = plt.figure()
 ax = plt.axes()
@@ -233,9 +339,9 @@ def animate(i):
 
 
 anim = animation.FuncAnimation(fig, animate, init_func=init,
-                               frames=2000, interval=20, blit=True)
+                               frames=100, interval=20, blit=True)
 
 
-anim.save('NonRelativisticISgamma1.gif', fps=30)
+anim.save('NonRelativisticIS.gif', fps=30)
 
-plt.show()
+'''

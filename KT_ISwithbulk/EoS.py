@@ -36,7 +36,7 @@ def getPrimitive( Mass, Momx, gamma, vol):
 
 def getSpeedOfSound(rho, gamma):
   
-  cs = np.sqrt((gamma)*np.abs(rho)**(gamma-1))
+  cs = np.sqrt((gamma)*rho**(gamma-1))
 
   return cs
 

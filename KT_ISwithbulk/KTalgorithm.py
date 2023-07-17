@@ -20,23 +20,13 @@ def local_propagation_speed(rho, vx, Pi, gamma, B):
 
     rho          is a matrix of left-state  density
     vx           is a matrix of x-velocity
-    Pi           is a matrix of bulk viscosity 
     cs           is the speed of sound
     '''
 
   
-   C1 = np.abs(vx)
-   cs = getSpeedOfSound(rho, gamma)
-   try:
-     C2 = np.abs(vx - np.sqrt((cs**2 +(Pi+B)/ rho)/gamma))
-   except:
-     C2 = np.zeros(vx.shape)
-   try:
-     C3 = np.abs(vx + np.sqrt((cs**2 + (Pi+B)/rho)/gamma))
-   except:
-     C3 = np.zeros(vx.shape)
+   C = np.abs(vx) + np.sqrt((cs**2 + (B)/rho)/gamma)
 
-   return np.maximum(C1,C2,C3)
+   return C
 
 
 def getGradient(f, dx, theta=1):
