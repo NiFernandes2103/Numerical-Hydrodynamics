@@ -345,21 +345,21 @@ sol = np.load("NonRelativisticIS.npy")
 print(sol.shape)
 
 i=10
-rho = sol[i][:200].T
-vx = sol[i][200:2*200].T
-vy = sol[i][2*200:3*200].T
+rho = sol[i][:300].T
+vx = sol[i][300:2*300].T
+vy = sol[i][2*300:3*300].T
 
 plt.imshow(rho)
 plt.show()
-plt.plot(rho[int(200/2)])
+plt.plot(rho[int(300/2)])
 plt.show()
 plt.imshow(vx)
 plt.show()
-plt.plot(vx[int(200/2)])
+plt.plot(vx[int(300/2)])
 plt.show()
 plt.imshow(vy)
 plt.show()
-plt.plot(vy[int(200/2)])
+plt.plot(vy[int(300/2)])
 plt.show()
 
 
@@ -368,16 +368,16 @@ plt.show()
 fig = plt.figure()
 ax = plt.axes()
 #line, = ax.plot([], [], lw=2)
-im=plt.imshow(sol[0][:200].T,interpolation='none')
+im=plt.imshow(sol[0][:300].T,interpolation='none')
 
 # initialization function: plot the background of each frame
 def init():
-    im.set_data(sol[0][:200].T)
+    im.set_data(sol[0][:300].T)
     return [im]
 
 # animation function.  This is called sequentially
 def animate(i):
-    im.set_array(sol[i][:200].T)
+    im.set_array(sol[i][:300].T)
     return [im]
 
 
@@ -387,3 +387,29 @@ anim = animation.FuncAnimation(fig, animate, init_func=init,
 
 anim.save('NonRelativisticIS.gif', fps=30)
 
+
+# First set up the figure, the axis, and the plot element we want to animate
+fig_slice = plt.figure()
+ax_slice = plt.axes()
+ax_slice.set_xlim((-2,2))
+ax_slice.set_ylim((1, 2))
+line, = ax_slice.plot([], [], lw=2)
+
+
+
+
+# initialization function: plot the background of each frame
+def init_slice():
+    line.set_data(xlin,sol[0][150].T)
+    return (line,)
+
+# animation function.  This is called sequentially
+def animate_slice(i):
+    line.set_data(xlin,sol[i][150].T)
+    return (line,)
+
+
+anim_slice = animation.FuncAnimation(fig_slice, animate_slice, init_func=init_slice,
+                            frames=100, interval=20, blit=True)
+
+anim_slice.save('NonRelativisticIS_xvelocity_slice.gif', fps=30)

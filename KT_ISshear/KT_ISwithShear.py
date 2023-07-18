@@ -234,7 +234,7 @@ t                      = 0    # s
 tEnd                   = 1  # time at the end
 tOut                   = 0.01 # time of each output
 
-N                      = 200  # resolution
+N                      = 300  # resolution
 boxsize                = 4.   # in some unit system l
 gamma                  = 5/3  # adiabatic index
 P0                     = 1    # pressure constant
@@ -262,7 +262,7 @@ Theta = np.arctan(Y/X)*(X>=0)*(Y>=0) + (np.pi/2 + np.arctan(Y/np.abs(X)))*(X<0)*
 ''' initial condition of density'''
 
 #rho = (1.5*(R <= 1) + 1*(R > 1))
-rho = ((1 - ((R)**2) )**4 )*(R < 1) + 0.5*np.ones(s) # Mauricio`s funtion advice    
+rho = ((1 - ((R)**2) )**4 )*(R < 1) + 1*np.ones(s) # Mauricio`s funtion advice    
 #rho = (1/(R))*(R>0)*(R<1) + 0.1*np.ones(s)
 #rho = 1*(X < 0) + 0.125*(X >= 0)
 
