@@ -1,0 +1,2 @@
+t,tEnd,tOut,N,boxsize,a,b,gamma,zeta,eta,tau_nu,theta
+0,1,0.01,300,4,-1.99667,1.99667,1,1,1,1,1
