@@ -128,12 +128,12 @@ def plot_each_csv(file, parameters_file):
         plt.show()
         outputcount += 1
         print(outputcount)
-        s +=1
+        s +=10
 
 
 
 #plot_ic_csv('KT_ISshear\C++\initial_state.csv','KT_ISshear\C++\parameters.csv')
-plot_each_csv('KT_ISshear\C++\density_solution.csv','KT_ISshear\C++\parameters.csv')
+#plot_each_csv('KT_ISshear\C++\density_solution.csv','KT_ISshear\C++\parameters.csv')
 #plot_each_csv('KT_ISshear\C++\momentx_solution.csv','KT_ISshear\C++\parameters.csv')
 
 def show_2dsolution_static(file,parameters_file,i,n):
@@ -201,7 +201,7 @@ def animate_numpy_solution_gif(sol,N):
     # First set up the figure, the axis, and the plot element we want to animate
     fig = plt.figure()
     ax = plt.axes()
-    #line, = ax.plot([], [], lw=2)
+    line, = ax.plot([], [], lw=2)
     s = 0
     outputcount = 0
 
@@ -216,8 +216,9 @@ def animate_numpy_solution_gif(sol,N):
         s += 1
     print("finished reading")
 
-    b = np.array(b)
     a = b[0].T
+    b = np.array(b)
+    print(b.shape)
 
     im=plt.imshow(a,interpolation='none')
 
@@ -228,12 +229,15 @@ def animate_numpy_solution_gif(sol,N):
 
     # animation function.  This is called sequentially
     def animate(i):
-        im.set_array(b[i].T)
+        im.set_array((b[i]).T)
         return [im]
 
 
     return animation.FuncAnimation(fig, animate, init_func=init,
-                                frames=50, interval=20, blit=True)
+                                frames=100, interval=20, blit=True)
+
+    
+
 
 
 def animate_numpy_solution_slice_gif(sol,N,xlin):
@@ -268,12 +272,15 @@ def animate_numpy_solution_slice_gif(sol,N,xlin):
 
     # animation function.  This is called sequentially
     def animate(i):
-        line.set_data(xlin,b[i][int(N/2)].T)
+        line.set_array(xlin,b[i][int(N/2)].T)
         return (line,)
 
 
     return animation.FuncAnimation(fig, animate, init_func=init,
                                 frames=40, interval=100, blit=True)
+
+    
+                            
 
 
 
@@ -291,16 +298,51 @@ S = X.shape
 
 v = np.zeros(S)
 
-solution = (pd.read_csv('KT_ISshear\C++\density_solution.csv', header=None)).to_numpy()
-
-anim = animate_numpy_solution_gif(solution,N)
-
-anim.save('NonRelativisticISC++.gif', fps=30)
+sol = (pd.read_csv('KT_ISshear\C++\density_solution.csv', header=None)).to_numpy()
 
 
-'''
+# First set up the figure, the axis, and the plot element we want to animate
+fig = plt.figure()
+ax = plt.axes()
+#line, = ax.plot([], [], lw=2)
+s = 0
+outputcount = 0
+
+b = []
+print("reading solution...")
+while s < sol.shape[0]:
+    for i in range(N):
+        for j in range(N):
+            v[i][j]  = sol[s][(N*i + j)]
+
+    b.append(v)
+    s += 1
+print("finished reading")
+
+b = np.array(b)
+print(b.shape)
+
+im=plt.imshow(b[0].T,interpolation='none')
+
+# initialization function: plot the background of each frame
+def init():
+    im.set_data(b[0].T)
+    return [im]
+
+# animation function.  This is called sequentially
+def animate(i):
+    im.set_array((b[i]).T)
+    return [im]
+
+
+ani = animation.FuncAnimation(fig, animate, init_func=init,
+                            frames=100, interval=20, blit=True)
+
+
+ani.save("NonRelativisticISC++.gif",fps=30)
+
 sol = np.load("NonRelativisticIS.npy")
-
+print(sol.shape)
 
 i=10
 rho = sol[i][:200].T
@@ -319,6 +361,7 @@ plt.imshow(vy)
 plt.show()
 plt.plot(vy[int(200/2)])
 plt.show()
+
 
 
 # First set up the figure, the axis, and the plot element we want to animate
@@ -344,4 +387,3 @@ anim = animation.FuncAnimation(fig, animate, init_func=init,
 
 anim.save('NonRelativisticIS.gif', fps=30)
 
-'''

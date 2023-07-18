@@ -124,7 +124,6 @@ double minmod3(double x, double y, double z) {
 }
 
 /*
-
 vector<vector<double>> getGradient (vector<vector<double>>& f, double dx, int axis, double theta = 1) {
     vector<vector<double>> df_dx(f.size(), vector<double>(f[0].size(), 0.0));
     int n = f[axis].size();
@@ -165,6 +164,7 @@ vector<vector<double>> getGradient (vector<vector<double>>& f, double dx, int ax
 
     return df_dx;
 }
+
 tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> extrapolateInSpaceToFace (vector<vector<double>>& q, vector<vector<double>>& q_dx, double dx, int axis) {
 
     int n = q.size();
@@ -209,7 +209,6 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
     return make_tuple(qM_XL, qP_XL, qM_XR, qP_XR);
 }
 */
-
 vector<vector<double>> getGradient (vector<vector<double>>& f, double dx, int axis, double theta = 1) {
     int n = f.size();
     int m = f[0].size();
@@ -287,7 +286,7 @@ vector<vector<double>> local_propagation_speed (vector<vector<double>>& rho, vec
         for (int j = 0; j < cols; j++) {
             if (rho[i][j] != 0) {
                 C1[i][j] = sqrt(eta * tau_nu / rho[i][j]);
-                C2[i][j] = sqrt(cs[i][j] * cs[i][j] * (zeta + 4.0 / 3.0 * tau_nu) / (rho[i][j] * tau_nu));
+                C2[i][j] = cs[i][j] * sqrt( (zeta + 4.0 / 3.0 * tau_nu) / (rho[i][j] * tau_nu));
             }
         }
     }
@@ -356,7 +355,7 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
             
 
             flux_Mass[i][j] = momx_av;
-            flux_Momx[i][j] = 0.5 * (rho_P[i][j] * pow(vx_P[i][j], 2) + rho_M[i][j] * pow(vx_M[i][j], 2)) + ((P_av) + (Pixx_av)) / gamma;
+            flux_Momx[i][j] = 0.5 * (rho_P[i][j] * vx_P[i][j] * vx_P[i][j] + rho_M[i][j] * vx_M[i][j] * vx_M[i][j]) + ((P_av) + (Pixx_av)) / gamma;
             flux_Momy[i][j] = 0.5 * (rho_P[i][j] * (vx_P[i][j] * vy_P[i][j]) + rho_M[i][j] * (vx_M[i][j] * vy_M[i][j])) + (Piyx_av) / gamma;
             flux_Pixx_vx[i][j] = Pixx_vx_av + B * (vx_P[i][j] + vx_M[i][j]) + (A - 2.0 / 3.0 * B) * (vx_P[i][j] + vx_M[i][j]) * 0.5;
             flux_Pixy_vx[i][j] = Pixy_vx_av + B * (vy_P[i][j] + vy_M[i][j]) * 0.5;
@@ -489,8 +488,7 @@ state heuns (state& q, function<state(double,state)> f, double dt, double t) {
     int rows = (q.get(0)).size();
     int cols = (q.get(0))[0].size();
 
-    vector<vector<double>> k1(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> k2(rows, vector<double>(cols, 0.0));
+    double k1,k2;
     vector<vector<double>> c1(rows, vector<double>(cols, 0.0));
     vector<vector<double>> c2(rows, vector<double>(cols, 0.0));
     vector<vector<double>> y(rows, vector<double>(cols, 0.0));
@@ -507,8 +505,8 @@ state heuns (state& q, function<state(double,state)> f, double dt, double t) {
         y = q.get(n);
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                k1[i][j] = dt * c1[i][j];
-                yprime[i][j] = y[i][j] + k1[i][j];
+                k1 = dt * c1[i][j];
+                yprime[i][j] = y[i][j] + k1;
             }
         }
         qprime.set(n , yprime);
@@ -522,8 +520,9 @@ state heuns (state& q, function<state(double,state)> f, double dt, double t) {
         y = q.get(n);
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                k2[i][j] = dt * (c2[i][j]);
-                yprime[i][j] = y[i][j] + 0.5*(k1[i][j] + k2[i][j]);
+                k1 = dt * c1[i][j];
+                k2 = dt * c2[i][j];
+                yprime[i][j] = y[i][j] + 0.5*(k1 + k2);
             }
         }
         qprime.set(n , yprime);

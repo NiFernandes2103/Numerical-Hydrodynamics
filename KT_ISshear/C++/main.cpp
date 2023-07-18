@@ -20,11 +20,11 @@ using namespace std;
 int main() {
 
     double t = 0.0;  // s 
-    double tEnd = 2;  // time at the end
+    double tEnd = 1;  // time at the end
     double tOut = 0.01;  // time of each output
 
-    int N = 200;  // resolution
-    double boxsize = 1.0;  // in some unit system l
+    int N = 300;  // resolution
+    double boxsize = 4.0;  // in some unit system l
     double gamma = 5/3;  // adiabatic index
     double zeta = 1.0;  // bulk viscosity coefficient
     double eta = 1.0;  // shear viscosity coefficient
