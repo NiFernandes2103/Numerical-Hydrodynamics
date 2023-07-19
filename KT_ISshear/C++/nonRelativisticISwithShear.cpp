@@ -38,7 +38,7 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
     Piyx = IC.get(5);
     Piyy = IC.get(6);
     
-   
+
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
             vx[i][j] = Momx[i][j] / rho[i][j];
@@ -47,6 +47,41 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
              /* Pressure from equation of state */
             P[i][j] = pow(rho[i][j], gamma);
 
+             // set boundary conditions
+            rho[0][j] = rho[1][j];
+            rho[i][0] = rho[i][1];
+            rho[-1][j] = rho[-2][j];
+            rho[i][-1] = rho[i][-2];
+
+            vx[0][j] = -vx[1][j];
+            vx[i][0] = 0;
+            vx[-1][j] = -vx[-2][j];
+            vx[i][-1] = 0;
+
+            vy[0][j] = 0;
+            vy[i][0] = -vy[i][1];
+            vy[-1][j] = 0;
+            vy[i][-1] = -vy[i][-2];
+
+            Pixx[0][j] = 0;
+            Pixx[i][0] = 0;
+            Pixx[-1][j] = 0;
+            Pixx[i][-1] = 0;
+
+            Pixy[0][j] = 0;
+            Pixy[i][0] = 0;
+            Pixy[-1][j] = 0;
+            Pixy[i][-1] = 0;
+            
+            Piyx[0][j] = 0;
+            Piyx[i][0] = 0;
+            Piyx[-1][j] = 0;
+            Piyx[i][-1] = 0;
+
+            Piyy[0][j] = 0;
+            Piyy[i][0] = 0;
+            Piyy[-1][j] = 0;
+            Piyy[i][-1] = 0;
         }
     }        
 

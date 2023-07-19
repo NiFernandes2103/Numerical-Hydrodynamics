@@ -102,9 +102,9 @@ tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>,vecto
 
 vector<vector<double>> getSpeedOfSound(vector<vector<double>>& rho, double gamma);
 
-vector<vector<double>> minmod2(vector<vector<double>> x, vector<vector<double>> y);
+double minmod(double x, double y);
 
-vector<vector<double>> minmod3(vector<vector<double>> x, vector<vector<double>> y, vector<vector<double>> z);
+double minmod3(double x, double y, double z);
 
 vector<vector<double>> getGradient (vector<vector<double>>& f, double dx, int axis, double theta);
 

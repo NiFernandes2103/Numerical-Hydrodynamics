@@ -44,10 +44,6 @@ double sign(double value){
     
 }
 
-double absolute(double value) {
-
-    return sign(value)*value;
-}
 
 
 tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>> getConserved(vector<vector<double>>& rho,
@@ -82,6 +78,29 @@ tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>,vecto
             vx[i][j] = Momx[i][j] / rho[i][j];
             vy[i][j] = Momy[i][j] / rho[i][j];
             P[i][j] = pow(rho[i][j], gamma);
+
+            
+            // set boundary conditions
+            rho[0][j] = rho[1][j];
+            rho[i][0] = rho[i][1];
+            rho[-1][j] = rho[-2][j];
+            rho[i][-1] = rho[i][-2];
+
+            vx[0][j] = -vx[1][j];
+            vx[i][0] = 0;
+            vx[-1][j] = -vx[-2][j];
+            vx[i][-1] = 0;
+
+            vy[0][j] = 0;
+            vy[i][0] = -vy[i][1];
+            vy[-1][j] = 0;
+            vy[i][-1] = -vy[i][-2];
+
+            P[0][j] = P[1][j];
+            P[i][0] = P[i][1];
+            P[-1][j] = P[-2][j];
+            P[i][-1] = P[i][-2];
+
         }
     }
 
@@ -105,13 +124,13 @@ vector<vector<double>> getSpeedOfSound(vector<vector<double>>& rho, double gamma
     return cs;
 }
 
-double minmod(double a, double b) {
+double minmod(double x, double y) {
     
 
-    double sign1 = sign(a);
-    double sign2 = sign(b);
-    double abs1 = absolute(a);
-    double abs2 = absolute(b);
+    double sign1 = sign(x);
+    double sign2 = sign(y);
+    double abs1 = std::abs(x);
+    double abs2 = std::abs(y);
 
     double mmod = (sign1 + sign2) * min(abs1, abs2) / 2;
 
@@ -294,7 +313,7 @@ vector<vector<double>> local_propagation_speed (vector<vector<double>>& rho, vec
     vector<vector<double>> maxC(rows, vector<double>(cols, 0.0));
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
-            maxC[i][j] = max(C1[i][j], C2[i][j]);
+            maxC[i][j] = std::max(C1[i][j], C2[i][j]);
         }
     }
 
@@ -322,6 +341,8 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
     vector<vector<double>> flux_Piyx_vx(rows, vector<double>(cols, 0.0));
     vector<vector<double>> flux_Piyy_vx(rows, vector<double>(cols, 0.0));
 
+    double vx_av;
+    double vy_av;
     double momx_av;
     double Pixx_av;
     double Piyx_av;
@@ -343,6 +364,8 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
 
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
+            vx_av = 0.5 * (vx_P[i][j] + vx_M[i][j]);
+            vy_av = 0.5 * (vy_P[i][j] + vy_M[i][j]);
             momx_av = 0.5 * (rho_P[i][j] * vx_P[i][j] + rho_M[i][j] * vx_M[i][j]);
             Pixx_av = 0.5 * (Pixx_P[i][j] + Pixx_M[i][j]);
             Piyx_av = 0.5 * (Piyx_P[i][j] + Piyx_M[i][j]);
@@ -357,10 +380,10 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
             flux_Mass[i][j] = momx_av;
             flux_Momx[i][j] = 0.5 * (rho_P[i][j] * vx_P[i][j] * vx_P[i][j] + rho_M[i][j] * vx_M[i][j] * vx_M[i][j]) + ((P_av) + (Pixx_av)) / gamma;
             flux_Momy[i][j] = 0.5 * (rho_P[i][j] * (vx_P[i][j] * vy_P[i][j]) + rho_M[i][j] * (vx_M[i][j] * vy_M[i][j])) + (Piyx_av) / gamma;
-            flux_Pixx_vx[i][j] = Pixx_vx_av + B * (vx_P[i][j] + vx_M[i][j]) + (A - 2.0 / 3.0 * B) * (vx_P[i][j] + vx_M[i][j]) * 0.5;
-            flux_Pixy_vx[i][j] = Pixy_vx_av + B * (vy_P[i][j] + vy_M[i][j]) * 0.5;
-            flux_Piyx_vx[i][j] = Piyx_vx_av + B * (vy_P[i][j] + vy_M[i][j]) * 0.5;
-            flux_Piyy_vx[i][j] = Piyy_vx_av + (A - 2.0 / 3.0 * B) * (vx_P[i][j] + vx_M[i][j]) * 0.5;
+            flux_Pixx_vx[i][j] = Pixx_vx_av + 2 * B * (vx_av) + (A - 2.0 / 3.0 * B) * vx_av;
+            flux_Pixy_vx[i][j] = Pixy_vx_av + B * vy_av;
+            flux_Piyx_vx[i][j] = Piyx_vx_av + B * vy_av;
+            flux_Piyy_vx[i][j] = Piyy_vx_av + (A - 2.0 / 3.0 * B) * vx_av;
 
             C = max(C_M[i][j], C_P[i][j]);
 
@@ -403,6 +426,8 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
     vector<vector<double>> flux_Piyx_vy(rows, vector<double>(cols, 0.0));
     vector<vector<double>> flux_Piyy_vy(rows, vector<double>(cols, 0.0));
 
+    double vx_av;
+    double vy_av;
     double momy_av;
     double Piyy_av;
     double Pixy_av;
@@ -426,7 +451,8 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
 
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
-
+            vx_av = 0.5 * (vx_P[i][j] + vx_M[i][j]);
+            vy_av = 0.5 * (vy_P[i][j] + vy_M[i][j]);
             momy_av = 0.5 * (rho_P[i][j] * vy_P[i][j] + rho_M[i][j] * vy_M[i][j]);
             Piyy_av = 0.5 * (Piyy_P[i][j] + Piyy_M[i][j]);
             Pixy_av = 0.5 * (Pixy_P[i][j] + Pixy_M[i][j]);
