@@ -119,8 +119,8 @@ double minmod(double a, double b) {
        
 }
 
-double minmod3(double x, double y, double z) {
-    return minmod(x,minmod(y,z));
+double minmod3(double a, double b, double c) {
+    return minmod(a,minmod(b,c));
 }
 
 /*
@@ -292,6 +292,7 @@ vector<vector<double>> local_propagation_speed (vector<vector<double>>& rho, vec
         }
     }
 
+
     vector<vector<double>> maxC(rows, vector<double>(cols, 0.0));
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
@@ -363,7 +364,7 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
             flux_Piyx_vx[i][j] = Piyx_vx_av + B * (vy_P[i][j] + vy_M[i][j]) * 0.5;
             flux_Piyy_vx[i][j] = Piyy_vx_av + (A - 2.0 / 3.0 * B) * (vx_P[i][j] + vx_M[i][j]) * 0.5;
 
-            C = max(C_M[i][j], C_P[i][j]);
+            C = std::max(C_M[i][j], C_P[i][j]);
 
             flux_Mass[i][j] -= C * 0.5 * (rho_P[i][j] - rho_M[i][j]);
             flux_Momx[i][j] -= C * 0.5 * (rho_P[i][j] * vx_P[i][j] - rho_M[i][j] * vx_M[i][j]);
@@ -444,7 +445,7 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
             flux_Piyx_vy[i][j] = Piyx_vy_av + B * (vx_P[i][j] + vx_M[i][j]) * 0.5;
             flux_Piyy_vy[i][j] = Piyy_vy_av + B * (vy_P[i][j] + vy_M[i][j]) + (A - 2.0 / 3.0 * B) * (vy_P[i][j] + vy_M[i][j]) * 0.5;
 
-            C = max(C_M[i][j], C_P[i][j]);
+            C = std::max(C_M[i][j], C_P[i][j]);
 
             flux_Mass[i][j] -= C * 0.5 * (rho_P[i][j] - rho_M[i][j]);
             flux_Momx[i][j] -= C * 0.5 * (rho_P[i][j] * vx_P[i][j] - rho_M[i][j] * vx_M[i][j]);

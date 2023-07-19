@@ -128,7 +128,7 @@ def plot_each_csv(file, parameters_file):
         plt.show()
         outputcount += 1
         print(outputcount)
-        s +=1
+        s += 10
 
 
 
