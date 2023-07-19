@@ -51,7 +51,9 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
     }        
 
 
-     // getSpeedOfSound(rho, gamma)
+
+    // calculate speed of sound
+    // getSpeedOfSound(rho, gamma)
     vector<vector<double>> cs = getSpeedOfSound(rho, gamma);
 
     // calculate gradients
@@ -72,10 +74,8 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
     vector<vector<double>> Pixy_dy = getGradient(Pixy, dy, 1, theta);
     vector<vector<double>> Piyx_dy = getGradient(Piyx, dy, 1, theta);
     vector<vector<double>> Piyy_dy = getGradient(Piyy, dy, 1, theta);
+    
 
-    
-    
-    
     // extrapolate fluxes
 
     vector<vector<double>> rhoM_XL, rhoP_XL, rhoM_XR, rhoP_XR;
@@ -169,6 +169,9 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
     timederivative_Piyx  = applyFluxes( flux_Piyx_vxR,    flux_Piyx_vxL, flux_Piyx_vyR,    flux_Piyx_vyL, dx, dy, Jyx);
     timederivative_Piyy  = applyFluxes( flux_Piyy_vxR,    flux_Piyy_vxL, flux_Piyy_vyR,    flux_Piyy_vyL, dx, dy, Jyy);
 
+
+    
+
    
     
     return {timederivative_rho,timederivative_Momx,timederivative_Momy,timederivative_Pixx,timederivative_Pixy,timederivative_Piyx,timederivative_Piyy};
@@ -190,7 +193,7 @@ map<double,state> integrator(state (*scheme)(double, state&, double, double, int
     args       are additional arguments for scheme
     */
 
-    //cout.precision(2);
+    cout.precision(2);
 
     double t = get<0>(time);
     double tEnd = get<1>(time);
@@ -245,6 +248,8 @@ map<double,state> integrator(state (*scheme)(double, state&, double, double, int
 
         if (method == "Heuns") {
             qprime = heuns(q, C, dt, t);
+        } if (method == "RK4") {
+            qprime = rK4(q, C, dt, t);
         } 
 
         

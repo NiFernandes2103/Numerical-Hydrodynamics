@@ -23,7 +23,7 @@ int main() {
     double tEnd = 1;  // time at the end
     double tOut = 0.01;  // time of each output
 
-    int N = 300;  // resolution
+    int N = 200;  // resolution
     double boxsize = 4.0;  // in some unit system l
     double gamma = 5/3;  // adiabatic index
     double zeta = 1.0;  // bulk viscosity coefficient
@@ -93,7 +93,7 @@ int main() {
 
     map<double, state> initial_state = {{t, IC}};
 
-map<double, state> solution = integrator(KTschemeNonRelativisticIS, make_tuple(t, tEnd), initial_state, tOut, make_tuple(dx, dy, N, gamma, zeta, tau_nu, eta, theta), "Heuns");
+map<double, state> solution = integrator(KTschemeNonRelativisticIS, make_tuple(t, tEnd), initial_state, tOut, make_tuple(dx, dy, N, gamma, zeta, tau_nu, eta, theta), "RK4");
 
     write_each(solution, "density_solution.csv", 0);
     write_each(solution, "momentx_solution.csv", 1);
