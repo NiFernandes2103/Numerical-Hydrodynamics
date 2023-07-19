@@ -4,7 +4,7 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/KT-ISshear/C++"
+                "${workspaceFolder}/KT_ISshear\\C++"
             ],
             "defines": [
                 "_DEBUG",

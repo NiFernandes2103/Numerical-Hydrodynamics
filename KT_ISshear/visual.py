@@ -128,7 +128,7 @@ def plot_each_csv(file, parameters_file):
         plt.show()
         outputcount += 1
         print(outputcount)
-        s +=10
+        s += 10
 
 
 
@@ -204,7 +204,7 @@ def animate_numpy_solution_gif(sol,N):
     line, = ax.plot([], [], lw=2)
     s = 0
     outputcount = 0
-
+    v = np.zeros((N,N))
     b = []
     print("reading solution...")
     while s < sol.shape[0]:
@@ -249,7 +249,7 @@ def animate_numpy_solution_slice_gif(sol,N,xlin):
     line, = ax.plot([], [], lw=2)
     s = 0
     outputcount = 0
-
+    v = np.zeros((N,N))
     b = []
     print("reading solution...")
     while s < sol.shape[0]:
@@ -283,7 +283,7 @@ def animate_numpy_solution_slice_gif(sol,N,xlin):
                             
 
 
-
+'''
 parameters = pd.read_csv('KT_ISshear\C++\parameters.csv')
 N = int(parameters['N'])
 boxsize = int(parameters['boxsize'])
@@ -413,3 +413,4 @@ anim_slice = animation.FuncAnimation(fig_slice, animate_slice, init_func=init_sl
                             frames=100, interval=20, blit=True)
 
 anim_slice.save('NonRelativisticIS_xvelocity_slice.gif', fps=30)
+'''
