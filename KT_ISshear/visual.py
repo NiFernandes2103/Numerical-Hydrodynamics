@@ -133,7 +133,7 @@ def plot_each_csv(file, parameters_file):
 
 
 #plot_ic_csv('KT_ISshear\C++\initial_state.csv','KT_ISshear\C++\parameters.csv')
-#plot_each_csv('KT_ISshear\C++\density_solution.csv','KT_ISshear\C++\parameters.csv')
+plot_each_csv('KT_ISshear\C++\density_solution.csv','KT_ISshear\C++\parameters.csv')
 #plot_each_csv('KT_ISshear\C++\momentx_solution.csv','KT_ISshear\C++\parameters.csv')
 
 def show_2dsolution_static(file,parameters_file,i,n):
@@ -161,7 +161,7 @@ def show_solution_static_slice(file,parameters_file,i,n):
     plt.imshow(a[int(N/2)])
     plt.show()
 
-def animate_solution_gif(file,parameters_file,gif_file):
+def animate_solution_gif(file,parameters_file,gif_file,n):
 
     sol = np.load(file)
 

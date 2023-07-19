@@ -378,6 +378,8 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
     return make_tuple(flux_Mass, flux_Momx, flux_Momy, flux_Pixx_vx, flux_Pixy_vx, flux_Piyx_vx, flux_Piyy_vx);
   }
 
+
+
 tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, vector<vector<double>>,
  vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> getYFlux(vector<vector<double>>& rho_P, vector<vector<double>>& rho_M,
              vector<vector<double>>& vx_P, vector<vector<double>>& vx_M,
@@ -528,6 +530,89 @@ state heuns (state& q, function<state(double,state)> f, double dt, double t) {
         qprime.set(n , yprime);
     }
     
+
+    return qprime;
+}
+
+
+state rK4 (state& q, function<state(double,state)> f, double dt, double t) {
+    
+    int rows = (q.get(0)).size();
+    int cols = (q.get(0))[0].size();
+
+    double k1,k2,k3,k4;
+    vector<vector<double>> c1(rows, vector<double>(cols, 0.0));
+    vector<vector<double>> c2(rows, vector<double>(cols, 0.0));
+    vector<vector<double>> c3(rows, vector<double>(cols, 0.0));
+    vector<vector<double>> c4(rows, vector<double>(cols, 0.0));
+    vector<vector<double>> y(rows, vector<double>(cols, 0.0));
+    vector<vector<double>> yprime(rows, vector<double>(cols, 0.0));
+
+
+    state qprime;
+    state C1,C2,C3,C4;
+
+    C1 = f(t,q);
+
+    for (int n = 0; n < 7; ++n){
+        c1 = C1.get(n);
+        y = q.get(n);
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                k1 = dt * c1[i][j];
+                yprime[i][j] = y[i][j] + 0.5 * k1;
+            }
+        }
+        qprime.set(n , yprime);
+    }
+    
+    C2 = f(t+dt/2,qprime);
+
+    for (int n = 0; n < 7; ++n){
+        c2 = C2.get(n);
+        y = q.get(n);
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                k2 = dt * c2[i][j];
+                yprime[i][j] = y[i][j] + 0.5*k2;
+            }
+        }
+        qprime.set(n , yprime);
+    }
+
+    C3 = f(t+dt/2,qprime);
+
+    for (int n = 0; n < 7; ++n){
+        c3 = C3.get(n);
+        y = q.get(n);
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                k3 = dt * c3[i][j];
+                yprime[i][j] = y[i][j] + k3;
+            }
+        }
+        qprime.set(n , yprime);
+    }
+
+    C4 = f(t+dt,qprime);
+
+    for (int n = 0; n < 7; ++n){
+        c1 = C1.get(n);
+        c2 = C2.get(n);
+        c3 = C3.get(n);
+        c4 = C4.get(n);
+        y = q.get(n);
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                k1 = dt * c1[i][j];
+                k2 = dt * c2[i][j];
+                k3 = dt * c3[i][j];
+                k4 = dt * c4[i][j];
+                yprime[i][j] = y[i][j] + (1/6)*(k1 + 2*k2 + 2*k3 + k4);
+            }
+        }
+        qprime.set(n , yprime);
+    }
 
     return qprime;
 }
