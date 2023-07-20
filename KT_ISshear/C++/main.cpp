@@ -20,7 +20,7 @@ using namespace std;
 int main() {
 
     double t = 0.0;  // s 
-    double tEnd = 2;  // time at the end
+    double tEnd = 0.5;  // time at the end
     double tOut = 0.01;  // time of each output
 
     int N = 200;  // resolution
@@ -38,7 +38,7 @@ int main() {
 
     parameters_csv(t,tEnd,tOut,N,boxsize,a,b,gamma,zeta,eta,tau_nu,theta,"parameters.csv");
 
-    vector<double> xlin(N);
+    double xlin[N];
     for (int i = 0; i < N; i++) {
         //xlin[i] = 0.5 * dx + (boxsize - 0.5 * dx) * i / (N - 1);  // simulation limits
 
@@ -46,43 +46,41 @@ int main() {
     }
 
 
-    vector<vector<double>> Y(N, vector<double>(N, 0.0));
-    vector<vector<double>> X(N, vector<double>(N, 0.0));
+    smatrix Y(N);
+    smatrix X(N);
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
-            Y[i][j] = xlin[j];
-            X[i][j] = xlin[i];
+            Y.set(xlin[j],i,j);
+            X.set(xlin[i],i,j);
+
+            
         }
     }
-    int s = X.size();
-    vector<vector<double>> R(s, vector<double>(s, 0.0));
-    for (int i = 0; i < s; i++) {
-        for (int j = 0; j < s; j++) {
-            R[i][j] = sqrt(X[i][j] * X[i][j] + Y[i][j] * Y[i][j]);
+
+    smatrix R(N);
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            R.set(sqrt(X.get(i,j) * X.get(i,j) + Y.get(i,j) * Y.get(i,j)), i,j);
         }
     }
 
     //double w0 = 0.1;
     //double sigma = 0.05 / sqrt(2.0);
-    vector<vector<double>> rho(s, vector<double>(s, 0.0));
-    vector<vector<double>> vx(s, vector<double>(s, 0.0));
-    vector<vector<double>> vy(s, vector<double>(s, 0.0));
-    vector<vector<double>> Momx(s, vector<double>(s, 0.0));
-    vector<vector<double>> Momy(s, vector<double>(s, 0.0));
-    vector<vector<double>> Pixx(s, vector<double>(s, 0.0));
-    vector<vector<double>> Pixy(s, vector<double>(s, 0.0));
-    vector<vector<double>> Piyx(s, vector<double>(s, 0.0));
-    vector<vector<double>> Piyy(s, vector<double>(s, 0.0));
+    smatrix rho(N);
+    smatrix vx(N);
+    smatrix vy(N);
+    smatrix Momx(N);
+    smatrix Momy(N);
+    smatrix Pixx(N);
+    smatrix Pixy(N);
+    smatrix Piyx(N);
+    smatrix Piyy(N);
 
-    for (int i = 0; i < s; i++) {
-        for (int j = 0; j < s; j++) {
-            //rho[i][j] = 1.0 + (abs(Y[i][j] - 0.5) < 0.25);
-            //vx[i][j] = -0.5 + (abs(Y[i][j] - 0.5) < 0.25);
-            //vy[i][j] = w0 * sin(4 * M_PI * X[i][j]) * (exp(-(Y[i][j] - 0.25) * (Y[i][j] - 0.25) / (2 * sigma * sigma)) + exp(-(Y[i][j] - 0.75) * (Y[i][j] - 0.75) / (2 * sigma * sigma)));
-            //Momx[i][j] = vx[i][j]*rho[i][j];
-            //Momy[i][j] = vy[i][j]*rho[i][j];
 
-            rho[i][j] = (pow((1 - (R[i][j])*(R[i][j])),4))*(R[i][j] < 1) + 1; // Mauricio's function advice
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+           
+            rho.set((pow((1 - (R.get(i,j))*(R.get(i,j))),4))*(R.get(i,j) < 1) + 1, i,j); // Mauricio's function advice
 
         }
     }

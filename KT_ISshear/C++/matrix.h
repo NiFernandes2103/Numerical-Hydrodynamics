@@ -11,25 +11,22 @@ using namespace std;
 struct smatrix{
 
     int N;
-    int M;
-    double* arr = new double[N*M];
+    double* m;
 
-    smatrix() : N(0),M(0),arr({0}) {}
+    smatrix() : N(0), m(nullptr) {}
 
-    smatrix(int n , int m) : N(n),M(m),arr({0}) {}
-
-    smatrix(int n , int m, double* arr) : N(n),M(m),arr(arr) {}
-
-    tuple<int, int> shape() {
-        return make_tuple(N,M);
-    }
+    smatrix(int n) : N(n), m(new double[n * n]{0}) {}
 
     double get(int i, int j) {
-        return arr[i + N*j];
+        return m[i + j*N];
     }
 
     void set(double var, int i, int j) {
-        arr[i + N*j] = var; 
+        m[i + j*N] = var; 
+    }
+
+    ~smatrix() {
+        delete[] m;
     }
 
 

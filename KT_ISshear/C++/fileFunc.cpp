@@ -1,4 +1,5 @@
 #include "KTmethods2d.h"
+#include "matrix.h"
 #include "fileFunc.h"
 #include <iostream>
 #include <map>
@@ -55,26 +56,27 @@ void create(state initial,string filename) {
     fout.open(filename, ios::out | ios::trunc);
 
 
-    vector<vector<double>> rhoIC  = initial.get(0);        
-    vector<vector<double>> MomxIC = initial.get(1);
-    vector<vector<double>> MomyIC = initial.get(2);
-    vector<vector<double>> PixxIC = initial.get(3);
-    vector<vector<double>> PixyIC = initial.get(4);
-    vector<vector<double>> PiyxIC = initial.get(5);
-    vector<vector<double>> PiyyIC = initial.get(6);
+    smatrix rhoIC  = initial.get(0);        
+    smatrix MomxIC = initial.get(1);
+    smatrix MomyIC = initial.get(2);
+    smatrix PixxIC = initial.get(3);
+    smatrix PixyIC = initial.get(4);
+    smatrix PiyxIC = initial.get(5);
+    smatrix PiyyIC = initial.get(6);
 
-    int A = rhoIC.size();
+    int A = rhoIC.N;
+
 
     // Read the input
     for (int i = 0; i < A; i++) {
         for (int j = 0; j < A; j++) {
-            fout << rhoIC[i][j]  <<',';
-            fout << MomxIC[i][j] <<',';
-            fout << MomyIC[i][j] <<',';
-            fout << PixxIC[i][j] <<',';
-            fout << PixyIC[i][j] <<',';
-            fout << PiyxIC[i][j] <<',';
-            fout << PiyyIC[i][j] <<',';
+            fout << rhoIC.get(i,j)  <<',';
+            fout << MomxIC.get(i,j) <<',';
+            fout << MomyIC.get(i,j) <<',';
+            fout << PixxIC.get(i,j) <<',';
+            fout << PixyIC.get(i,j) <<',';
+            fout << PiyxIC.get(i,j) <<',';
+            fout << PiyyIC.get(i,j) <<',';
         }
     }
 
@@ -96,26 +98,26 @@ void write(map<double, state> solution, string filename)
     // Iterate over the list using the iterator
     // Read the input
     for (map<double,state>::iterator it = solution.begin(); it != solution.end(); ++it) {
-        vector<vector<double>> rho  = (*it).second.get(0);        
-        vector<vector<double>> Momx = (*it).second.get(1);
-        vector<vector<double>> Momy = (*it).second.get(2);
-        vector<vector<double>> Pixx = (*it).second.get(3);
-        vector<vector<double>> Pixy = (*it).second.get(4);
-        vector<vector<double>> Piyx = (*it).second.get(5);
-        vector<vector<double>> Piyy = (*it).second.get(6);
+        smatrix rho  = (*it).second.get(0);        
+        smatrix Momx = (*it).second.get(1);
+        smatrix Momy = (*it).second.get(2);
+        smatrix Pixx = (*it).second.get(3);
+        smatrix Pixy = (*it).second.get(4);
+        smatrix Piyx = (*it).second.get(5);
+        smatrix Piyy = (*it).second.get(6);
 
-        int N = rho.size();
+        int N = rho.N;
 
         // write the csv file
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
-                fout << rho[i][j]  <<',';
-                fout << Momx[i][j] <<',';
-                fout << Momy[i][j] <<',';
-                fout << Pixx[i][j] <<',';
-                fout << Pixy[i][j] <<',';
-                fout << Piyx[i][j] <<',';
-                fout << Piyy[i][j] <<',';
+                fout << rho.get(i,j)  <<',';
+                fout << Momx.get(i,j) <<',';
+                fout << Momy.get(i,j) <<',';
+                fout << Pixx.get(i,j) <<',';
+                fout << Pixy.get(i,j) <<',';
+                fout << Piyx.get(i,j) <<',';
+                fout << Piyy.get(i,j) <<',';
             }
         }
         
@@ -141,14 +143,14 @@ void write_each(map<double, state> solution, string filename, int n)
     // Iterate over the list using the iterator
     // Read the input
     for (map<double,state>::iterator it = solution.begin(); it != solution.end(); ++it) {
-        vector<vector<double>> v  = (*it).second.get(n);        
+        smatrix v  = (*it).second.get(n);        
 
-        int N = v.size();
+        int N = v.N;
 
         // write the csv file
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
-                fout << v[i][j]  <<',';
+                fout << v.get(i,j)  <<',';
             }
         }
         
@@ -158,8 +160,6 @@ void write_each(map<double, state> solution, string filename, int n)
 
     fout.close();
 
-
-
-    
+   
     
 }

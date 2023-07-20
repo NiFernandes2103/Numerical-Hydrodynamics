@@ -10,31 +10,32 @@
 #include <vector>
 #include <map>
 #include <functional>
+#include "matrix.h"
 #pragma once
 using namespace std;
 
 class state {       
   private:             
-    vector<vector<double>> rho;        
-    vector<vector<double>> Momx;
-    vector<vector<double>> Momy;
-    vector<vector<double>> Pixx;
-    vector<vector<double>> Pixy;
-    vector<vector<double>> Piyx;
-    vector<vector<double>> Piyy;
+    smatrix rho;        
+    smatrix Momx;
+    smatrix Momy;
+    smatrix Pixx;
+    smatrix Pixy;
+    smatrix Piyx;
+    smatrix Piyy;
 
 public:
     state() : rho(), Momx(), Momy(), Pixx(), Pixy(), Piyx(), Piyy() {}
 
-    state(vector<vector<double>> v1,
-     vector<vector<double>> v2,
-     vector<vector<double>> v3,
-     vector<vector<double>> v4,
-     vector<vector<double>> v5,
-     vector<vector<double>> v6,
-     vector<vector<double>> v7) : rho(v1), Momx(v2), Momy(v3), Pixx(v4), Pixy(v5), Piyx(v6), Piyy(v7) {}
+    state(smatrix v1,
+     smatrix v2,
+     smatrix v3,
+     smatrix v4,
+     smatrix v5,
+     smatrix v6,
+     smatrix v7) : rho(v1), Momx(v2), Momy(v3), Pixx(v4), Pixy(v5), Piyx(v6), Piyy(v7) {}
 
-    vector<vector<double>> get(int n) {
+    smatrix get(int n) {
         if (n == 0){
             return rho;
         }
@@ -57,12 +58,12 @@ public:
             return Piyy;
         }
         else { 
-            return vector<vector<double>>();
+            return smatrix();
         } 
         
     }
 
-    void set(int n , vector<vector<double>> v) {
+    void set(int n , smatrix v) {
 
         if (n == 0){
             rho = v;
@@ -92,54 +93,54 @@ public:
 
 
 
-double max_value(vector<vector<double>> value);
+double max_value(smatrix value);
 
 double sign(double value);
 
-tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>> getConserved(vector<vector<double>>& rho,
- vector<vector<double>>& vx, vector<vector<double>>& vy, double vol);
+tuple<smatrix,smatrix,smatrix> getConserved(smatrix& rho,
+ smatrix& vx, smatrix& vy, double vol);
 
-tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>,vector<vector<double>>> getPrimitive(vector<vector<double>> &Mass,
- vector<vector<double>>& Momx, vector<vector<double>>& Momy, double gamma, double vol);
+tuple<smatrix,smatrix,smatrix,smatrix> getPrimitive(smatrix &Mass,
+ smatrix& Momx, smatrix& Momy, double gamma, double vol);
 
-vector<vector<double>> getSpeedOfSound(vector<vector<double>>& rho, double gamma);
+smatrix getSpeedOfSound(smatrix& rho, double gamma);
 
 double minmod(double a, double b);
 
 double minmod3(double a, double b, double c);
 
-vector<vector<double>> getGradient (vector<vector<double>>& f, double dx, int axis, double theta);
+smatrix getGradient (smatrix& f, double dx, int axis, double theta);
 
-tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> extrapolateInSpaceToFace (vector<vector<double>>& q, vector<vector<double>>& q_dx, double dx, int axis);
+tuple<smatrix, smatrix, smatrix, smatrix> extrapolateInSpaceToFace (smatrix& q, smatrix& q_dx, double dx, int axis);
 
-vector<vector<double>> local_propagation_speed (vector<vector<double>>& rho, vector<vector<double>>& vx, vector<vector<double>>& vy, double eta, double zeta, double tau_nu, vector<vector<double>>& cs);
+smatrix local_propagation_speed (smatrix& rho, smatrix& vx, smatrix& vy, double eta, double zeta, double tau_nu, smatrix& cs);
 
 
-tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, vector<vector<double>>,
- vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> getXFlux(vector<vector<double>>& rho_P,
-    vector<vector<double>>& rho_M, vector<vector<double>>& vx_P, vector<vector<double>>& vx_M, 
-    vector<vector<double>>& vy_P, vector<vector<double>>& vy_M, vector<vector<double>>& Pixx_P, 
-   vector<vector<double>>& Pixx_M, vector<vector<double>>& Pixy_P, vector<vector<double>>& Pixy_M, 
-   vector<vector<double>>& Piyx_P, vector<vector<double>>& Piyx_M, vector<vector<double>>& Piyy_P, 
-   vector<vector<double>>& Piyy_M, vector<vector<double>>& P_P, vector<vector<double>>& P_M, double gamma, 
+tuple<smatrix, smatrix, smatrix, smatrix,
+ smatrix, smatrix, smatrix> getXFlux(smatrix& rho_P,
+    smatrix& rho_M, smatrix& vx_P, smatrix& vx_M, 
+    smatrix& vy_P, smatrix& vy_M, smatrix& Pixx_P, 
+   smatrix& Pixx_M, smatrix& Pixy_P, smatrix& Pixy_M, 
+   smatrix& Piyx_P, smatrix& Piyx_M, smatrix& Piyy_P, 
+   smatrix& Piyy_M, smatrix& P_P, smatrix& P_M, double gamma, 
   double eta, double zeta, double tau_nu);
 
-tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, vector<vector<double>>,
- vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> getYFlux(vector<vector<double>>& rho_P, vector<vector<double>>& rho_M,
-             vector<vector<double>>& vx_P, vector<vector<double>>& vx_M,
-             vector<vector<double>>& vy_P, vector<vector<double>>& vy_M,
-             vector<vector<double>>& Pixx_P, vector<vector<double>>& Pixx_M,
-             vector<vector<double>>& Pixy_P, vector<vector<double>>& Pixy_M,
-             vector<vector<double>>& Piyx_P, vector<vector<double>>& Piyx_M,
-             vector<vector<double>>& Piyy_P, vector<vector<double>>& Piyy_M,
-             vector<vector<double>>& P_P, vector<vector<double>>& P_M,
+tuple<smatrix, smatrix, smatrix, smatrix,
+ smatrix, smatrix, smatrix> getYFlux(smatrix& rho_P, smatrix& rho_M,
+             smatrix& vx_P, smatrix& vx_M,
+             smatrix& vy_P, smatrix& vy_M,
+             smatrix& Pixx_P, smatrix& Pixx_M,
+             smatrix& Pixy_P, smatrix& Pixy_M,
+             smatrix& Piyx_P, smatrix& Piyx_M,
+             smatrix& Piyy_P, smatrix& Piyy_M,
+             smatrix& P_P, smatrix& P_M,
              double gamma, double eta,
              double zeta, double tau_nu);
 
 // Apply fluxes to conserved variables
-vector<vector<double>> applyFluxes(vector<vector<double>>& flux_H1_X, vector<vector<double>>& flux_H2_X,
-  vector<vector<double>>& flux_H1_Y, vector<vector<double>>& flux_H2_Y,
-   double dx, double dy, vector<vector<double>>& J);
+smatrix applyFluxes(smatrix& flux_H1_X, smatrix& flux_H2_X,
+  smatrix& flux_H1_Y, smatrix& flux_H2_Y,
+   double dx, double dy, smatrix& J);
 
 // Heun's method
 state heuns (state& q, function<state(double,state)> f, double dt, double t);
