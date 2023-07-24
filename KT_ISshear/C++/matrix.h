@@ -10,19 +10,19 @@ using namespace std;
 
 struct smatrix{
 
-    int N;
     double* m;
+    int N;
 
-    smatrix() : N(0), m(nullptr) {}
+    smatrix(smatrix &old) : m(old.m), N(old.N) {}
 
-    smatrix(int n) : N(n), m(new double[n * n]{0}) {}
+    smatrix(int n) : m(new double[n*n]{0}), N(n) {}
 
     double get(int i, int j) {
-        return m[i + j*N];
+        return m[i*N + j];
     }
 
     void set(double var, int i, int j) {
-        m[i + j*N] = var; 
+        m[i*N + j] = var; 
     }
 
     ~smatrix() {

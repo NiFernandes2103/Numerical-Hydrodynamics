@@ -479,8 +479,8 @@ state heuns (state& q, function<state(double,state)> f, double dt, double t) {
     smatrix yprime(N);
 
 
-    state qprime;
-    state C1,C2;
+    state qprime(N);
+    state C1(N),C2(N);
 
     C1 = f(t,q);
 

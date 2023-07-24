@@ -25,8 +25,10 @@ class state {
     smatrix Piyy;
 
 public:
-    state() : rho(), Momx(), Momy(), Pixx(), Pixy(), Piyx(), Piyy() {}
-
+    state(int N) : rho(N), Momx(N), Momy(N), Pixx(N), Pixy(N), Piyx(N), Piyy(N) {} 
+    
+    
+    
     state(smatrix v1,
      smatrix v2,
      smatrix v3,
@@ -58,7 +60,7 @@ public:
             return Piyy;
         }
         else { 
-            return smatrix();
+            return smatrix(0);
         } 
         
     }

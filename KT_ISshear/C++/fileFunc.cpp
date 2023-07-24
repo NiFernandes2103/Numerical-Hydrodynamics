@@ -2,7 +2,7 @@
 #include "matrix.h"
 #include "fileFunc.h"
 #include <iostream>
-#include <map>
+#include <list>
 #include <fstream>
 using namespace std;
 
@@ -85,7 +85,7 @@ void create(state initial,string filename) {
 }
 
 
-void write(map<double, state> solution, string filename)
+void write( list<state> solution, string filename)
 {
     // file pointer
     fstream fout;
@@ -97,14 +97,14 @@ void write(map<double, state> solution, string filename)
 
     // Iterate over the list using the iterator
     // Read the input
-    for (map<double,state>::iterator it = solution.begin(); it != solution.end(); ++it) {
-        smatrix rho  = (*it).second.get(0);        
-        smatrix Momx = (*it).second.get(1);
-        smatrix Momy = (*it).second.get(2);
-        smatrix Pixx = (*it).second.get(3);
-        smatrix Pixy = (*it).second.get(4);
-        smatrix Piyx = (*it).second.get(5);
-        smatrix Piyy = (*it).second.get(6);
+    for (list<state>::iterator it = solution.begin(); it != solution.end(); ++it) {
+        smatrix rho  = (*it).get(0);        
+        smatrix Momx = (*it).get(1);
+        smatrix Momy = (*it).get(2);
+        smatrix Pixx = (*it).get(3);
+        smatrix Pixy = (*it).get(4);
+        smatrix Piyx = (*it).get(5);
+        smatrix Piyy = (*it).get(6);
 
         int N = rho.N;
 
@@ -130,7 +130,7 @@ void write(map<double, state> solution, string filename)
 
 }
 
-void write_each(map<double, state> solution, string filename, int n)
+void write_each(list<state> solution, string filename, int n)
 {
     // file pointer
     fstream fout;
@@ -142,8 +142,8 @@ void write_each(map<double, state> solution, string filename, int n)
 
     // Iterate over the list using the iterator
     // Read the input
-    for (map<double,state>::iterator it = solution.begin(); it != solution.end(); ++it) {
-        smatrix v  = (*it).second.get(n);        
+    for (list<state>::iterator it = solution.begin(); it != solution.end(); ++it) {
+        smatrix v  = (*it).get(n);        
 
         int N = v.N;
 
