@@ -5,7 +5,7 @@
 
 #include "KTmethods2d.h"
 #include <iostream>
-#include <map>
+#include <list>
 #include <fstream>
 using namespace std;
 
@@ -13,8 +13,8 @@ void parameters_csv(double t, double tEnd, double tOut,int N, double boxsize, do
 
 void create(state initial, string filename);
 
-void write(map<double, state> solution, string filename);
+void write(list<state> solution, string filename);
 
-void write_each(map<double, state> solution, string filename, int n);
+void write_each(list<state> solution, string filename, int n);
 
 #endif

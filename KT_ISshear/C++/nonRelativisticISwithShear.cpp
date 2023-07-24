@@ -220,7 +220,7 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
 }
 
 
-map<double,state> integrator(state (*scheme)(double, state&, double, double, int, double, double, double, double, double), tuple<double,double> time, map<double, state> Q, double dtmax,  tuple<double, double, int, double, double, double, double, double> args, string method)
+list<state> integrator(state (*scheme)(double, state&, double, double, int, double, double, double, double, double), tuple<double,double> time, list<state> Q, double dtmax,  tuple<double, double, int, double, double, double, double, double> args, string method)
 {
     /*
     This is an integrator that evolves a
@@ -240,7 +240,7 @@ map<double,state> integrator(state (*scheme)(double, state&, double, double, int
     double tEnd = get<1>(time);
     int outCount = 1;
 
-    state q = Q[t];
+    state q = Q.back();
     state qprime;
 
     int N;
@@ -300,7 +300,7 @@ map<double,state> integrator(state (*scheme)(double, state&, double, double, int
         q = qprime;
 
         if (t > outCount*dtmax) {
-            Q[t] = qprime;
+            Q.push_back(qprime);
             cout << t << '/' << tEnd << endl;
             ++outCount;
         }

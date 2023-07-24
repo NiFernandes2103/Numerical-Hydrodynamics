@@ -91,9 +91,9 @@ int main() {
 
     create(IC, "initial_state.csv");
 
-    map<double, state> initial_state = {{t, IC}};
+    list<state> initial_state = {IC};
 
-map<double, state> solution = integrator(KTschemeNonRelativisticIS, make_tuple(t, tEnd), initial_state, tOut, make_tuple(dx, dy, N, gamma, zeta, tau_nu, eta, theta), "Heuns");
+list<state> solution = integrator(KTschemeNonRelativisticIS, make_tuple(t, tEnd), initial_state, tOut, make_tuple(dx, dy, N, gamma, zeta, tau_nu, eta, theta), "Heuns");
 
     write_each(solution, "density_solution.csv", 0);
     write_each(solution, "momentx_solution.csv", 1);

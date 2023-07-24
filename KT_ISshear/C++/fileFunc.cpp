@@ -83,7 +83,7 @@ void create(state initial,string filename) {
 }
 
 
-void write(map<double, state> solution, string filename)
+void write(list<state> solution, string filename)
 {
     // file pointer
     fstream fout;
@@ -95,14 +95,14 @@ void write(map<double, state> solution, string filename)
 
     // Iterate over the list using the iterator
     // Read the input
-    for (map<double,state>::iterator it = solution.begin(); it != solution.end(); ++it) {
-        vector<vector<double>> rho  = (*it).second.get(0);        
-        vector<vector<double>> Momx = (*it).second.get(1);
-        vector<vector<double>> Momy = (*it).second.get(2);
-        vector<vector<double>> Pixx = (*it).second.get(3);
-        vector<vector<double>> Pixy = (*it).second.get(4);
-        vector<vector<double>> Piyx = (*it).second.get(5);
-        vector<vector<double>> Piyy = (*it).second.get(6);
+    for (list<state>::iterator it = solution.begin(); it != solution.end(); ++it) {
+        vector<vector<double>> rho  = (*it).get(0);        
+        vector<vector<double>> Momx = (*it).get(1);
+        vector<vector<double>> Momy = (*it).get(2);
+        vector<vector<double>> Pixx = (*it).get(3);
+        vector<vector<double>> Pixy = (*it).get(4);
+        vector<vector<double>> Piyx = (*it).get(5);
+        vector<vector<double>> Piyy = (*it).get(6);
 
         int N = rho.size();
 
@@ -128,7 +128,7 @@ void write(map<double, state> solution, string filename)
 
 }
 
-void write_each(map<double, state> solution, string filename, int n)
+void write_each(list<state> solution, string filename, int n)
 {
     // file pointer
     fstream fout;
@@ -140,8 +140,8 @@ void write_each(map<double, state> solution, string filename, int n)
 
     // Iterate over the list using the iterator
     // Read the input
-    for (map<double,state>::iterator it = solution.begin(); it != solution.end(); ++it) {
-        vector<vector<double>> v  = (*it).second.get(n);        
+    for (list<state>::iterator it = solution.begin(); it != solution.end(); ++it) {
+        vector<vector<double>> v  = (*it).get(n);        
 
         int N = v.size();
 
