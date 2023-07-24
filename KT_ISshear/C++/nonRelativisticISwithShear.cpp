@@ -254,7 +254,7 @@ list<state> integrator(state (*scheme)(double, state&, double, double, int, doub
     vector<vector<double>> Momy(N, vector<double>(N,0.0));
     vector<vector<double>> cs(N, vector<double>(N,0.0));
 
-    auto C = [&](double t, state y) {return scheme(t, q, dx, dy, N, gamma, zeta, tau_nu, eta, theta);};
+    auto C = [&](double t, state y) {return scheme(t, y, dx, dy, N, gamma, zeta, tau_nu, eta, theta);};
 
     while (t < tEnd) {
 
