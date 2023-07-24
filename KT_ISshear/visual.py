@@ -96,8 +96,10 @@ def plot_each_csv(file, parameters_file):
     parameters = pd.read_csv(parameters_file)
     N = int(parameters['N'])
     boxsize = int(parameters['boxsize'])
+    a = float(parameters['a'])
+    b = float(parameters['b'])
     dx = boxsize/N
-    xlin = np.linspace(0.5*dx, boxsize-0.5*dx,N)
+    xlin = np.linspace(a, b,N)
 
     Y, X = np.meshgrid( xlin, xlin ) # define the mesh grid
     S = X.shape
@@ -124,7 +126,7 @@ def plot_each_csv(file, parameters_file):
         plt.imshow(v.T)
         plt.clim(0.8,2.2)
         plt.show()
-        plt.plot(v[int(N/2)].T)
+        plt.plot(xlin, v[int(N/2)].T)
         plt.show()
         outputcount += 1
         print(outputcount)
@@ -134,7 +136,7 @@ def plot_each_csv(file, parameters_file):
 
 #plot_ic_csv('KT_ISshear\C++\initial_state.csv','KT_ISshear\C++\parameters.csv')
 plot_each_csv('KT_ISshear\C++\density_solution.csv','KT_ISshear\C++\parameters.csv')
-#plot_each_csv('KT_ISshear\C++\momentx_solution.csv','KT_ISshear\C++\parameters.csv')
+#plot_each_csv('KT_ISshear\C++\Pixy_solution.csv','KT_ISshear\C++\parameters.csv')
 
 def show_2dsolution_static(file,parameters_file,i,n):
 
@@ -340,26 +342,32 @@ ani = animation.FuncAnimation(fig, animate, init_func=init,
 
 
 ani.save("NonRelativisticISC++.gif",fps=30)
+'''
 
-sol = np.load("NonRelativisticIS.npy")
+'''
+sol = np.load("NonRelativisticISHeuns.npy")
+
+t,tEnd,tOut,N,boxsize,gamma,zeta,eta,tau_nu,theta,a,b = np.loadtxt("NonRelativisticISHeuns_parameters",delimiter=',',unpack=True)
+
+xlin = np.linspace(float(a),float(b),int(N))
 print(sol.shape)
 
 i=10
-rho = sol[i][:300].T
-vx = sol[i][300:2*300].T
-vy = sol[i][2*300:3*300].T
+rho = sol[i][:200].T
+vx = sol[i][200:2*200].T
+vy = sol[i][2*200:3*200].T
 
 plt.imshow(rho)
 plt.show()
-plt.plot(rho[int(300/2)])
+plt.plot(rho[int(200/2)])
 plt.show()
 plt.imshow(vx)
 plt.show()
-plt.plot(vx[int(300/2)])
+plt.plot(vx[int(200/2)])
 plt.show()
 plt.imshow(vy)
 plt.show()
-plt.plot(vy[int(300/2)])
+plt.plot(vy[int(200/2)])
 plt.show()
 
 
@@ -368,16 +376,16 @@ plt.show()
 fig = plt.figure()
 ax = plt.axes()
 #line, = ax.plot([], [], lw=2)
-im=plt.imshow(sol[0][:300].T,interpolation='none')
+im=plt.imshow(sol[0][:200].T,interpolation='none')
 
 # initialization function: plot the background of each frame
 def init():
-    im.set_data(sol[0][:300].T)
+    im.set_data(sol[0][:00].T)
     return [im]
 
 # animation function.  This is called sequentially
 def animate(i):
-    im.set_array(sol[i][:300].T)
+    im.set_array(sol[i][:200].T)
     return [im]
 
 
@@ -385,7 +393,7 @@ anim = animation.FuncAnimation(fig, animate, init_func=init,
                                frames=100, interval=20, blit=True)
 
 
-anim.save('NonRelativisticIS.gif', fps=30)
+anim.save('NonRelativisticISHeuns.gif', fps=30)
 
 
 # First set up the figure, the axis, and the plot element we want to animate
@@ -412,5 +420,5 @@ def animate_slice(i):
 anim_slice = animation.FuncAnimation(fig_slice, animate_slice, init_func=init_slice,
                             frames=100, interval=20, blit=True)
 
-anim_slice.save('NonRelativisticIS_xvelocity_slice.gif', fps=30)
+anim_slice.save('NonRelativisticISHeuns_density_slice.gif', fps=30)
 '''

@@ -47,41 +47,47 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
              /* Pressure from equation of state */
             P[i][j] = pow(rho[i][j], gamma);
 
-             // set boundary conditions
+            
+            // set boundary conditions
             rho[0][j] = rho[1][j];
             rho[i][0] = rho[i][1];
-            rho[-1][j] = rho[-2][j];
-            rho[i][-1] = rho[i][-2];
+            rho[N-1][j] = rho[N-2][j];
+            rho[i][N-1] = rho[i][N-2];
 
             vx[0][j] = -vx[1][j];
             vx[i][0] = 0;
-            vx[-1][j] = -vx[-2][j];
-            vx[i][-1] = 0;
+            vx[N-1][j] = -vx[N-2][j];
+            vx[i][N-1] = 0;
 
             vy[0][j] = 0;
             vy[i][0] = -vy[i][1];
-            vy[-1][j] = 0;
-            vy[i][-1] = -vy[i][-2];
+            vy[N-1][j] = 0;
+            vy[i][N-1] = -vy[i][N-2];
 
-            Pixx[0][j] = 0;
-            Pixx[i][0] = 0;
-            Pixx[-1][j] = 0;
-            Pixx[i][-1] = 0;
+            P[0][j] = P[1][j];
+            P[i][0] = P[i][1];
+            P[N-1][j] = P[N-2][j];
+            P[i][N-1] = P[i][N-2];
 
-            Pixy[0][j] = 0;
-            Pixy[i][0] = 0;
-            Pixy[-1][j] = 0;
-            Pixy[i][-1] = 0;
+            Pixx[0][j] = Pixx[1][j];
+            Pixx[i][0] = Pixx[i][1];
+            Pixx[N-1][j] = Pixx[N-2][j];
+            Pixx[i][N-1] = Pixx[i][N-2];
+
+            Pixy[0][j] = Pixy[1][j];
+            Pixy[i][0] = Pixy[i][1];
+            Pixy[N-1][j] = Pixy[N-2][j];
+            Pixy[i][N-1] = Pixy[i][N-2];
             
-            Piyx[0][j] = 0;
-            Piyx[i][0] = 0;
-            Piyx[-1][j] = 0;
-            Piyx[i][-1] = 0;
+            Piyx[0][j] = Piyx[1][j];
+            Piyx[i][0] = Piyx[i][1];
+            Piyx[N-1][j] = Piyx[N-2][j];
+            Piyx[i][N-1] = Piyx[i][N-2];
 
-            Piyy[0][j] = 0;
-            Piyy[i][0] = 0;
-            Piyy[-1][j] = 0;
-            Piyy[i][-1] = 0;
+            Piyy[0][j] = Piyy[1][j];
+            Piyy[i][0] = Piyy[i][1];
+            Piyy[N-1][j] = Piyy[N-2][j];
+            Piyy[i][N-1] = Piyy[i][N-2];
         }
     }        
 

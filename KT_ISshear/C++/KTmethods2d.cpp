@@ -80,26 +80,6 @@ tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>,vecto
             P[i][j] = pow(rho[i][j], gamma);
 
             
-            // set boundary conditions
-            rho[0][j] = rho[1][j];
-            rho[i][0] = rho[i][1];
-            rho[-1][j] = rho[-2][j];
-            rho[i][-1] = rho[i][-2];
-
-            vx[0][j] = -vx[1][j];
-            vx[i][0] = 0;
-            vx[-1][j] = -vx[-2][j];
-            vx[i][-1] = 0;
-
-            vy[0][j] = 0;
-            vy[i][0] = -vy[i][1];
-            vy[-1][j] = 0;
-            vy[i][-1] = -vy[i][-2];
-
-            P[0][j] = P[1][j];
-            P[i][0] = P[i][1];
-            P[-1][j] = P[-2][j];
-            P[i][-1] = P[i][-2];
 
         }
     }
@@ -466,10 +446,10 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
             flux_Mass[i][j] = momy_av;
             flux_Momx[i][j] = 0.5 * (rho_P[i][j] * vx_P[i][j] * vy_P[i][j] + rho_M[i][j] * vx_M[i][j] * vy_M[i][j]) + Pixy_av / gamma;
             flux_Momy[i][j] = 0.5 * (rho_P[i][j] * vy_P[i][j] * vy_P[i][j] + rho_M[i][j] * vy_M[i][j] * vy_M[i][j]) + ((P_av)  + (Piyy_av)) / gamma;
-            flux_Pixx_vy[i][j] = Pixx_vy_av + (A - 2.0 / 3.0 * B) * (vy_P[i][j] + vy_M[i][j]) * 0.5;
-            flux_Pixy_vy[i][j] = Pixy_vy_av + B * (vx_P[i][j] + vx_M[i][j]) * 0.5;
-            flux_Piyx_vy[i][j] = Piyx_vy_av + B * (vx_P[i][j] + vx_M[i][j]) * 0.5;
-            flux_Piyy_vy[i][j] = Piyy_vy_av + B * (vy_P[i][j] + vy_M[i][j]) + (A - 2.0 / 3.0 * B) * (vy_P[i][j] + vy_M[i][j]) * 0.5;
+            flux_Pixx_vy[i][j] = Pixx_vy_av + (A - 2.0 / 3.0 * B) * (vy_av);
+            flux_Pixy_vy[i][j] = Pixy_vy_av + B * (vx_av);
+            flux_Piyx_vy[i][j] = Piyx_vy_av + B * (vx_av);
+            flux_Piyy_vy[i][j] = Piyy_vy_av + 2 * B * (vy_av) + (A - 2.0 / 3.0 * B) * (vy_av);
 
             C = max(C_M[i][j], C_P[i][j]);
 

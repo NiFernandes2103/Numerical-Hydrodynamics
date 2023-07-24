@@ -142,6 +142,6 @@ vector<vector<double>> applyFluxes(vector<vector<double>>& flux_H1_X, vector<vec
 // Heun's method
 state heuns (state& q, function<state(double,state)> f, double dt, double t);
 
-
+state rK4 (state& q, function<state(double,state)> f, double dt, double t);
 
 # endif

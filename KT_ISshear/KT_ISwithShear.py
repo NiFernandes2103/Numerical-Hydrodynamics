@@ -234,7 +234,7 @@ t                      = 0    # s
 tEnd                   = 1  # time at the end
 tOut                   = 0.01 # time of each output
 
-N                      = 300  # resolution
+N                      = 200  # resolution
 boxsize                = 4.   # in some unit system l
 gamma                  = 5/3  # adiabatic index
 P0                     = 1    # pressure constant
@@ -297,7 +297,7 @@ IC = np.vstack((rho,rho*vx,rho*vy,Pixx,Pixy,Piyx,Piyy)) # here the initial condi
 
 # input (dx, dy, xlin, gamma, zeta, tau_nu, BC, theta=1)
 # output solution list of arrays that are 7N x N in the order (rho,rho*vx,rho*vy,Pixx,Pixy,Piyx,Piyy)
-solution = integrator(KTschemeNonRelativisticIS, (t, tEnd), IC, 0.01, method="RK4", args=(dx, dy, N, gamma, zeta, tau_nu, eta, P0, theta))
+solution = integrator(KTschemeNonRelativisticIS, (t, tEnd), IC, 0.01, method="Heuns", args=(dx, dy, N, gamma, zeta, tau_nu, eta, P0, theta))
 
-np.savetxt('NonRelativisticIS_parameters',parameters)
-np.save('NonRelativisticIS',solution)
+np.savetxt('NonRelativisticISHeuns_parameters',parameters)
+np.save('NonRelativisticISHeuns',solution)
