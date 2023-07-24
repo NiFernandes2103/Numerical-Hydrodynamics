@@ -3,9 +3,8 @@
 #ifndef _matrix_h
 #define _matrix_h
 
-# include <tuple>
+# include <algorithm>
 #pragma once
-using namespace std;
 
 
 struct smatrix{
@@ -23,6 +22,10 @@ struct smatrix{
 
     void set(double var, int i, int j) {
         m[i*N + j] = var; 
+    }
+
+    double max() {
+        return *std::max_element(m, m + N*N);
     }
 
     ~smatrix() {

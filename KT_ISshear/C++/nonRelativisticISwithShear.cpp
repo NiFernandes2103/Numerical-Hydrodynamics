@@ -1,5 +1,4 @@
 #include <cmath>
-#include <vector>
 #include <tuple>
 #include <list>
 #include <functional>
@@ -175,7 +174,7 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
 }
 
 
-list<state> integrator(state (*scheme)(double, state&, double, double, int, double, double, double, double, double), tuple<double,double> time, list<state> Q, double dtmax,  tuple<double, double, int, double, double, double, double, double> args, string method)
+list<state> integrator(state (*scheme)(double, state, double, double, int, double, double, double, double, double), tuple<double,double> time, list<state> Q, double dtmax,  tuple<double, double, int, double, double, double, double, double> args, string method)
 {
     /*
     This is an integrator that evolves a
@@ -195,7 +194,7 @@ list<state> integrator(state (*scheme)(double, state&, double, double, int, doub
     double tEnd = get<1>(time);
     int outCount = 1;
 
-    state q(Q.back());
+    state q = Q.back();
 
     int N;
     double dx, dy, gamma, zeta, tau_nu, eta, theta;
@@ -215,10 +214,10 @@ list<state> integrator(state (*scheme)(double, state&, double, double, int, doub
 
     while (t < tEnd) {
 
-        rho = q.get(0);
+        rho   = q.get(0);
         Momx  = q.get(1);
         Momy  = q.get(2);
-        cs  = getSpeedOfSound(rho, gamma);
+        cs    = getSpeedOfSound(rho, gamma);
 
         for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {

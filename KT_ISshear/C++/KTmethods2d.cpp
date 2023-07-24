@@ -2,8 +2,6 @@
 #include <cmath>
 #include <tuple>
 #include <algorithm>
-#include <vector>
-#include <map>
 #include <functional>
 #include "matrix.h"
 #include "KTmethods2d.h"
@@ -467,7 +465,8 @@ smatrix applyFluxes(smatrix& flux_H1_X, smatrix& flux_H2_X,
 }
 
 // Heun's method
-state heuns (state& q, function<state(double,state)> f, double dt, double t) {
+template<typename F>
+state heuns (state& q, F && f, double dt, double t) {
     
     int N = q.get(0).N;
 

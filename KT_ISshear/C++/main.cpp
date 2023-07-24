@@ -1,6 +1,4 @@
-
 #include <cmath>
-#include <vector>
 #include <tuple>
 #include <list>
 #include <iostream>
@@ -11,10 +9,7 @@
 #include "nonRelativisticISwithShear.h"
 #include "nonRelativisticISwithShear.cpp"
 
-
 using namespace std;
-
-
 
 int main() {
 
@@ -88,7 +83,7 @@ int main() {
 
     create(IC, "initial_state.csv");
 
-    list<state> initial_state = {{t, IC}};
+    list<state> initial_state = {IC};
 
 list<state> solution = integrator(KTschemeNonRelativisticIS, make_tuple(t, tEnd), initial_state, tOut, make_tuple(dx, dy, N, gamma, zeta, tau_nu, eta, theta), "Heuns");
 
