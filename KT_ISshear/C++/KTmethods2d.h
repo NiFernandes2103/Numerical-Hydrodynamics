@@ -92,7 +92,6 @@ public:
 
 double max_value(vector<vector<double>> value);
 
-vector<vector<double>> sign(vector<vector<double>> value);
 
 tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>> getConserved(vector<vector<double>>& rho,
  vector<vector<double>>& vx, vector<vector<double>>& vy, double vol);
@@ -102,9 +101,11 @@ tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>,vecto
 
 vector<vector<double>> getSpeedOfSound(vector<vector<double>>& rho, double gamma);
 
-double minmod(double x, double y);
+double minmod2(double x, double y);
 
 double minmod3(double x, double y, double z);
+
+double minmod(double x, double y, double z);
 
 vector<vector<double>> getGradient (vector<vector<double>>& f, double dx, int axis, double theta);
 

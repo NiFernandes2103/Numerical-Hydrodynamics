@@ -104,7 +104,7 @@ vector<vector<double>> getSpeedOfSound(vector<vector<double>>& rho, double gamma
     return cs;
 }
 
-double minmod(double x, double y) {
+double minmod2(double x, double y) {
     
 
     double sign1 = sign(x);
@@ -119,7 +119,15 @@ double minmod(double x, double y) {
 }
 
 double minmod3(double x, double y, double z) {
-    return minmod(x,minmod(y,z));
+    return minmod2(x,minmod2(y,z));
+}
+
+double minmod(double x, double y, double z) {
+    if ((x > 0 & y > 0 & z > 0) or (x < 0 & y < 0 & z < 0)) {
+        return min({x,y,z});
+    } else {
+        return 0.0;
+    }
 }
 
 /*
