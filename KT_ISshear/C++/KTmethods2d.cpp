@@ -3,55 +3,38 @@
 #include <tuple>
 #include <algorithm>
 #include <vector>
-#include <map>
 #include <functional>
 #include "KTmethods2d.h"
-using namespace std;
 
-double max_value(vector<vector<double>> value)
-{  
-    unsigned int rows,cols;
-    rows = value.size();
-    cols = value[0].size();
+
+double max_value(const std::vector<std::vector<double>>& value) {
+    if (value.empty() || value[0].empty()) {
+        // Handle the case when the input matrix is empty
+        throw std::runtime_error("Input matrix is empty.");
+    }
 
     double max = value[0][0];
 
-    for (unsigned int i = 0; i < rows; i++){
-        for (unsigned int j = 0; j < cols; j++){
-            if (value[i][j] > max){
-                max = value[i][j];
-            }
+    for (const auto& row : value) {
+        for (const double& element : row) {
+            max = std::max(max, element);
         }
     }
+
     return max;
-
 }
-
 double sign(double value){   
-    
-    if (value > 0.0)
-    {
-        return 1.0;
-    } else if (value < 0.0)
-    {
-        return -1.0;
-    } else 
-    {
-        return 0.0;
-    }
-    
-    
-    
+    return (value > 0) - (value < 0);
 }
 
 
 
-tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>> getConserved(vector<vector<double>>& rho,
- vector<vector<double>>& vx, vector<vector<double>>& vy, double vol) {
+std::tuple<std::vector<std::vector<double>>,std::vector<std::vector<double>>,std::vector<std::vector<double>>> getConserved(std::vector<std::vector<double>>& rho,
+ std::vector<std::vector<double>>& vx, std::vector<std::vector<double>>& vy, double vol) {
    
-    vector<vector<double>> Mass(rho.size(), vector<double>(rho[0].size()));
-    vector<vector<double>> Momx(rho.size(), vector<double>(rho[0].size()));
-    vector<vector<double>> Momy(rho.size(), vector<double>(rho[0].size()));
+    std::vector<std::vector<double>> Mass(rho.size(), std::vector<double>(rho[0].size()));
+    std::vector<std::vector<double>> Momx(rho.size(), std::vector<double>(rho[0].size()));
+    std::vector<std::vector<double>> Momy(rho.size(), std::vector<double>(rho[0].size()));
 
     for (unsigned int i = 0; i < rho.size(); i++) {
         for (unsigned int j = 0; j < rho[0].size(); j++) {
@@ -64,13 +47,13 @@ tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>> getC
     return make_tuple(Mass, Momx, Momy);
 }
 
-tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>,vector<vector<double>>> getPrimitive(vector<vector<double>> &Mass,
- vector<vector<double>>& Momx, vector<vector<double>>& Momy, double gamma, double vol) {
+std::tuple<std::vector<std::vector<double>>,std::vector<std::vector<double>>,std::vector<std::vector<double>>,std::vector<std::vector<double>>> getPrimitive(std::vector<std::vector<double>> &Mass,
+ std::vector<std::vector<double>>& Momx, std::vector<std::vector<double>>& Momy, double gamma, double vol) {
     
-    vector<vector<double>> rho(Mass.size(), vector<double>(Mass[0].size()));
-    vector<vector<double>> vx(Mass.size(), vector<double>(Mass[0].size()));
-    vector<vector<double>> vy(Mass.size(), vector<double>(Mass[0].size()));
-    vector<vector<double>> P(Mass.size(), vector<double>(Mass[0].size()));
+    std::vector<std::vector<double>> rho(Mass.size(), std::vector<double>(Mass[0].size()));
+    std::vector<std::vector<double>> vx(Mass.size(), std::vector<double>(Mass[0].size()));
+    std::vector<std::vector<double>> vy(Mass.size(), std::vector<double>(Mass[0].size()));
+    std::vector<std::vector<double>> P(Mass.size(), std::vector<double>(Mass[0].size()));
 
     for (unsigned int i = 0; i < Mass.size(); i++) {
         for (unsigned int j = 0; j < Mass[0].size(); j++) {
@@ -87,13 +70,13 @@ tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>,vecto
     return make_tuple(rho, vx, vy, P);
 }
 
-vector<vector<double>> getSpeedOfSound(vector<vector<double>>& rho, double gamma) {
+std::vector<std::vector<double>> getSpeedOfSound(std::vector<std::vector<double>>& rho, double gamma) {
 
     unsigned int rows,cols;
     rows = rho.size();
     cols = rho[0].size();
 
-    vector<vector<double>> cs(rows, vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> cs(rows, std::vector<double>(cols, 0.0));
 
     for (unsigned int i=0; i < rows; i++){
         for (unsigned int j=0; j < cols; j++){
@@ -112,7 +95,7 @@ double minmod2(double x, double y) {
     double abs1 = std::abs(x);
     double abs2 = std::abs(y);
 
-    double mmod = (sign1 + sign2) * min(abs1, abs2) / 2;
+    double mmod = (sign1 + sign2) * std::min(abs1, abs2) / 2;
 
     return mmod;
        
@@ -123,104 +106,14 @@ double minmod3(double x, double y, double z) {
 }
 
 double minmod(double x, double y, double z) {
-    if ((x > 0 & y > 0 & z > 0) or (x < 0 & y < 0 & z < 0)) {
-        return min({x,y,z});
-    } else {
-        return 0.0;
-    }
+    return std::max(0.0, std::min({x, y, z}));
 }
 
-/*
-vector<vector<double>> getGradient (vector<vector<double>>& f, double dx, int axis, double theta = 1) {
-    vector<vector<double>> df_dx(f.size(), vector<double>(f[0].size(), 0.0));
-    int n = f[axis].size();
-
-    vector<int> K(n);
-    for (int i = 0; i < n; i++) {
-        K[i] = i;
-    }
-
-    vector<int> Kp1(K);
-    rotate(Kp1.begin(), Kp1.begin() + 1, Kp1.end());
-
-    vector<int> Km1(K);
-    rotate(Km1.rbegin(), Km1.rbegin() + 1, Km1.rend());
-
-
-    if (axis == 0) {
-        for (int i = 0; i < f.size(); i++) {
-            for (int j = 0; j < f[i].size(); j++) {
-                double term1 = theta * (f[i][j] - f[Km1[i]][j]) / dx;
-                double term2 = (f[Kp1[i]][j] - f[Km1[i]][j]) / (2 * dx);
-                double term3 = theta * (f[Kp1[i]][j] - f[i][j]) / dx;
-                df_dx[i][j] = minmod3(term1, term2, term3);
-            }
-        }
-    }
-    else if (axis == 1) {
-        for (int i = 0; i < f.size(); i++) {
-            for (int j = 0; j < f[i].size(); j++) {
-                double term1 = theta * (f[i][j] - f[i][Km1[j]]) / dx;
-                double term2 = (f[i][Kp1[j]] - f[i][Km1[j]]) / (2 * dx);
-                double term3 = theta * (f[i][Kp1[j]] - f[i][j]) / dx;
-                df_dx[i][j] = minmod3(term1, term2, term3);
-            }
-        }
-    }
-
-
-    return df_dx;
-}
-
-tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> extrapolateInSpaceToFace (vector<vector<double>>& q, vector<vector<double>>& q_dx, double dx, int axis) {
-
-    int n = q.size();
-
-    vector<int> K(n);
-    for (int i = 0; i < n; i++) {
-        K[i] = i;
-    }
-
-    vector<int> Kp1(K);
-    rotate(Kp1.begin(), Kp1.begin() + 1, Kp1.end());
-
-    vector<int> Km1(K);
-    rotate(Km1.rbegin(), Km1.rbegin() + 1, Km1.rend());
-
-    vector<vector<double>> qP_XL(q.size(), vector<double>(q[0].size(), 0.0));
-    vector<vector<double>> qP_XR(q.size(), vector<double>(q[0].size(), 0.0));
-    vector<vector<double>> qM_XR(q.size(), vector<double>(q[0].size(), 0.0));
-    vector<vector<double>> qM_XL(q.size(), vector<double>(q[0].size(), 0.0));
-
-    if (axis == 0) {
-        for (int i = 0; i < q.size(); i++) {
-            for (int j = 0; j < q[i].size(); j++) {
-                qP_XL[i][j] = q[i][j] - q_dx[i][j] * dx / 2;
-                qP_XR[i][j] = q[Kp1[i]][j] - q_dx[Kp1[i]][j] * dx / 2;
-                qM_XR[i][j] = q[i][j] + q_dx[i][j] * dx / 2;
-                qM_XL[i][j] = q[Km1[i]][j] + q_dx[Km1[i]][j] * dx / 2;
-            }
-        }
-    }
-    else if (axis == 1) {
-        for (int i = 0; i < q.size(); i++) {
-            for (int j = 0; j < q[i].size(); j++) {
-                qP_XL[i][j] = q[i][j] - q_dx[i][j] * dx / 2;
-                qP_XR[i][j] = q[i][Kp1[j]] - q_dx[i][Kp1[j]] * dx / 2;
-                qM_XR[i][j] = q[i][j] + q_dx[i][j] * dx / 2;
-                qM_XL[i][j] = q[i][Km1[j]] + q_dx[i][Km1[j]] * dx / 2;
-            }
-        }
-    }
-
-    return make_tuple(qM_XL, qP_XL, qM_XR, qP_XR);
-}
-*/
-vector<vector<double>> getGradient (vector<vector<double>>& f, double dx, int axis, double theta = 1) {
+std::vector<std::vector<double>> getGradient (std::vector<std::vector<double>>& f, double dx, int axis, double theta = 1) {
     int n = f.size();
     int m = f[0].size();
 
-    vector<vector<double>> df_dx(n, vector<double>(m, 0.0));
+    std::vector<std::vector<double>> df_dx(n, std::vector<double>(m, 0.0));
     
 
     if (axis == 0) {
@@ -229,7 +122,7 @@ vector<vector<double>> getGradient (vector<vector<double>>& f, double dx, int ax
                 double term1 = theta * (f[i][j] - f[i-1][j]) / dx;
                 double term2 = (f[i+1][j] - f[i-1][j]) / (2 * dx);
                 double term3 = theta * (f[i+1][j] - f[i][j]) / dx;
-                df_dx[i][j] = minmod3(term1, term2, term3);
+                df_dx[i][j] = minmod(term1, term2, term3);
             }
         }
     }
@@ -239,7 +132,7 @@ vector<vector<double>> getGradient (vector<vector<double>>& f, double dx, int ax
                 double term1 = theta * (f[i][j] - f[i][j-1]) / dx;
                 double term2 = (f[i][j+1] - f[i][j-1]) / (2 * dx);
                 double term3 = theta * (f[i][j+1] - f[i][j]) / dx;
-                df_dx[i][j] = minmod3(term1, term2, term3);
+                df_dx[i][j] = minmod(term1, term2, term3);
             }
         }
     }
@@ -247,15 +140,15 @@ vector<vector<double>> getGradient (vector<vector<double>>& f, double dx, int ax
     return df_dx;
 }
 
-tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> extrapolateInSpaceToFace (vector<vector<double>>& q, vector<vector<double>>& q_dx, double dx, int axis) {
+std::tuple<std::vector<std::vector<double>>, std::vector<std::vector<double>>, std::vector<std::vector<double>>, std::vector<std::vector<double>>> extrapolateInSpaceToFace (std::vector<std::vector<double>>& q, std::vector<std::vector<double>>& q_dx, double dx, int axis) {
     
     int n = q.size();
     int m = q[0].size();
 
-    vector<vector<double>> qP_XL(q.size(), vector<double>(q[0].size(), 0.0));
-    vector<vector<double>> qP_XR(q.size(), vector<double>(q[0].size(), 0.0));
-    vector<vector<double>> qM_XR(q.size(), vector<double>(q[0].size(), 0.0));
-    vector<vector<double>> qM_XL(q.size(), vector<double>(q[0].size(), 0.0));
+    std::vector<std::vector<double>> qP_XL(q.size(), std::vector<double>(q[0].size(), 0.0));
+    std::vector<std::vector<double>> qP_XR(q.size(), std::vector<double>(q[0].size(), 0.0));
+    std::vector<std::vector<double>> qM_XR(q.size(), std::vector<double>(q[0].size(), 0.0));
+    std::vector<std::vector<double>> qM_XL(q.size(), std::vector<double>(q[0].size(), 0.0));
 
     if (axis == 0) {
         for (int i = 1; i < n - 1; i++) {
@@ -281,13 +174,13 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
     return make_tuple(qM_XL, qP_XL, qM_XR, qP_XR);
 }
 
-vector<vector<double>> local_propagation_speed (vector<vector<double>>& rho, vector<vector<double>>& vx, vector<vector<double>>& vy, double eta, double zeta, double tau_nu, vector<vector<double>>& cs) {
+std::vector<std::vector<double>> local_propagation_speed (std::vector<std::vector<double>>& rho, std::vector<std::vector<double>>& vx, std::vector<std::vector<double>>& vy, double eta, double zeta, double tau_nu, std::vector<std::vector<double>>& cs) {
    
     int rows = rho.size();
     int cols = rho[0].size();
 
-    vector<vector<double>> C1(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> C2(rows, vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> C1(rows, std::vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> C2(rows, std::vector<double>(cols, 0.0));
 
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
@@ -298,7 +191,7 @@ vector<vector<double>> local_propagation_speed (vector<vector<double>>& rho, vec
         }
     }
 
-    vector<vector<double>> maxC(rows, vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> maxC(rows, std::vector<double>(cols, 0.0));
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
             maxC[i][j] = std::max(C1[i][j], C2[i][j]);
@@ -309,25 +202,25 @@ vector<vector<double>> local_propagation_speed (vector<vector<double>>& rho, vec
 }
 
 
-tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, vector<vector<double>>,
- vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> getXFlux(vector<vector<double>>& rho_P,
-    vector<vector<double>>& rho_M, vector<vector<double>>& vx_P, vector<vector<double>>& vx_M, 
-    vector<vector<double>>& vy_P, vector<vector<double>>& vy_M, vector<vector<double>>& Pixx_P, 
-   vector<vector<double>>& Pixx_M, vector<vector<double>>& Pixy_P, vector<vector<double>>& Pixy_M, 
-   vector<vector<double>>& Piyx_P, vector<vector<double>>& Piyx_M, vector<vector<double>>& Piyy_P, 
-   vector<vector<double>>& Piyy_M, vector<vector<double>>& P_P, vector<vector<double>>& P_M, double gamma, 
+std::tuple<std::vector<std::vector<double>>, std::vector<std::vector<double>>, std::vector<std::vector<double>>, std::vector<std::vector<double>>,
+ std::vector<std::vector<double>>, std::vector<std::vector<double>>, std::vector<std::vector<double>>> getXFlux(std::vector<std::vector<double>>& rho_P,
+    std::vector<std::vector<double>>& rho_M, std::vector<std::vector<double>>& vx_P, std::vector<std::vector<double>>& vx_M, 
+    std::vector<std::vector<double>>& vy_P, std::vector<std::vector<double>>& vy_M, std::vector<std::vector<double>>& Pixx_P, 
+   std::vector<std::vector<double>>& Pixx_M, std::vector<std::vector<double>>& Pixy_P, std::vector<std::vector<double>>& Pixy_M, 
+   std::vector<std::vector<double>>& Piyx_P, std::vector<std::vector<double>>& Piyx_M, std::vector<std::vector<double>>& Piyy_P, 
+   std::vector<std::vector<double>>& Piyy_M, std::vector<std::vector<double>>& P_P, std::vector<std::vector<double>>& P_M, double gamma, 
   double eta, double zeta, double tau_nu) {
 
     int rows = rho_P.size();
     int cols = rho_P[0].size();
 
-    vector<vector<double>> flux_Mass(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> flux_Momx(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> flux_Momy(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> flux_Pixx_vx(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> flux_Pixy_vx(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> flux_Piyx_vx(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> flux_Piyy_vx(rows, vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> flux_Mass(rows, std::vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> flux_Momx(rows, std::vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> flux_Momy(rows, std::vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> flux_Pixx_vx(rows, std::vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> flux_Pixy_vx(rows, std::vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> flux_Piyx_vx(rows, std::vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> flux_Piyy_vx(rows, std::vector<double>(cols, 0.0));
 
     double vx_av;
     double vy_av;
@@ -340,10 +233,10 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
     double Piyy_vx_av;
     double P_av;
 
-    vector<vector<double>> cs_P = getSpeedOfSound(rho_P, gamma);
-    vector<vector<double>> C_P = local_propagation_speed(rho_P, vx_P, vy_P, eta, zeta, tau_nu, cs_P);
-    vector<vector<double>> cs_M = getSpeedOfSound(rho_M, gamma);
-    vector<vector<double>> C_M = local_propagation_speed(rho_M, vx_M, vy_M, eta, zeta, tau_nu, cs_M);
+    std::vector<std::vector<double>> cs_P = getSpeedOfSound(rho_P, gamma);
+    std::vector<std::vector<double>> C_P = local_propagation_speed(rho_P, vx_P, vy_P, eta, zeta, tau_nu, cs_P);
+    std::vector<std::vector<double>> cs_M = getSpeedOfSound(rho_M, gamma);
+    std::vector<std::vector<double>> C_M = local_propagation_speed(rho_M, vx_M, vy_M, eta, zeta, tau_nu, cs_M);
 
     double C;
 
@@ -373,7 +266,7 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
             flux_Piyx_vx[i][j] = Piyx_vx_av + B * vy_av;
             flux_Piyy_vx[i][j] = Piyy_vx_av + (A - 2.0 / 3.0 * B) * vx_av;
 
-            C = max(C_M[i][j], C_P[i][j]);
+            C = std::max(C_M[i][j], C_P[i][j]);
 
             flux_Mass[i][j] -= C * 0.5 * (rho_P[i][j] - rho_M[i][j]);
             flux_Momx[i][j] -= C * 0.5 * (rho_P[i][j] * vx_P[i][j] - rho_M[i][j] * vx_M[i][j]);
@@ -391,28 +284,28 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
 
 
 
-tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, vector<vector<double>>,
- vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> getYFlux(vector<vector<double>>& rho_P, vector<vector<double>>& rho_M,
-             vector<vector<double>>& vx_P, vector<vector<double>>& vx_M,
-             vector<vector<double>>& vy_P, vector<vector<double>>& vy_M,
-             vector<vector<double>>& Pixx_P, vector<vector<double>>& Pixx_M,
-             vector<vector<double>>& Pixy_P, vector<vector<double>>& Pixy_M,
-             vector<vector<double>>& Piyx_P, vector<vector<double>>& Piyx_M,
-             vector<vector<double>>& Piyy_P, vector<vector<double>>& Piyy_M,
-             vector<vector<double>>& P_P, vector<vector<double>>& P_M,
+std::tuple<std::vector<std::vector<double>>, std::vector<std::vector<double>>, std::vector<std::vector<double>>, std::vector<std::vector<double>>,
+ std::vector<std::vector<double>>, std::vector<std::vector<double>>, std::vector<std::vector<double>>> getYFlux(std::vector<std::vector<double>>& rho_P, std::vector<std::vector<double>>& rho_M,
+             std::vector<std::vector<double>>& vx_P, std::vector<std::vector<double>>& vx_M,
+             std::vector<std::vector<double>>& vy_P, std::vector<std::vector<double>>& vy_M,
+             std::vector<std::vector<double>>& Pixx_P, std::vector<std::vector<double>>& Pixx_M,
+             std::vector<std::vector<double>>& Pixy_P, std::vector<std::vector<double>>& Pixy_M,
+             std::vector<std::vector<double>>& Piyx_P, std::vector<std::vector<double>>& Piyx_M,
+             std::vector<std::vector<double>>& Piyy_P, std::vector<std::vector<double>>& Piyy_M,
+             std::vector<std::vector<double>>& P_P, std::vector<std::vector<double>>& P_M,
              double gamma, double eta,
              double zeta, double tau_nu){
 
     int rows = rho_P.size();
     int cols = rho_P[0].size();
 
-    vector<vector<double>> flux_Mass(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> flux_Momx(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> flux_Momy(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> flux_Pixx_vy(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> flux_Pixy_vy(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> flux_Piyx_vy(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> flux_Piyy_vy(rows, vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> flux_Mass(rows, std::vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> flux_Momx(rows, std::vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> flux_Momy(rows, std::vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> flux_Pixx_vy(rows, std::vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> flux_Pixy_vy(rows, std::vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> flux_Piyx_vy(rows, std::vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> flux_Piyy_vy(rows, std::vector<double>(cols, 0.0));
 
     double vx_av;
     double vy_av;
@@ -425,11 +318,11 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
     double Piyy_vy_av;
     double P_av;
 
-    vector<vector<double>> cs_P = getSpeedOfSound(rho_P, gamma);
-    vector<vector<double>> C_P = local_propagation_speed(rho_P, vx_P, vy_P, eta, zeta, tau_nu, cs_P);
+    std::vector<std::vector<double>> cs_P = getSpeedOfSound(rho_P, gamma);
+    std::vector<std::vector<double>> C_P = local_propagation_speed(rho_P, vx_P, vy_P, eta, zeta, tau_nu, cs_P);
 
-    vector<vector<double>> cs_M = getSpeedOfSound(rho_M, gamma);
-    vector<vector<double>> C_M = local_propagation_speed(rho_M, vx_M, vy_M, eta, zeta, tau_nu, cs_M);
+    std::vector<std::vector<double>> cs_M = getSpeedOfSound(rho_M, gamma);
+    std::vector<std::vector<double>> C_M = local_propagation_speed(rho_M, vx_M, vy_M, eta, zeta, tau_nu, cs_M);
 
     double C;
 
@@ -459,7 +352,7 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
             flux_Piyx_vy[i][j] = Piyx_vy_av + B * (vx_av);
             flux_Piyy_vy[i][j] = Piyy_vy_av + 2 * B * (vy_av) + (A - 2.0 / 3.0 * B) * (vy_av);
 
-            C = max(C_M[i][j], C_P[i][j]);
+            C = std::max(C_M[i][j], C_P[i][j]);
 
             flux_Mass[i][j] -= C * 0.5 * (rho_P[i][j] - rho_M[i][j]);
             flux_Momx[i][j] -= C * 0.5 * (rho_P[i][j] * vx_P[i][j] - rho_M[i][j] * vx_M[i][j]);
@@ -477,15 +370,15 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
 }
 // Apply fluxes to conserved variables
 
-vector<vector<double>> applyFluxes(vector<vector<double>>& flux_H1_X, vector<vector<double>>& flux_H2_X,
-  vector<vector<double>>& flux_H1_Y, vector<vector<double>>& flux_H2_Y,
-   double dx, double dy, vector<vector<double>>& J){
+std::vector<std::vector<double>> applyFluxes(std::vector<std::vector<double>>& flux_H1_X, std::vector<std::vector<double>>& flux_H2_X,
+  std::vector<std::vector<double>>& flux_H1_Y, std::vector<std::vector<double>>& flux_H2_Y,
+   double dx, double dy, std::vector<std::vector<double>>& J){
 
     int rows = flux_H1_X.size();
     int cols = flux_H1_X[0].size();
 
 
-    vector<vector<double>> C(rows, vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> C(rows, std::vector<double>(cols, 0.0));
     
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
@@ -499,16 +392,16 @@ vector<vector<double>> applyFluxes(vector<vector<double>>& flux_H1_X, vector<vec
 }
 
 // Heun's method
-state heuns (state& q, function<state(double,state)> f, double dt, double t) {
+state heuns (state& q, std::function<state(double,state)> f, double dt, double t) {
     
     int rows = (q.get(0)).size();
     int cols = (q.get(0))[0].size();
 
     double k1,k2;
-    vector<vector<double>> c1(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> c2(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> y(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> yprime(rows, vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> c1(rows, std::vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> c2(rows, std::vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> y(rows, std::vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> yprime(rows, std::vector<double>(cols, 0.0));
 
 
     state qprime;
@@ -549,18 +442,18 @@ state heuns (state& q, function<state(double,state)> f, double dt, double t) {
 }
 
 
-state rK4 (state& q, function<state(double,state)> f, double dt, double t) {
+state rK4 (state& q, std::function<state(double,state)> f, double dt, double t) {
     
     int rows = (q.get(0)).size();
     int cols = (q.get(0))[0].size();
 
     double k1,k2,k3,k4;
-    vector<vector<double>> c1(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> c2(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> c3(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> c4(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> y(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> yprime(rows, vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> c1(rows, std::vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> c2(rows, std::vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> c3(rows, std::vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> c4(rows, std::vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> y(rows, std::vector<double>(cols, 0.0));
+    std::vector<std::vector<double>> yprime(rows, std::vector<double>(cols, 0.0));
 
 
     state qprime;

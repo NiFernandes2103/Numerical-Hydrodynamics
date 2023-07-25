@@ -6,15 +6,17 @@
 #include "KTmethods2d.h"
 #include <iostream>
 #include <list>
+#include <vector>
+#include <string>
 #include <fstream>
-using namespace std;
 
-void parameters_csv(double t, double tEnd, double tOut,int N, double boxsize, double a, double b, double gamma, double zeta, double eta, double tau_nu, double theta, string filename);
 
-void create(state initial, string filename);
+void parameters_csv(double t, double tEnd, double tOut,int N, double boxsize, double a, double b, double gamma, double zeta, double eta, double tau_nu, double theta, std::string filename);
 
-void write(list<state> solution, string filename);
+void create(state initial, std::string filename);
 
-void write_each(list<state> solution, string filename, int n);
+void write(std::list<state> solution, std::string filename);
+
+void write_each(std::list<state> solution, std::string filename, int n);
 
 #endif

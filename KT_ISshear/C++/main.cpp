@@ -4,7 +4,7 @@
 #include <tuple>
 #include <list>
 #include <iostream>
-#include <map> 
+#include <string>
 #include "fileFunc.h"
 #include "fileFunc.cpp"
 #include "KTmethods2d.h"
@@ -13,17 +13,13 @@
 #include "nonRelativisticISwithShear.cpp"
 
 
-using namespace std;
-
-
-
 int main() {
 
     double t = 0.0;  // s 
     double tEnd = 1;  // time at the end
     double tOut = 0.01;  // time of each output
 
-    int N = 300;  // resolution
+    int N = 500;  // resolution
     double boxsize = 4.0;  // in some unit system l
     double gamma = 1;  // adiabatic index
     double zeta = 1.0;  // bulk viscosity coefficient
@@ -38,7 +34,7 @@ int main() {
 
     parameters_csv(t,tEnd,tOut,N,boxsize,a,b,gamma,zeta,eta,tau_nu,theta,"parameters.csv");
 
-    vector<double> xlin(N);
+    std::vector<double> xlin(N);
     for (int i = 0; i < N; i++) {
         //xlin[i] = 0.5 * dx + (boxsize - 0.5 * dx) * i / (N - 1);  // simulation limits
 
@@ -46,8 +42,8 @@ int main() {
     }
 
 
-    vector<vector<double>> Y(N, vector<double>(N, 0.0));
-    vector<vector<double>> X(N, vector<double>(N, 0.0));
+    std::vector<std::vector<double>> Y(N, std::vector<double>(N, 0.0));
+    std::vector<std::vector<double>> X(N, std::vector<double>(N, 0.0));
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
             Y[i][j] = xlin[j];
@@ -55,7 +51,7 @@ int main() {
         }
     }
     int s = X.size();
-    vector<vector<double>> R(s, vector<double>(s, 0.0));
+    std::vector<std::vector<double>> R(s, std::vector<double>(s, 0.0));
     for (int i = 0; i < s; i++) {
         for (int j = 0; j < s; j++) {
             R[i][j] = sqrt(X[i][j] * X[i][j] + Y[i][j] * Y[i][j]);
@@ -64,15 +60,15 @@ int main() {
 
     //double w0 = 0.1;
     //double sigma = 0.05 / sqrt(2.0);
-    vector<vector<double>> rho(s, vector<double>(s, 0.0));
-    vector<vector<double>> vx(s, vector<double>(s, 0.0));
-    vector<vector<double>> vy(s, vector<double>(s, 0.0));
-    vector<vector<double>> Momx(s, vector<double>(s, 0.0));
-    vector<vector<double>> Momy(s, vector<double>(s, 0.0));
-    vector<vector<double>> Pixx(s, vector<double>(s, 0.0));
-    vector<vector<double>> Pixy(s, vector<double>(s, 0.0));
-    vector<vector<double>> Piyx(s, vector<double>(s, 0.0));
-    vector<vector<double>> Piyy(s, vector<double>(s, 0.0));
+    std::vector<std::vector<double>> rho(s, std::vector<double>(s, 0.0));
+    std::vector<std::vector<double>> vx(s, std::vector<double>(s, 0.0));
+    std::vector<std::vector<double>> vy(s, std::vector<double>(s, 0.0));
+    std::vector<std::vector<double>> Momx(s, std::vector<double>(s, 0.0));
+    std::vector<std::vector<double>> Momy(s, std::vector<double>(s, 0.0));
+    std::vector<std::vector<double>> Pixx(s, std::vector<double>(s, 0.0));
+    std::vector<std::vector<double>> Pixy(s, std::vector<double>(s, 0.0));
+    std::vector<std::vector<double>> Piyx(s, std::vector<double>(s, 0.0));
+    std::vector<std::vector<double>> Piyy(s, std::vector<double>(s, 0.0));
 
     for (int i = 0; i < s; i++) {
         for (int j = 0; j < s; j++) {
@@ -87,10 +83,13 @@ int main() {
 
     create(IC, "initial_state.csv");
 
-    list<state> initial_state = {IC};
+    std::list<state> initial_state = {IC};
 
-list<state> solution = integrator(KTschemeNonRelativisticIS, make_tuple(t, tEnd), initial_state, tOut, make_tuple(dx, dy, N, gamma, zeta, tau_nu, eta, theta), "Heuns");
+std::list<state> solution = integrator(KTschemeNonRelativisticIS, std::make_tuple(t, tEnd), initial_state, tOut, std::make_tuple(dx, dy, N, gamma, zeta, tau_nu, eta, theta), "Heuns");
 
+    //write(solution, "NonrelativisticISwithsmoothIC.csv");
+
+    
     write_each(solution, "density_solution.csv", 0);
     write_each(solution, "momentx_solution.csv", 1);
     write_each(solution, "momenty_solution.csv", 2);

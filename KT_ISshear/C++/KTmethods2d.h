@@ -3,38 +3,35 @@
 #ifndef _KTmethods2d_h
 #define _KTmethods2d_h
 
-#include <iostream>
 #include <cmath>
 #include <tuple>
 #include <algorithm>
 #include <vector>
-#include <map>
 #include <functional>
 #pragma once
-using namespace std;
 
 class state {       
   private:             
-    vector<vector<double>> rho;        
-    vector<vector<double>> Momx;
-    vector<vector<double>> Momy;
-    vector<vector<double>> Pixx;
-    vector<vector<double>> Pixy;
-    vector<vector<double>> Piyx;
-    vector<vector<double>> Piyy;
+    std::vector<std::vector<double>> rho;        
+    std::vector<std::vector<double>> Momx;
+    std::vector<std::vector<double>> Momy;
+    std::vector<std::vector<double>> Pixx;
+    std::vector<std::vector<double>> Pixy;
+    std::vector<std::vector<double>> Piyx;
+    std::vector<std::vector<double>> Piyy;
 
 public:
     state() : rho(), Momx(), Momy(), Pixx(), Pixy(), Piyx(), Piyy() {}
 
-    state(vector<vector<double>> v1,
-     vector<vector<double>> v2,
-     vector<vector<double>> v3,
-     vector<vector<double>> v4,
-     vector<vector<double>> v5,
-     vector<vector<double>> v6,
-     vector<vector<double>> v7) : rho(v1), Momx(v2), Momy(v3), Pixx(v4), Pixy(v5), Piyx(v6), Piyy(v7) {}
+    state(std::vector<std::vector<double>> v1,
+     std::vector<std::vector<double>> v2,
+     std::vector<std::vector<double>> v3,
+     std::vector<std::vector<double>> v4,
+     std::vector<std::vector<double>> v5,
+     std::vector<std::vector<double>> v6,
+     std::vector<std::vector<double>> v7) : rho(v1), Momx(v2), Momy(v3), Pixx(v4), Pixy(v5), Piyx(v6), Piyy(v7) {}
 
-    vector<vector<double>> get(int n) {
+    std::vector<std::vector<double>> get(int n) {
         if (n == 0){
             return rho;
         }
@@ -57,12 +54,12 @@ public:
             return Piyy;
         }
         else { 
-            return vector<vector<double>>();
+            return std::vector<std::vector<double>>();
         } 
         
     }
 
-    void set(int n , vector<vector<double>> v) {
+    void set(int n , std::vector<std::vector<double>> v) {
 
         if (n == 0){
             rho = v;
@@ -90,16 +87,15 @@ public:
 };
 
 
-double max_value(vector<vector<double>> value);
+double max_value(const std::vector<std::vector<double>>& value);
 
+std::tuple<std::vector<std::vector<double>>,std::vector<std::vector<double>>,std::vector<std::vector<double>>> getConserved(std::vector<std::vector<double>>& rho,
+ std::vector<std::vector<double>>& vx, std::vector<std::vector<double>>& vy, double vol);
 
-tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>> getConserved(vector<vector<double>>& rho,
- vector<vector<double>>& vx, vector<vector<double>>& vy, double vol);
+std::tuple<std::vector<std::vector<double>>,std::vector<std::vector<double>>,std::vector<std::vector<double>>,std::vector<std::vector<double>>> getPrimitive(std::vector<std::vector<double>> &Mass,
+ std::vector<std::vector<double>>& Momx, std::vector<std::vector<double>>& Momy, double gamma, double vol);
 
-tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>,vector<vector<double>>> getPrimitive(vector<vector<double>> &Mass,
- vector<vector<double>>& Momx, vector<vector<double>>& Momy, double gamma, double vol);
-
-vector<vector<double>> getSpeedOfSound(vector<vector<double>>& rho, double gamma);
+std::vector<std::vector<double>> getSpeedOfSound(std::vector<std::vector<double>>& rho, double gamma);
 
 double minmod2(double x, double y);
 
@@ -107,42 +103,41 @@ double minmod3(double x, double y, double z);
 
 double minmod(double x, double y, double z);
 
-vector<vector<double>> getGradient (vector<vector<double>>& f, double dx, int axis, double theta);
+std::vector<std::vector<double>> getGradient (std::vector<std::vector<double>>& f, double dx, int axis, double theta);
 
-tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> extrapolateInSpaceToFace (vector<vector<double>>& q, vector<vector<double>>& q_dx, double dx, int axis);
+std::tuple<std::vector<std::vector<double>>, std::vector<std::vector<double>>, std::vector<std::vector<double>>, std::vector<std::vector<double>>> extrapolateInSpaceToFace (std::vector<std::vector<double>>& q, std::vector<std::vector<double>>& q_dx, double dx, int axis);
 
-vector<vector<double>> local_propagation_speed (vector<vector<double>>& rho, vector<vector<double>>& vx, vector<vector<double>>& vy, double eta, double zeta, double tau_nu, vector<vector<double>>& cs);
+std::vector<std::vector<double>> local_propagation_speed (std::vector<std::vector<double>>& rho, std::vector<std::vector<double>>& vx, std::vector<std::vector<double>>& vy, double eta, double zeta, double tau_nu, std::vector<std::vector<double>>& cs);
 
-
-tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, vector<vector<double>>,
- vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> getXFlux(vector<vector<double>>& rho_P,
-    vector<vector<double>>& rho_M, vector<vector<double>>& vx_P, vector<vector<double>>& vx_M, 
-    vector<vector<double>>& vy_P, vector<vector<double>>& vy_M, vector<vector<double>>& Pixx_P, 
-   vector<vector<double>>& Pixx_M, vector<vector<double>>& Pixy_P, vector<vector<double>>& Pixy_M, 
-   vector<vector<double>>& Piyx_P, vector<vector<double>>& Piyx_M, vector<vector<double>>& Piyy_P, 
-   vector<vector<double>>& Piyy_M, vector<vector<double>>& P_P, vector<vector<double>>& P_M, double gamma, 
+std::tuple<std::vector<std::vector<double>>, std::vector<std::vector<double>>, std::vector<std::vector<double>>, std::vector<std::vector<double>>,
+ std::vector<std::vector<double>>, std::vector<std::vector<double>>, std::vector<std::vector<double>>> getXFlux(std::vector<std::vector<double>>& rho_P,
+    std::vector<std::vector<double>>& rho_M, std::vector<std::vector<double>>& vx_P, std::vector<std::vector<double>>& vx_M, 
+    std::vector<std::vector<double>>& vy_P, std::vector<std::vector<double>>& vy_M, std::vector<std::vector<double>>& Pixx_P, 
+   std::vector<std::vector<double>>& Pixx_M, std::vector<std::vector<double>>& Pixy_P, std::vector<std::vector<double>>& Pixy_M, 
+   std::vector<std::vector<double>>& Piyx_P, std::vector<std::vector<double>>& Piyx_M, std::vector<std::vector<double>>& Piyy_P, 
+   std::vector<std::vector<double>>& Piyy_M, std::vector<std::vector<double>>& P_P, std::vector<std::vector<double>>& P_M, double gamma, 
   double eta, double zeta, double tau_nu);
 
-tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, vector<vector<double>>,
- vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> getYFlux(vector<vector<double>>& rho_P, vector<vector<double>>& rho_M,
-             vector<vector<double>>& vx_P, vector<vector<double>>& vx_M,
-             vector<vector<double>>& vy_P, vector<vector<double>>& vy_M,
-             vector<vector<double>>& Pixx_P, vector<vector<double>>& Pixx_M,
-             vector<vector<double>>& Pixy_P, vector<vector<double>>& Pixy_M,
-             vector<vector<double>>& Piyx_P, vector<vector<double>>& Piyx_M,
-             vector<vector<double>>& Piyy_P, vector<vector<double>>& Piyy_M,
-             vector<vector<double>>& P_P, vector<vector<double>>& P_M,
+std::tuple<std::vector<std::vector<double>>, std::vector<std::vector<double>>, std::vector<std::vector<double>>, std::vector<std::vector<double>>,
+ std::vector<std::vector<double>>, std::vector<std::vector<double>>, std::vector<std::vector<double>>> getYFlux(std::vector<std::vector<double>>& rho_P, std::vector<std::vector<double>>& rho_M,
+             std::vector<std::vector<double>>& vx_P, std::vector<std::vector<double>>& vx_M,
+             std::vector<std::vector<double>>& vy_P, std::vector<std::vector<double>>& vy_M,
+             std::vector<std::vector<double>>& Pixx_P, std::vector<std::vector<double>>& Pixx_M,
+             std::vector<std::vector<double>>& Pixy_P, std::vector<std::vector<double>>& Pixy_M,
+             std::vector<std::vector<double>>& Piyx_P, std::vector<std::vector<double>>& Piyx_M,
+             std::vector<std::vector<double>>& Piyy_P, std::vector<std::vector<double>>& Piyy_M,
+             std::vector<std::vector<double>>& P_P, std::vector<std::vector<double>>& P_M,
              double gamma, double eta,
              double zeta, double tau_nu);
 
 // Apply fluxes to conserved variables
-vector<vector<double>> applyFluxes(vector<vector<double>>& flux_H1_X, vector<vector<double>>& flux_H2_X,
-  vector<vector<double>>& flux_H1_Y, vector<vector<double>>& flux_H2_Y,
-   double dx, double dy, vector<vector<double>>& J);
+std::vector<std::vector<double>> applyFluxes(std::vector<std::vector<double>>& flux_H1_X, std::vector<std::vector<double>>& flux_H2_X,
+  std::vector<std::vector<double>>& flux_H1_Y, std::vector<std::vector<double>>& flux_H2_Y,
+   double dx, double dy, std::vector<std::vector<double>>& J);
 
 // Heun's method
-state heuns (state& q, function<state(double,state)> f, double dt, double t);
+state heuns (state& q, std::function<state(double,state)> f, double dt, double t);
 
-state rK4 (state& q, function<state(double,state)> f, double dt, double t);
+state rK4 (state& q, std::function<state(double,state)> f, double dt, double t);
 
 # endif

@@ -1,18 +1,17 @@
 #include "KTmethods2d.h"
 #include "fileFunc.h"
 #include <iostream>
-#include <map>
+#include <vector>
 #include <fstream>
-using namespace std;
+#include <string>
 
-
-void parameters_csv(double t, double tEnd, double tOut, int N, double boxsize, double a, double b, double gamma, double zeta, double eta, double tau_nu, double theta, string filename ) {
+void parameters_csv(double t, double tEnd, double tOut, int N, double boxsize, double a, double b, double gamma, double zeta, double eta, double tau_nu, double theta, std::string filename ) {
     
     // file pointer
-    fstream fout;
+    std::fstream fout;
   
     // opens an existing csv file or creates a new file.
-    fout.open(filename, ios::out | ios::trunc);
+    fout.open(filename, std::ios::out | std::ios::trunc);
 
 
     fout << "t" << ",";
@@ -26,7 +25,7 @@ void parameters_csv(double t, double tEnd, double tOut, int N, double boxsize, d
     fout << "zeta" << ",";
     fout << "eta" << ",";
     fout << "tau_nu" << ",";
-    fout << "theta" << endl;
+    fout << "theta" << std::endl;
     
     fout << t << ",";
     fout << tEnd << ",";
@@ -39,29 +38,29 @@ void parameters_csv(double t, double tEnd, double tOut, int N, double boxsize, d
     fout << zeta << ",";
     fout << eta << ",";
     fout << tau_nu << ",";
-    fout << theta << endl;
+    fout << theta << std::endl;
 
     fout.close();
     
 }
 
 
-void create(state initial,string filename) {
+void create(state initial,std::string filename) {
     
     // file pointer
-    fstream fout;
+    std::fstream fout;
   
     // opens an existing csv file or creates a new file.
-    fout.open(filename, ios::out | ios::trunc);
+    fout.open(filename, std::ios::out | std::ios::trunc);
 
 
-    vector<vector<double>> rhoIC  = initial.get(0);        
-    vector<vector<double>> MomxIC = initial.get(1);
-    vector<vector<double>> MomyIC = initial.get(2);
-    vector<vector<double>> PixxIC = initial.get(3);
-    vector<vector<double>> PixyIC = initial.get(4);
-    vector<vector<double>> PiyxIC = initial.get(5);
-    vector<vector<double>> PiyyIC = initial.get(6);
+    std::vector<std::vector<double>> rhoIC  = initial.get(0);        
+    std::vector<std::vector<double>> MomxIC = initial.get(1);
+    std::vector<std::vector<double>> MomyIC = initial.get(2);
+    std::vector<std::vector<double>> PixxIC = initial.get(3);
+    std::vector<std::vector<double>> PixyIC = initial.get(4);
+    std::vector<std::vector<double>> PiyxIC = initial.get(5);
+    std::vector<std::vector<double>> PiyyIC = initial.get(6);
 
     int A = rhoIC.size();
 
@@ -83,26 +82,26 @@ void create(state initial,string filename) {
 }
 
 
-void write(list<state> solution, string filename)
+void write(std::list<state> solution, std::string filename)
 {
     // file pointer
-    fstream fout;
+    std::fstream fout;
 
   
     // opens an existing csv file or creates a new file.
-    fout.open(filename, ios::out | ios::trunc);
+    fout.open(filename, std::ios::out | std::ios::trunc);
 
 
     // Iterate over the list using the iterator
     // Read the input
-    for (list<state>::iterator it = solution.begin(); it != solution.end(); ++it) {
-        vector<vector<double>> rho  = (*it).get(0);        
-        vector<vector<double>> Momx = (*it).get(1);
-        vector<vector<double>> Momy = (*it).get(2);
-        vector<vector<double>> Pixx = (*it).get(3);
-        vector<vector<double>> Pixy = (*it).get(4);
-        vector<vector<double>> Piyx = (*it).get(5);
-        vector<vector<double>> Piyy = (*it).get(6);
+    for (std::list<state>::iterator it = solution.begin(); it != solution.end(); ++it) {
+        std::vector<std::vector<double>> rho  = (*it).get(0);        
+        std::vector<std::vector<double>> Momx = (*it).get(1);
+        std::vector<std::vector<double>> Momy = (*it).get(2);
+        std::vector<std::vector<double>> Pixx = (*it).get(3);
+        std::vector<std::vector<double>> Pixy = (*it).get(4);
+        std::vector<std::vector<double>> Piyx = (*it).get(5);
+        std::vector<std::vector<double>> Piyy = (*it).get(6);
 
         int N = rho.size();
 
@@ -128,20 +127,20 @@ void write(list<state> solution, string filename)
 
 }
 
-void write_each(list<state> solution, string filename, int n)
+void write_each(std::list<state> solution, std::string filename, int n)
 {
     // file pointer
-    fstream fout;
+    std::fstream fout;
 
   
     // opens an existing csv file or creates a new file.
-    fout.open(filename, ios::out | ios::trunc);
+    fout.open(filename, std::ios::out | std::ios::trunc);
 
 
     // Iterate over the list using the iterator
     // Read the input
-    for (list<state>::iterator it = solution.begin(); it != solution.end(); ++it) {
-        vector<vector<double>> v  = (*it).get(n);        
+    for (std::list<state>::iterator it = solution.begin(); it != solution.end(); ++it) {
+        std::vector<std::vector<double>> v  = (*it).get(n);        
 
         int N = v.size();
 
