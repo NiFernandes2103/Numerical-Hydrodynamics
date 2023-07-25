@@ -8,7 +8,7 @@
 #include "nonRelativisticISwithShear.h"
 using namespace std;
 
-state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int N, double gamma, double zeta, double tau_nu, double eta, double theta = 1) {
+state KTschemeNonRelativisticIS(double t,  state IC, double dx, double dy, int N, double gamma, double zeta, double tau_nu, double eta, double theta = 1) {
      
     /* Finite Volume simulation */
 
@@ -174,7 +174,7 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
 }
 
 
-list<state> integrator(state (*scheme)(double, state, double, double, int, double, double, double, double, double), tuple<double,double> time, list<state> Q, double dtmax,  tuple<double, double, int, double, double, double, double, double> args, string method)
+list<state> integrator(state (*scheme)(double, state, double, double, int, double, double, double, double, double), tuple<double,double> time, list<state>& Q, double dtmax,  tuple<double, double, int, double, double, double, double, double> args, string method)
 {
     /*
     This is an integrator that evolves a
@@ -230,7 +230,7 @@ list<state> integrator(state (*scheme)(double, state, double, double, int, doubl
         smatrix propagation_speed = local_propagation_speed(rho, vx, vy, eta, zeta, tau_nu, cs);
         double courant_number;
 
-        courant_number = dx / max_value(propagation_speed);            
+        courant_number = dx / propagation_speed.max();            
 
         double dt = std::min(dtmax, 0.4 * (courant_number));
 

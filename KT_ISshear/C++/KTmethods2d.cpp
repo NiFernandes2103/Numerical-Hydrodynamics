@@ -7,24 +7,6 @@
 #include "KTmethods2d.h"
 using namespace std;
 
-double max_value(smatrix value)
-{  
-    int N;
-    N = value.N;
-
-
-    double max = value.get(0,0);
-
-    for (int i = 0; i < N; i++){
-        for (int j = 0; j < N; j++){
-            if (value.get(i,j) > max){
-                max = value.get(i,j);
-            }
-        }
-    }
-    return max;
-
-}
 
 double sign(double value){   
     

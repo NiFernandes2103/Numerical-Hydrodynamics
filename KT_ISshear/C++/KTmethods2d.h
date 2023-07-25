@@ -26,6 +26,9 @@ class state {
 
 public:
 
+    state(state& old) : rho(old.rho), Momx(old.Momx), Momy(old.Momy), Pixx(old.Pixx), Pixy(old.Pixy), Piyx(old.Piyx), Piyy(old.Piyy) {} 
+
+    state(const state& old) : rho(old.rho), Momx(old.Momx), Momy(old.Momy), Pixx(old.Pixx), Pixy(old.Pixy), Piyx(old.Piyx), Piyy(old.Piyy) {} 
 
     state(int N) : rho(N), Momx(N), Momy(N), Pixx(N), Pixy(N), Piyx(N), Piyy(N) {} 
         
@@ -91,7 +94,7 @@ public:
     }
 
 
-
+    
 };
 
 

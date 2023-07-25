@@ -12,7 +12,27 @@ struct smatrix{
     double* m;
     int N;
 
-    smatrix(smatrix &old) : m(old.m), N(old.N) {}
+    smatrix(smatrix &old) : N(old.N) {
+        m = new double[N * N];
+        std::copy(old.m, old.m + N * N, m);   
+     }
+
+    // Copy Constructor
+    smatrix(const smatrix& old) : N(old.N) {
+        m = new double[N * N];
+        std::copy(old.m, old.m + N * N, m);
+    }
+
+    // Copy Assignment Operator
+    smatrix& operator=(const smatrix& old) {
+        if (this != &old) {
+            delete[] m;
+            N = old.N;
+            m = new double[N * N];
+            std::copy(old.m, old.m + N * N, m);
+        }
+        return *this;
+    }
 
     smatrix(int n) : m(new double[n*n]{0}), N(n) {}
 
@@ -27,6 +47,8 @@ struct smatrix{
     double max() {
         return *std::max_element(m, m + N*N);
     }
+
+    
 
     ~smatrix() {
         delete[] m;
