@@ -588,7 +588,7 @@ state rK4 (state& q, function<state(double,state)> f, double dt, double t) {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 k2 = dt * c2[i][j];
-                yprime[i][j] = y[i][j] + 0.5*k2;
+                yprime[i][j] = y[i][j] + 0.5 * k2;
             }
         }
         qprime.set(n , yprime);

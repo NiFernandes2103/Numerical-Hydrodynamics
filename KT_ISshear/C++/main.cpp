@@ -23,7 +23,7 @@ int main() {
     double tEnd = 1;  // time at the end
     double tOut = 0.01;  // time of each output
 
-    int N = 200;  // resolution
+    int N = 300;  // resolution
     double boxsize = 4.0;  // in some unit system l
     double gamma = 1;  // adiabatic index
     double zeta = 1.0;  // bulk viscosity coefficient
@@ -76,11 +76,7 @@ int main() {
 
     for (int i = 0; i < s; i++) {
         for (int j = 0; j < s; j++) {
-            //rho[i][j] = 1.0 + (abs(Y[i][j] - 0.5) < 0.25);
-            //vx[i][j] = -0.5 + (abs(Y[i][j] - 0.5) < 0.25);
-            //vy[i][j] = w0 * sin(4 * M_PI * X[i][j]) * (exp(-(Y[i][j] - 0.25) * (Y[i][j] - 0.25) / (2 * sigma * sigma)) + exp(-(Y[i][j] - 0.75) * (Y[i][j] - 0.75) / (2 * sigma * sigma)));
-            //Momx[i][j] = vx[i][j]*rho[i][j];
-            //Momy[i][j] = vy[i][j]*rho[i][j];
+            
 
             rho[i][j] = (pow((1 - (R[i][j])*(R[i][j])),4))*(R[i][j] < 1) + 1; // Mauricio's function advice
 

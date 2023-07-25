@@ -47,7 +47,6 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
              /* Pressure from equation of state */
             P[i][j] = pow(rho[i][j], gamma);
 
-            
             // set boundary conditions
             rho[0][j] = rho[1][j];
             rho[i][0] = rho[i][1];

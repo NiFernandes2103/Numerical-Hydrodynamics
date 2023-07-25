@@ -99,7 +99,7 @@ def plot_each_csv(file, parameters_file):
     a = float(parameters['a'])
     b = float(parameters['b'])
     dx = boxsize/N
-    xlin = np.linspace(a, b,N)
+    xlin = np.linspace(a,b,N)
 
     Y, X = np.meshgrid( xlin, xlin ) # define the mesh grid
     S = X.shape
@@ -132,11 +132,89 @@ def plot_each_csv(file, parameters_file):
         print(outputcount)
         s += 10
 
+def plot_image(v, ax, fontsize=12, hide_labels=False):
+        pc = ax.pcolormesh(v, vmin=-2.5, vmax=2.5)
+        if not hide_labels:
+            ax.set_xlabel('x-label', fontsize=fontsize)
+            ax.set_ylabel('y-label', fontsize=fontsize)
+            ax.set_title('Title', fontsize=fontsize)
+        return pc
+
+def plot_each_csv_static(file, parameters_file, s, nameOfFigure, fontsize, hide_labels = False):
+    
+    parameters = pd.read_csv(parameters_file)
+    N = int(parameters['N'])
+    boxsize = int(parameters['boxsize'])
+    a = float(parameters['a'])
+    b = float(parameters['b'])
+    dx = boxsize/N
+    xlin = np.linspace(a,b,N)
+
+    Y, X = np.meshgrid( xlin, xlin ) # define the mesh grid
+    S = X.shape
+
+    init = np.zeros(S)
+    v    = np.zeros(S)
+    
+    print("starting...")
+    solution = pd.read_csv(file, header=None)
+    print("solution Dataframe created")
+
+    sol = solution.to_numpy()
+    print("solution format:".format(sol.shape))
+
+    print("reading solution...")
+    for i in range(N):
+        for j in range(N):
+            init[i][j] = float(sol[0][N*i + j])
+            v[i][j]  = float(sol[s][(N*i + j)])
+            
+    print('finished reading')
+
+    fig, axs = plt.subplots(2, 3, figsize=(10, 4))
+    gridspec = axs[0, 0].get_subplotspec().get_gridspec()
+    print("created the figure")
+
+    # clear the left column for the subfigure:
+    for a in axs[:, 0]:
+        a.remove()
+
+    # plot data in remaining axes:
+    count = 0
+    print("plotting subfigures")
+    for a in axs[:, 1:].flat:
+        if count == 0:
+            a.plot(xlin, init[int(N/2)]) 
+            count += 1
+        if count == 1:
+            a.plot(xlin, v[int(N/2)])
+        else:
+            a.plot(np.arange(10))
+
+    # make the subfigure in the empty gridspec slots:
+    subfig = fig.add_subfigure(gridspec[:, 0])
+
+    axsLeft = subfig.subplots(1, 2, sharey=True)
+    subfig.set_facecolor('0.75')
+    count = 0
+    for ax in axsLeft:
+        if count == 0:
+            pc = plot_image(init,ax)
+            count += 1
+        elif count == 1:
+            pc = plot_image(v,ax)
+    subfig.suptitle('Left plots', fontsize='x-large')
+    subfig.colorbar(pc, shrink=0.6, ax=axsLeft, location='bottom')
+    print("Done")
+    fig.suptitle('Figure suptitle', fontsize='xx-large')
+    plt.show()
 
 
 #plot_ic_csv('KT_ISshear\C++\initial_state.csv','KT_ISshear\C++\parameters.csv')
-plot_each_csv('KT_ISshear\C++\density_solution.csv','KT_ISshear\C++\parameters.csv')
+#plot_each_csv('KT_ISshear\C++\density_solution.csv','KT_ISshear\C++\parameters.csv')
 #plot_each_csv('KT_ISshear\C++\Pixy_solution.csv','KT_ISshear\C++\parameters.csv')
+
+plot_each_csv_static('KT_ISshear\C++\density_solution.csv','KT_ISshear\C++\parameters.csv',50,"densityattime0.50", 12)
 
 def show_2dsolution_static(file,parameters_file,i,n):
 
@@ -151,7 +229,7 @@ def show_2dsolution_static(file,parameters_file,i,n):
     plt.show()
     
 
-def show_solution_static_slice(file,parameters_file,i,n):
+def show_solution_static_slice(file,parameters_file,i,n,title,label):
 
     sol = np.load(file)
 
@@ -160,8 +238,10 @@ def show_solution_static_slice(file,parameters_file,i,n):
     N = int(N)
     a = sol[i][n*N:(n+1)*N].T
     
-    plt.imshow(a[int(N/2)])
+    plt.plot(a[int(N/2)], label=label)
     plt.show()
+
+    plt.savefig("static_slice_{}".format(file))
 
 def animate_solution_gif(file,parameters_file,gif_file,n):
 
