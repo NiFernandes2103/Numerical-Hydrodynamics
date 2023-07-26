@@ -3,21 +3,19 @@
 #include <tuple>
 #include <algorithm>
 #include <vector>
-#include <map>
 #include <functional>
 #include "KTmethods2d.h"
 using namespace std;
 
-double max_value(vector<vector<double>> value)
-{  
-    unsigned int rows,cols;
-    rows = value.size();
-    cols = value[0].size();
 
+
+double max_value(double** value, int rows, int cols)
+{  
+    
     double max = value[0][0];
 
-    for (unsigned int i = 0; i < rows; i++){
-        for (unsigned int j = 0; j < cols; j++){
+    for (int i = 0; i < rows; i++){
+        for (int j = 0; j < cols; j++){
             if (value[i][j] > max){
                 max = value[i][j];
             }
@@ -46,15 +44,19 @@ double sign(double value){
 
 
 
-tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>> getConserved(vector<vector<double>>& rho,
- vector<vector<double>>& vx, vector<vector<double>>& vy, double vol) {
+tuple<double**,double**,double**> getConserved(double**& rho,
+ double**& vx, double**& vy, double vol, int rows, int cols) {
    
-    vector<vector<double>> Mass(rho.size(), vector<double>(rho[0].size()));
-    vector<vector<double>> Momx(rho.size(), vector<double>(rho[0].size()));
-    vector<vector<double>> Momy(rho.size(), vector<double>(rho[0].size()));
+    double** Mass = new double*[rows];
+    double** Momx = new double*[rows];
+    double** Momy = new double*[rows];
 
-    for (unsigned int i = 0; i < rho.size(); i++) {
-        for (unsigned int j = 0; j < rho[0].size(); j++) {
+    for (int i = 0; i < rows; i++) {
+        Mass[i] = new double[cols];
+        Momx[i] = new double[cols];
+        Momy[i] = new double[cols];
+        for (int j = 0; j < cols; j++) {
+            
             Mass[i][j] = rho[i][j] * vol;
             Momx[i][j] = rho[i][j] * vx[i][j];
             Momy[i][j] = rho[i][j] * vy[i][j];
@@ -64,22 +66,25 @@ tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>> getC
     return make_tuple(Mass, Momx, Momy);
 }
 
-tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>,vector<vector<double>>> getPrimitive(vector<vector<double>> &Mass,
- vector<vector<double>>& Momx, vector<vector<double>>& Momy, double gamma, double vol) {
+tuple<double**,double**,double**,double**> getPrimitive(double** &Mass,
+ double**& Momx, double**& Momy, double gamma, double vol, int rows, int cols) {
     
-    vector<vector<double>> rho(Mass.size(), vector<double>(Mass[0].size()));
-    vector<vector<double>> vx(Mass.size(), vector<double>(Mass[0].size()));
-    vector<vector<double>> vy(Mass.size(), vector<double>(Mass[0].size()));
-    vector<vector<double>> P(Mass.size(), vector<double>(Mass[0].size()));
+    double** rho = new double*[rows];
+    double** vx = new double*[rows];
+    double** vy = new double*[rows];
+    double** P = new double*[rows];
 
-    for (unsigned int i = 0; i < Mass.size(); i++) {
-        for (unsigned int j = 0; j < Mass[0].size(); j++) {
+    for (int i = 0; i < rows; i++) {
+        rho[i] = new double[cols];
+        vx[i] = new double[cols];
+        vy[i] = new double[cols];
+        P[i] = new double[cols];
+        for (int j = 0; j < cols; j++) {
+            
             rho[i][j] = Mass[i][j] / vol;
             vx[i][j] = Momx[i][j] / rho[i][j];
             vy[i][j] = Momy[i][j] / rho[i][j];
             P[i][j] = pow(rho[i][j], gamma);
-
-            
 
         }
     }
@@ -87,16 +92,11 @@ tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>,vecto
     return make_tuple(rho, vx, vy, P);
 }
 
-vector<vector<double>> getSpeedOfSound(vector<vector<double>>& rho, double gamma) {
-
-    unsigned int rows,cols;
-    rows = rho.size();
-    cols = rho[0].size();
-
-    vector<vector<double>> cs(rows, vector<double>(cols, 0.0));
-
-    for (unsigned int i=0; i < rows; i++){
-        for (unsigned int j=0; j < cols; j++){
+double** getSpeedOfSound(double**& rho, double gamma, int rows, int cols) {
+    double** cs = new double*[rows];
+    for (int i=0; i < rows; i++){
+        cs[i] = new double[cols];
+        for (int j=0; j < cols; j++){
             cs[i][j] = sqrt(gamma * pow(rho[i][j], gamma - 1));
         }
     }
@@ -122,102 +122,23 @@ double minmod3(double x, double y, double z) {
     return minmod(x,minmod(y,z));
 }
 
-/*
-vector<vector<double>> getGradient (vector<vector<double>>& f, double dx, int axis, double theta = 1) {
-    vector<vector<double>> df_dx(f.size(), vector<double>(f[0].size(), 0.0));
-    int n = f[axis].size();
+double** getGradient (double**& f, double dx, int axis, int rows, int cols, double theta = 1) {
+  
+    double** df_dx = new double*[rows];
 
-    vector<int> K(n);
-    for (int i = 0; i < n; i++) {
-        K[i] = i;
-    }
-
-    vector<int> Kp1(K);
-    rotate(Kp1.begin(), Kp1.begin() + 1, Kp1.end());
-
-    vector<int> Km1(K);
-    rotate(Km1.rbegin(), Km1.rbegin() + 1, Km1.rend());
-
-
-    if (axis == 0) {
-        for (int i = 0; i < f.size(); i++) {
-            for (int j = 0; j < f[i].size(); j++) {
-                double term1 = theta * (f[i][j] - f[Km1[i]][j]) / dx;
-                double term2 = (f[Kp1[i]][j] - f[Km1[i]][j]) / (2 * dx);
-                double term3 = theta * (f[Kp1[i]][j] - f[i][j]) / dx;
-                df_dx[i][j] = minmod3(term1, term2, term3);
-            }
-        }
-    }
-    else if (axis == 1) {
-        for (int i = 0; i < f.size(); i++) {
-            for (int j = 0; j < f[i].size(); j++) {
-                double term1 = theta * (f[i][j] - f[i][Km1[j]]) / dx;
-                double term2 = (f[i][Kp1[j]] - f[i][Km1[j]]) / (2 * dx);
-                double term3 = theta * (f[i][Kp1[j]] - f[i][j]) / dx;
-                df_dx[i][j] = minmod3(term1, term2, term3);
-            }
-        }
-    }
-
-
-    return df_dx;
-}
-
-tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> extrapolateInSpaceToFace (vector<vector<double>>& q, vector<vector<double>>& q_dx, double dx, int axis) {
-
-    int n = q.size();
-
-    vector<int> K(n);
-    for (int i = 0; i < n; i++) {
-        K[i] = i;
-    }
-
-    vector<int> Kp1(K);
-    rotate(Kp1.begin(), Kp1.begin() + 1, Kp1.end());
-
-    vector<int> Km1(K);
-    rotate(Km1.rbegin(), Km1.rbegin() + 1, Km1.rend());
-
-    vector<vector<double>> qP_XL(q.size(), vector<double>(q[0].size(), 0.0));
-    vector<vector<double>> qP_XR(q.size(), vector<double>(q[0].size(), 0.0));
-    vector<vector<double>> qM_XR(q.size(), vector<double>(q[0].size(), 0.0));
-    vector<vector<double>> qM_XL(q.size(), vector<double>(q[0].size(), 0.0));
-
-    if (axis == 0) {
-        for (int i = 0; i < q.size(); i++) {
-            for (int j = 0; j < q[i].size(); j++) {
-                qP_XL[i][j] = q[i][j] - q_dx[i][j] * dx / 2;
-                qP_XR[i][j] = q[Kp1[i]][j] - q_dx[Kp1[i]][j] * dx / 2;
-                qM_XR[i][j] = q[i][j] + q_dx[i][j] * dx / 2;
-                qM_XL[i][j] = q[Km1[i]][j] + q_dx[Km1[i]][j] * dx / 2;
-            }
-        }
-    }
-    else if (axis == 1) {
-        for (int i = 0; i < q.size(); i++) {
-            for (int j = 0; j < q[i].size(); j++) {
-                qP_XL[i][j] = q[i][j] - q_dx[i][j] * dx / 2;
-                qP_XR[i][j] = q[i][Kp1[j]] - q_dx[i][Kp1[j]] * dx / 2;
-                qM_XR[i][j] = q[i][j] + q_dx[i][j] * dx / 2;
-                qM_XL[i][j] = q[i][Km1[j]] + q_dx[i][Km1[j]] * dx / 2;
-            }
-        }
-    }
-
-    return make_tuple(qM_XL, qP_XL, qM_XR, qP_XR);
-}
-*/
-vector<vector<double>> getGradient (vector<vector<double>>& f, double dx, int axis, double theta = 1) {
-    int n = f.size();
-    int m = f[0].size();
-
-    vector<vector<double>> df_dx(n, vector<double>(m, 0.0));
+    df_dx[0] = new double[cols];
+    df_dx[rows-1] = new double[cols];
     
-
     if (axis == 0) {
-        for (int i = 1; i < n - 1; i++) {
-            for (int j = 1; j < m - 1; j++) {
+        for (int i = 1; i < rows - 1; i++) {
+            df_dx[i] = new double[cols];
+
+            df_dx[i][0] = 0;
+            df_dx[i][cols-1] = 0;
+            df_dx[0][i] = 0;
+            df_dx[rows-1][i] = 0;
+
+            for (int j = 1; j < cols - 1; j++) {
                 double term1 = theta * (f[i][j] - f[i-1][j]) / dx;
                 double term2 = (f[i+1][j] - f[i-1][j]) / (2 * dx);
                 double term3 = theta * (f[i+1][j] - f[i][j]) / dx;
@@ -226,12 +147,20 @@ vector<vector<double>> getGradient (vector<vector<double>>& f, double dx, int ax
         }
     }
     else if (axis == 1) {
-        for (int i = 1; i < n - 1; i++) {
-            for (int j = 1; j < m - 1; j++) {
+        for (int i = 1; i < rows - 1; i++) {
+            df_dx[i] = new double[cols];
+
+            df_dx[i][0] = 0;
+            df_dx[i][cols-1] = 0;
+            df_dx[0][i] = 0;
+            df_dx[rows-1][i] = 0;
+
+            for (int j = 1; j < cols - 1; j++) {
                 double term1 = theta * (f[i][j] - f[i][j-1]) / dx;
                 double term2 = (f[i][j+1] - f[i][j-1]) / (2 * dx);
                 double term3 = theta * (f[i][j+1] - f[i][j]) / dx;
-                df_dx[i][j] = minmod3(term1, term2, term3);
+                df_dx[i][j] = minmod3(term1, term2, term3);    
+                
             }
         }
     }
@@ -239,19 +168,35 @@ vector<vector<double>> getGradient (vector<vector<double>>& f, double dx, int ax
     return df_dx;
 }
 
-tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> extrapolateInSpaceToFace (vector<vector<double>>& q, vector<vector<double>>& q_dx, double dx, int axis) {
+tuple<double**, double**, double**, double**> extrapolateInSpaceToFace (double**& q, double**& q_dx, double dx, int axis, int rows, int cols) {
     
-    int n = q.size();
-    int m = q[0].size();
 
-    vector<vector<double>> qP_XL(q.size(), vector<double>(q[0].size(), 0.0));
-    vector<vector<double>> qP_XR(q.size(), vector<double>(q[0].size(), 0.0));
-    vector<vector<double>> qM_XR(q.size(), vector<double>(q[0].size(), 0.0));
-    vector<vector<double>> qM_XL(q.size(), vector<double>(q[0].size(), 0.0));
+    double** qP_XL = new double*[rows];
+    double** qP_XR = new double*[rows];
+    double** qM_XR = new double*[rows];
+    double** qM_XL = new double*[rows];
+    qP_XL[0] = new double[cols];
+    qP_XR[0] = new double[cols];
+    qM_XR[0] = new double[cols];
+    qM_XL[0] = new double[cols];
+    qP_XL[rows-1] = new double[cols];
+    qP_XR[rows-1] = new double[cols];
+    qM_XR[rows-1] = new double[cols];
+    qM_XL[rows-1] = new double[cols];
 
     if (axis == 0) {
-        for (int i = 1; i < n - 1; i++) {
-            for (int j = 1; j < m - 1; j++) {
+        for (int i = 1; i < rows - 1; i++) {
+            qP_XL[i] = new double[cols];
+            qP_XR[i] = new double[cols];
+            qM_XR[i] = new double[cols];
+            qM_XL[i] = new double[cols];
+
+            qP_XL[i][0] = 0;
+            qP_XR[i][cols-1] = 0;
+            qM_XR[0][i] = 0;
+            qM_XL[rows-1][i] = 0;
+
+            for (int j = 1; j < cols - 1; j++) {
                 qP_XL[i][j] = q[i][j] - q_dx[i][j] * dx / 2;
                 qP_XR[i][j] = q[i+1][j] - q_dx[i+1][j] * dx / 2;
                 qM_XR[i][j] = q[i][j] + q_dx[i][j] * dx / 2;
@@ -260,8 +205,18 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
         }
     }
     else if (axis == 1) {
-        for (int i = 1; i < n-1; i++) {
-            for (int j = 1; j < m-1; j++) {
+        for (int i = 1; i < rows-1; i++) {
+            qP_XL[i] = new double[cols];
+            qP_XR[i] = new double[cols];
+            qM_XR[i] = new double[cols];
+            qM_XL[i] = new double[cols];
+
+            qP_XL[i][0] = 0;
+            qP_XR[i][cols-1] = 0;
+            qM_XR[0][i] = 0;
+            qM_XL[rows-1][i] = 0;
+
+            for (int j = 1; j < cols-1; j++) {
                 qP_XL[i][j] = q[i][j] - q_dx[i][j] * dx / 2;
                 qP_XR[i][j] = q[i][j+1] - q_dx[i][j+1] * dx / 2;
                 qM_XR[i][j] = q[i][j] + q_dx[i][j] * dx / 2;
@@ -273,27 +228,16 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
     return make_tuple(qM_XL, qP_XL, qM_XR, qP_XR);
 }
 
-vector<vector<double>> local_propagation_speed (vector<vector<double>>& rho, vector<vector<double>>& vx, vector<vector<double>>& vy, double eta, double zeta, double tau_nu, vector<vector<double>>& cs) {
+double** local_propagation_speed (double**& rho, double**& vx, double**& vy, double eta, double zeta, double tau_nu, double**& cs, int rows, int cols) {
    
-    int rows = rho.size();
-    int cols = rho[0].size();
-
-    vector<vector<double>> C1(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> C2(rows, vector<double>(cols, 0.0));
-
+    double** maxC = new double*[rows];
     for (int i = 0; i < rows; i++) {
+        maxC[i] = new double[cols];
         for (int j = 0; j < cols; j++) {
-            if (rho[i][j] != 0) {
-                C1[i][j] = sqrt(eta * tau_nu / rho[i][j]);
-                C2[i][j] = cs[i][j] * sqrt( (zeta + 4.0 / 3.0 * tau_nu) / (rho[i][j] * tau_nu));
-            }
-        }
-    }
-
-    vector<vector<double>> maxC(rows, vector<double>(cols, 0.0));
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            maxC[i][j] = std::max(C1[i][j], C2[i][j]);
+                double C1, C2;
+                C1 = sqrt(eta * tau_nu / rho[i][j]);
+                C2 = cs[i][j] * sqrt( (zeta + 4.0 / 3.0 * tau_nu) / (rho[i][j] * tau_nu));
+                maxC[i][j] = std::max(C1, C2);
         }
     }
 
@@ -301,25 +245,23 @@ vector<vector<double>> local_propagation_speed (vector<vector<double>>& rho, vec
 }
 
 
-tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, vector<vector<double>>,
- vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> getXFlux(vector<vector<double>>& rho_P,
-    vector<vector<double>>& rho_M, vector<vector<double>>& vx_P, vector<vector<double>>& vx_M, 
-    vector<vector<double>>& vy_P, vector<vector<double>>& vy_M, vector<vector<double>>& Pixx_P, 
-   vector<vector<double>>& Pixx_M, vector<vector<double>>& Pixy_P, vector<vector<double>>& Pixy_M, 
-   vector<vector<double>>& Piyx_P, vector<vector<double>>& Piyx_M, vector<vector<double>>& Piyy_P, 
-   vector<vector<double>>& Piyy_M, vector<vector<double>>& P_P, vector<vector<double>>& P_M, double gamma, 
-  double eta, double zeta, double tau_nu) {
+tuple<double**, double**, double**, double**,
+ double**, double**, double**> getXFlux(double**& rho_P,
+    double**& rho_M, double**& vx_P, double**& vx_M, 
+    double**& vy_P, double**& vy_M, double**& Pixx_P, 
+   double**& Pixx_M, double**& Pixy_P, double**& Pixy_M, 
+   double**& Piyx_P, double**& Piyx_M, double**& Piyy_P, 
+   double**& Piyy_M, double**& P_P, double**& P_M, double gamma, 
+  double eta, double zeta, double tau_nu, int rows, int cols) {
 
-    int rows = rho_P.size();
-    int cols = rho_P[0].size();
 
-    vector<vector<double>> flux_Mass(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> flux_Momx(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> flux_Momy(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> flux_Pixx_vx(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> flux_Pixy_vx(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> flux_Piyx_vx(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> flux_Piyy_vx(rows, vector<double>(cols, 0.0));
+    double** flux_Mass = new double*[rows];
+    double** flux_Momx = new double*[rows];
+    double** flux_Momy = new double*[rows];
+    double** flux_Pixx_vx = new double*[rows];
+    double** flux_Pixy_vx = new double*[rows];
+    double** flux_Piyx_vx = new double*[rows];
+    double** flux_Piyy_vx = new double*[rows];
 
     double vx_av;
     double vy_av;
@@ -332,10 +274,10 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
     double Piyy_vx_av;
     double P_av;
 
-    vector<vector<double>> cs_P = getSpeedOfSound(rho_P, gamma);
-    vector<vector<double>> C_P = local_propagation_speed(rho_P, vx_P, vy_P, eta, zeta, tau_nu, cs_P);
-    vector<vector<double>> cs_M = getSpeedOfSound(rho_M, gamma);
-    vector<vector<double>> C_M = local_propagation_speed(rho_M, vx_M, vy_M, eta, zeta, tau_nu, cs_M);
+    double** cs_P = getSpeedOfSound(rho_P, gamma, rows, cols);
+    double** C_P = local_propagation_speed(rho_P, vx_P, vy_P, eta, zeta, tau_nu, cs_P, rows, cols);
+    double** cs_M = getSpeedOfSound(rho_M, gamma, rows, cols);
+    double** C_M = local_propagation_speed(rho_M, vx_M, vy_M, eta, zeta, tau_nu, cs_M, rows, cols);
 
     double C;
 
@@ -343,6 +285,14 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
     double A = zeta / tau_nu;
 
     for (int i = 0; i < rows; i++) {
+        flux_Mass[i] = new double[cols];
+        flux_Momx[i] = new double[cols];
+        flux_Momy[i] = new double[cols];
+        flux_Pixx_vx[i] = new double[cols];
+        flux_Pixy_vx[i] = new double[cols];
+        flux_Piyx_vx[i] = new double[cols];
+        flux_Piyy_vx[i] = new double[cols];
+
         for (int j = 0; j < cols; j++) {
             vx_av = 0.5 * (vx_P[i][j] + vx_M[i][j]);
             vy_av = 0.5 * (vy_P[i][j] + vy_M[i][j]);
@@ -378,33 +328,38 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
         }
     }
 
+
+    delete[] cs_M; 
+    delete[] cs_P;
+    delete[] C_M;
+    delete[] C_P;
+
     return make_tuple(flux_Mass, flux_Momx, flux_Momy, flux_Pixx_vx, flux_Pixy_vx, flux_Piyx_vx, flux_Piyy_vx);
   }
 
 
 
-tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, vector<vector<double>>,
- vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> getYFlux(vector<vector<double>>& rho_P, vector<vector<double>>& rho_M,
-             vector<vector<double>>& vx_P, vector<vector<double>>& vx_M,
-             vector<vector<double>>& vy_P, vector<vector<double>>& vy_M,
-             vector<vector<double>>& Pixx_P, vector<vector<double>>& Pixx_M,
-             vector<vector<double>>& Pixy_P, vector<vector<double>>& Pixy_M,
-             vector<vector<double>>& Piyx_P, vector<vector<double>>& Piyx_M,
-             vector<vector<double>>& Piyy_P, vector<vector<double>>& Piyy_M,
-             vector<vector<double>>& P_P, vector<vector<double>>& P_M,
+tuple<double**, double**, double**, double**,
+ double**, double**, double**> getYFlux(double**& rho_P, double**& rho_M,
+             double**& vx_P, double**& vx_M,
+             double**& vy_P, double**& vy_M,
+             double**& Pixx_P, double**& Pixx_M,
+             double**& Pixy_P, double**& Pixy_M,
+             double**& Piyx_P, double**& Piyx_M,
+             double**& Piyy_P, double**& Piyy_M,
+             double**& P_P, double**& P_M,
              double gamma, double eta,
-             double zeta, double tau_nu){
+             double zeta, double tau_nu,  int rows, int cols){
 
-    int rows = rho_P.size();
-    int cols = rho_P[0].size();
+    
 
-    vector<vector<double>> flux_Mass(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> flux_Momx(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> flux_Momy(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> flux_Pixx_vy(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> flux_Pixy_vy(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> flux_Piyx_vy(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> flux_Piyy_vy(rows, vector<double>(cols, 0.0));
+    double** flux_Mass = new double*[rows];
+    double** flux_Momx = new double*[rows];
+    double** flux_Momy = new double*[rows];
+    double** flux_Pixx_vy = new double*[rows];
+    double** flux_Pixy_vy = new double*[rows];
+    double** flux_Piyx_vy = new double*[rows];
+    double** flux_Piyy_vy = new double*[rows];
 
     double vx_av;
     double vy_av;
@@ -417,19 +372,25 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
     double Piyy_vy_av;
     double P_av;
 
-    vector<vector<double>> cs_P = getSpeedOfSound(rho_P, gamma);
-    vector<vector<double>> C_P = local_propagation_speed(rho_P, vx_P, vy_P, eta, zeta, tau_nu, cs_P);
+    double** cs_P = getSpeedOfSound(rho_P, gamma, rows, cols);
+    double** C_P = local_propagation_speed(rho_P, vx_P, vy_P, eta, zeta, tau_nu, cs_P, rows, cols);
 
-    vector<vector<double>> cs_M = getSpeedOfSound(rho_M, gamma);
-    vector<vector<double>> C_M = local_propagation_speed(rho_M, vx_M, vy_M, eta, zeta, tau_nu, cs_M);
+    double** cs_M = getSpeedOfSound(rho_M, gamma, rows, cols);
+    double** C_M = local_propagation_speed(rho_M, vx_M, vy_M, eta, zeta, tau_nu, cs_M, rows, cols);
 
     double C;
-
     double B = eta / tau_nu;
     double A = zeta/ tau_nu;
 
 
     for (int i = 0; i < rows; i++) {
+        flux_Mass[i] = new double[cols];
+        flux_Momx[i] = new double[cols];
+        flux_Momy[i] = new double[cols];
+        flux_Pixx_vy[i] = new double[cols];
+        flux_Pixy_vy[i] = new double[cols];
+        flux_Piyx_vy[i] = new double[cols];
+        flux_Piyy_vy[i] = new double[cols];
         for (int j = 0; j < cols; j++) {
             vx_av = 0.5 * (vx_P[i][j] + vx_M[i][j]);
             vy_av = 0.5 * (vy_P[i][j] + vy_M[i][j]);
@@ -464,24 +425,27 @@ tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, ve
         }
     }
 
+    delete[] cs_M;
+    delete[] cs_P;
+    delete[] C_M;
+    delete[] C_P;
+
     return make_tuple(flux_Mass, flux_Momx, flux_Momy, flux_Pixx_vy, flux_Pixy_vy, flux_Piyx_vy, flux_Piyy_vy);
         
 }
 // Apply fluxes to conserved variables
 
-vector<vector<double>> applyFluxes(vector<vector<double>>& flux_H1_X, vector<vector<double>>& flux_H2_X,
-  vector<vector<double>>& flux_H1_Y, vector<vector<double>>& flux_H2_Y,
-   double dx, double dy, vector<vector<double>>& J){
-
-    int rows = flux_H1_X.size();
-    int cols = flux_H1_X[0].size();
+double** applyFluxes(double**& flux_H1_X, double**& flux_H2_X,
+  double**& flux_H1_Y, double**& flux_H2_Y,
+   double dx, double dy, double**& J, int rows, int cols){
 
 
-    vector<vector<double>> C(rows, vector<double>(cols, 0.0));
+    double** C = new double*[rows];
     
     for (int i = 0; i < rows; i++) {
+        C[i] = new double[cols];
         for (int j = 0; j < cols; j++) {
-            C[i][j] -= (flux_H1_X[i][j] - flux_H2_X[i][j]) / dx;
+            C[i][j] = (flux_H1_X[i][j] - flux_H2_X[i][j]) / dx;
             C[i][j] -= (flux_H1_Y[i][j] - flux_H2_Y[i][j]) / dy;
             C[i][j] += J[i][j];
         }
@@ -491,16 +455,14 @@ vector<vector<double>> applyFluxes(vector<vector<double>>& flux_H1_X, vector<vec
 }
 
 // Heun's method
-state heuns (state& q, function<state(double,state)> f, double dt, double t) {
+state heuns (state& q, function<state(double,state)> f, double dt, double t, int rows, int cols) {
     
-    int rows = (q.get(0)).size();
-    int cols = (q.get(0))[0].size();
 
     double k1,k2;
-    vector<vector<double>> c1(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> c2(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> y(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> yprime(rows, vector<double>(cols, 0.0));
+    double** c1 = new double*[rows];
+    double** c2 = new double*[rows];
+    double** y = new double*[rows];
+    double** yprime = new double*[rows];
 
 
     state qprime;
@@ -512,6 +474,7 @@ state heuns (state& q, function<state(double,state)> f, double dt, double t) {
         c1 = C1.get(n);
         y = q.get(n);
         for (int i = 0; i < rows; i++) {
+            yprime[i] = new double[cols];
             for (int j = 0; j < cols; j++) {
                 k1 = dt * c1[i][j];
                 yprime[i][j] = y[i][j] + k1;
@@ -532,27 +495,30 @@ state heuns (state& q, function<state(double,state)> f, double dt, double t) {
                 k2 = dt * c2[i][j];
                 yprime[i][j] = y[i][j] + 0.5*(k1 + k2);
             }
+            delete[] yprime[i];
         }
         qprime.set(n , yprime);
     }
     
+    delete[] c1;
+    delete[] c2; 
+    delete[] y;
+    delete[] yprime;
 
     return qprime;
 }
 
 
-state rK4 (state& q, function<state(double,state)> f, double dt, double t) {
-    
-    int rows = (q.get(0)).size();
-    int cols = (q.get(0))[0].size();
+state rK4 (state& q, function<state(double,state)> f, double dt, double t, int rows, int cols) {
+  
 
     double k1,k2,k3,k4;
-    vector<vector<double>> c1(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> c2(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> c3(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> c4(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> y(rows, vector<double>(cols, 0.0));
-    vector<vector<double>> yprime(rows, vector<double>(cols, 0.0));
+    double** c1 = new double*[rows];
+    double** c2 = new double*[rows];
+    double** c3 = new double*[rows];
+    double** c4 = new double*[rows];
+    double** y = new double*[rows];
+    double** yprime = new double*[rows];
 
 
     state qprime;
@@ -564,6 +530,7 @@ state rK4 (state& q, function<state(double,state)> f, double dt, double t) {
         c1 = C1.get(n);
         y = q.get(n);
         for (int i = 0; i < rows; i++) {
+            yprime[i] = new double[cols];
             for (int j = 0; j < cols; j++) {
                 k1 = dt * c1[i][j];
                 yprime[i][j] = y[i][j] + 0.5 * k1;
@@ -616,9 +583,19 @@ state rK4 (state& q, function<state(double,state)> f, double dt, double t) {
                 k4 = dt * c4[i][j];
                 yprime[i][j] = y[i][j] + (1/6)*(k1 + 2*k2 + 2*k3 + k4);
             }
+            delete[] yprime[i];
+
         }
         qprime.set(n , yprime);
     }
 
+    delete[] c1;
+    delete[] c2;
+    delete[] c3;
+    delete[] c4;
+    delete[] y;
+    delete[] yprime;
+
     return qprime;
 }
+

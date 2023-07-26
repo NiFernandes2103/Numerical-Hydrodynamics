@@ -8,33 +8,32 @@
 #include <tuple>
 #include <algorithm>
 #include <vector>
-#include <map>
 #include <functional>
 #pragma once
 using namespace std;
 
 class state {       
   private:             
-    vector<vector<double>> rho;        
-    vector<vector<double>> Momx;
-    vector<vector<double>> Momy;
-    vector<vector<double>> Pixx;
-    vector<vector<double>> Pixy;
-    vector<vector<double>> Piyx;
-    vector<vector<double>> Piyy;
+    double** rho;        
+    double** Momx;
+    double** Momy;
+    double** Pixx;
+    double** Pixy;
+    double** Piyx;
+    double** Piyy;
 
 public:
     state() : rho(), Momx(), Momy(), Pixx(), Pixy(), Piyx(), Piyy() {}
 
-    state(vector<vector<double>> v1,
-     vector<vector<double>> v2,
-     vector<vector<double>> v3,
-     vector<vector<double>> v4,
-     vector<vector<double>> v5,
-     vector<vector<double>> v6,
-     vector<vector<double>> v7) : rho(v1), Momx(v2), Momy(v3), Pixx(v4), Pixy(v5), Piyx(v6), Piyy(v7) {}
+    state(double** v1,
+     double** v2,
+     double** v3,
+     double** v4,
+     double** v5,
+     double** v6,
+     double** v7) : rho(v1), Momx(v2), Momy(v3), Pixx(v4), Pixy(v5), Piyx(v6), Piyy(v7) {}
 
-    vector<vector<double>> get(int n) {
+    double** get(int n) {
         if (n == 0){
             return rho;
         }
@@ -56,13 +55,13 @@ public:
         if (n == 6){
             return Piyy;
         }
-        else { 
-            return vector<vector<double>>();
-        } 
+        else {
+            return nullptr;
+        }
         
     }
 
-    void set(int n , vector<vector<double>> v) {
+    void set(int n , double** v) {
 
         if (n == 0){
             rho = v;
@@ -86,62 +85,62 @@ public:
             Piyy = v;
         }
     }
-
+    
 };
 
 
-double max_value(vector<vector<double>> value);
+double max_value(double** value, int rows, int cols);
 
-vector<vector<double>> sign(vector<vector<double>> value);
+double** sign(double** value,  int rows, int cols);
 
-tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>> getConserved(vector<vector<double>>& rho,
- vector<vector<double>>& vx, vector<vector<double>>& vy, double vol);
+tuple<double**,double**,double**> getConserved(double**& rho,
+ double**& vx, double**& vy, double vol, int rows, int cols);
 
-tuple<vector<vector<double>>,vector<vector<double>>,vector<vector<double>>,vector<vector<double>>> getPrimitive(vector<vector<double>> &Mass,
- vector<vector<double>>& Momx, vector<vector<double>>& Momy, double gamma, double vol);
+tuple<double**,double**,double**,double**> getPrimitive(double** &Mass,
+ double**& Momx, double**& Momy, double gamma, double vol, int rows, int cols);
 
-vector<vector<double>> getSpeedOfSound(vector<vector<double>>& rho, double gamma);
+double** getSpeedOfSound(double**& rho, double gamma, int rows, int cols);
 
 double minmod(double x, double y);
 
 double minmod3(double x, double y, double z);
 
-vector<vector<double>> getGradient (vector<vector<double>>& f, double dx, int axis, double theta);
+double** getGradient (double**& f, double dx, int axis, int rows, int cols, double theta);
 
-tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> extrapolateInSpaceToFace (vector<vector<double>>& q, vector<vector<double>>& q_dx, double dx, int axis);
+tuple<double**, double**, double**, double**> extrapolateInSpaceToFace (double**& q, double**& q_dx, double dx, int axis, int rows, int cols);
 
-vector<vector<double>> local_propagation_speed (vector<vector<double>>& rho, vector<vector<double>>& vx, vector<vector<double>>& vy, double eta, double zeta, double tau_nu, vector<vector<double>>& cs);
+double** local_propagation_speed (double**& rho, double**& vx, double**& vy, double eta, double zeta, double tau_nu, double**& cs, int rows, int cols);
 
 
-tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, vector<vector<double>>,
- vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> getXFlux(vector<vector<double>>& rho_P,
-    vector<vector<double>>& rho_M, vector<vector<double>>& vx_P, vector<vector<double>>& vx_M, 
-    vector<vector<double>>& vy_P, vector<vector<double>>& vy_M, vector<vector<double>>& Pixx_P, 
-   vector<vector<double>>& Pixx_M, vector<vector<double>>& Pixy_P, vector<vector<double>>& Pixy_M, 
-   vector<vector<double>>& Piyx_P, vector<vector<double>>& Piyx_M, vector<vector<double>>& Piyy_P, 
-   vector<vector<double>>& Piyy_M, vector<vector<double>>& P_P, vector<vector<double>>& P_M, double gamma, 
-  double eta, double zeta, double tau_nu);
+tuple<double**, double**, double**, double**,
+ double**, double**, double**> getXFlux(double**& rho_P,
+    double**& rho_M, double**& vx_P, double**& vx_M, 
+    double**& vy_P, double**& vy_M, double**& Pixx_P, 
+   double**& Pixx_M, double**& Pixy_P, double**& Pixy_M, 
+   double**& Piyx_P, double**& Piyx_M, double**& Piyy_P, 
+   double**& Piyy_M, double**& P_P, double**& P_M, double gamma, 
+  double eta, double zeta, double tau_nu, int rows, int cols);
 
-tuple<vector<vector<double>>, vector<vector<double>>, vector<vector<double>>, vector<vector<double>>,
- vector<vector<double>>, vector<vector<double>>, vector<vector<double>>> getYFlux(vector<vector<double>>& rho_P, vector<vector<double>>& rho_M,
-             vector<vector<double>>& vx_P, vector<vector<double>>& vx_M,
-             vector<vector<double>>& vy_P, vector<vector<double>>& vy_M,
-             vector<vector<double>>& Pixx_P, vector<vector<double>>& Pixx_M,
-             vector<vector<double>>& Pixy_P, vector<vector<double>>& Pixy_M,
-             vector<vector<double>>& Piyx_P, vector<vector<double>>& Piyx_M,
-             vector<vector<double>>& Piyy_P, vector<vector<double>>& Piyy_M,
-             vector<vector<double>>& P_P, vector<vector<double>>& P_M,
+tuple<double**, double**, double**, double**,
+ double**, double**, double**> getYFlux(double**& rho_P, double**& rho_M,
+             double**& vx_P, double**& vx_M,
+             double**& vy_P, double**& vy_M,
+             double**& Pixx_P, double**& Pixx_M,
+             double**& Pixy_P, double**& Pixy_M,
+             double**& Piyx_P, double**& Piyx_M,
+             double**& Piyy_P, double**& Piyy_M,
+             double**& P_P, double**& P_M,
              double gamma, double eta,
-             double zeta, double tau_nu);
+             double zeta, double tau_nu, int rows, int cols);
 
 // Apply fluxes to conserved variables
-vector<vector<double>> applyFluxes(vector<vector<double>>& flux_H1_X, vector<vector<double>>& flux_H2_X,
-  vector<vector<double>>& flux_H1_Y, vector<vector<double>>& flux_H2_Y,
-   double dx, double dy, vector<vector<double>>& J);
+double** applyFluxes(double**& flux_H1_X, double**& flux_H2_X,
+  double**& flux_H1_Y, double**& flux_H2_Y,
+   double dx, double dy, double**& J, int rows, int cols);
 
 // Heun's method
-state heuns (state& q, function<state(double,state)> f, double dt, double t);
+state heuns (state& q, function<state(double,state)> f, double dt, double t, int rows, int cols);
 
-state rK4 (state& q, function<state(double,state)> f, double dt, double t);
+state rK4 (state& q, function<state(double,state)> f, double dt, double t, int rows, int cols);
 
 # endif

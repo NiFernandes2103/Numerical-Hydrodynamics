@@ -1,7 +1,6 @@
 #include "KTmethods2d.h"
 #include "fileFunc.h"
 #include <iostream>
-#include <map>
 #include <fstream>
 using namespace std;
 
@@ -46,7 +45,7 @@ void parameters_csv(double t, double tEnd, double tOut, int N, double boxsize, d
 }
 
 
-void create(state initial,string filename) {
+void create(state initial,string filename, int rows, int cols) {
     
     // file pointer
     fstream fout;
@@ -55,19 +54,18 @@ void create(state initial,string filename) {
     fout.open(filename, ios::out | ios::trunc);
 
 
-    vector<vector<double>> rhoIC  = initial.get(0);        
-    vector<vector<double>> MomxIC = initial.get(1);
-    vector<vector<double>> MomyIC = initial.get(2);
-    vector<vector<double>> PixxIC = initial.get(3);
-    vector<vector<double>> PixyIC = initial.get(4);
-    vector<vector<double>> PiyxIC = initial.get(5);
-    vector<vector<double>> PiyyIC = initial.get(6);
+    double** rhoIC  = initial.get(0);        
+    double** MomxIC = initial.get(1);
+    double** MomyIC = initial.get(2);
+    double** PixxIC = initial.get(3);
+    double** PixyIC = initial.get(4);
+    double** PiyxIC = initial.get(5);
+    double** PiyyIC = initial.get(6);
 
-    int A = rhoIC.size();
 
     // Read the input
-    for (int i = 0; i < A; i++) {
-        for (int j = 0; j < A; j++) {
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
             fout << rhoIC[i][j]  <<',';
             fout << MomxIC[i][j] <<',';
             fout << MomyIC[i][j] <<',';
@@ -83,7 +81,7 @@ void create(state initial,string filename) {
 }
 
 
-void write(list<state> solution, string filename)
+void write(list<state> solution, string filename, int rows, int cols)
 {
     // file pointer
     fstream fout;
@@ -96,19 +94,18 @@ void write(list<state> solution, string filename)
     // Iterate over the list using the iterator
     // Read the input
     for (list<state>::iterator it = solution.begin(); it != solution.end(); ++it) {
-        vector<vector<double>> rho  = (*it).get(0);        
-        vector<vector<double>> Momx = (*it).get(1);
-        vector<vector<double>> Momy = (*it).get(2);
-        vector<vector<double>> Pixx = (*it).get(3);
-        vector<vector<double>> Pixy = (*it).get(4);
-        vector<vector<double>> Piyx = (*it).get(5);
-        vector<vector<double>> Piyy = (*it).get(6);
+        double** rho  = (*it).get(0);        
+        double** Momx = (*it).get(1);
+        double** Momy = (*it).get(2);
+        double** Pixx = (*it).get(3);
+        double** Pixy = (*it).get(4);
+        double** Piyx = (*it).get(5);
+        double** Piyy = (*it).get(6);
 
-        int N = rho.size();
 
         // write the csv file
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
                 fout << rho[i][j]  <<',';
                 fout << Momx[i][j] <<',';
                 fout << Momy[i][j] <<',';
@@ -128,7 +125,7 @@ void write(list<state> solution, string filename)
 
 }
 
-void write_each(list<state> solution, string filename, int n)
+void write_each(list<state> solution, string filename, int n, int rows, int cols)
 {
     // file pointer
     fstream fout;
@@ -141,13 +138,12 @@ void write_each(list<state> solution, string filename, int n)
     // Iterate over the list using the iterator
     // Read the input
     for (list<state>::iterator it = solution.begin(); it != solution.end(); ++it) {
-        vector<vector<double>> v  = (*it).get(n);        
+        double** v  = (*it).get(n);        
 
-        int N = v.size();
 
         // write the csv file
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
                 fout << v[i][j]  <<',';
             }
         }

@@ -11,10 +11,10 @@ using namespace std;
 
 void parameters_csv(double t, double tEnd, double tOut,int N, double boxsize, double a, double b, double gamma, double zeta, double eta, double tau_nu, double theta, string filename);
 
-void create(state initial, string filename);
+void create(state initial, string filename, int rows, int cols);
 
-void write(list<state> solution, string filename);
+void write(list<state> solution, string filename, int rows, int cols);
 
-void write_each(list<state> solution, string filename, int n);
+void write_each(list<state> solution, string filename, int n, int rows, int cols);
 
 #endif
