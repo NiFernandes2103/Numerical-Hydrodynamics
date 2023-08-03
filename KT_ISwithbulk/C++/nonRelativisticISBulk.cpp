@@ -7,7 +7,7 @@
 #include "KTmethods2dBulk.h"
 #include "nonRelativisticISBulk.h"
 
-state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int N, double gamma, double zeta, double tau_nu, double theta = 1) {
+stateb KTschemeNonRelativisticIS(double t,  stateb& IC, double dx, double dy, int N, double gamma, double zeta, double tau_nu, double theta = 1) {
      
     /* Finite Volume simulation */
 
@@ -38,7 +38,7 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
             vx[i][j] = Momx[i][j] / rho[i][j];
             vy[i][j] = Momy[i][j] / rho[i][j];
 
-             /* Pressure from equation of state */
+             /* Pressure from equation of stateb */
             P[i][j] = pow(rho[i][j], gamma);
 
             // set boundary conditions
@@ -165,14 +165,14 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
 }
 
 
-std::list<state> integrator(state (*scheme)(double, state&, double, double, int, double, double, double, double), std::tuple<double,double> time, std::list<state> Q, double dtmax,  std::tuple<double, double, int, double, double, double, double> args, std::string method)
+std::list<stateb> integrator(stateb (*scheme)(double, stateb&, double, double, int, double, double, double, double), std::tuple<double,double> time, std::list<stateb> Q, double dtmax,  std::tuple<double, double, int, double, double, double, double> args, std::string method)
 {
     /*
     This is an integrator that evolves a
 
     scheme     is the method to get dy/dt e.g. KTscheme
     time       is the current time
-    q0         is the current state
+    q0         is the current stateb
     dtmax      is the upperbound of dt set by the user
     BC         is a function that enforces the boundary conditions
     method     is the method used in the integrator

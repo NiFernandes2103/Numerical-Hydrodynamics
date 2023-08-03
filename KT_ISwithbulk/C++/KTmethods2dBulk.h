@@ -1,4 +1,4 @@
-// file: KTmethods2d.h
+// file: KTmethods2dBulk.h
 
 #ifndef _KTmethods2dBulk_h
 #define _KTmethods2dBulk_h
@@ -103,8 +103,8 @@ std::vector<std::vector<double>> applyFluxes(std::vector<std::vector<double>>& f
    double dx, double dy, std::vector<std::vector<double>>& J);
 
 // Heun's method
-stateb heuns (stateb& q, std::function<stateb(double,stateb)> f, double dt, double t);
+stateb heuns(stateb& q, std::function<stateb(double,stateb)> f, double dt, double t);
 
-stateb rK4 (stateb& q, std::function<stateb(double,stateb)> f, double dt, double t);
+stateb rK4(stateb& q, std::function<stateb(double,stateb)> f, double dt, double t);
 
 # endif

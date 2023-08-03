@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <vector>
 #include <functional>
-#include "KTmethods2d.h"
+#include "KTmethods2dBulk.h"
 
 
 double max_value(const std::vector<std::vector<double>>& value) {
@@ -331,7 +331,7 @@ std::vector<std::vector<double>> applyFluxes(std::vector<std::vector<double>>& f
 }
 
 // Heun's method
-state heuns (state& q, std::function<state(double,state)> f, double dt, double t) {
+stateb heuns (stateb& q, std::function<stateb(double,stateb)> f, double dt, double t) {
     
     int rows = (q.get(0)).size();
     int cols = (q.get(0))[0].size();
@@ -343,8 +343,8 @@ state heuns (state& q, std::function<state(double,state)> f, double dt, double t
     std::vector<std::vector<double>> yprime(rows, std::vector<double>(cols, 0.0));
 
 
-    state qprime;
-    state C1,C2;
+    stateb qprime;
+    stateb C1,C2;
 
     C1 = f(t,q);
 
@@ -381,7 +381,7 @@ state heuns (state& q, std::function<state(double,state)> f, double dt, double t
 }
 
 
-state rK4 (state& q, std::function<state(double,state)> f, double dt, double t) {
+stateb rK4 (stateb& q, std::function<stateb(double,stateb)> f, double dt, double t) {
     
     int rows = (q.get(0)).size();
     int cols = (q.get(0))[0].size();
@@ -395,8 +395,8 @@ state rK4 (state& q, std::function<state(double,state)> f, double dt, double t) 
     std::vector<std::vector<double>> yprime(rows, std::vector<double>(cols, 0.0));
 
 
-    state qprime;
-    state C1,C2,C3,C4;
+    stateb qprime;
+    stateb C1,C2,C3,C4;
 
     C1 = f(t,q);
 

@@ -43,7 +43,7 @@ void parameters_csv(double t, double tEnd, double tOut, int N, double boxsize, d
 }
 
 
-void create(state initial,std::string filename) {
+void create(stateb initial,std::string filename) {
     
     // file pointer
     std::fstream fout;
@@ -75,7 +75,7 @@ void create(state initial,std::string filename) {
 }
 
 
-void write(std::list<state> solution, std::string filename)
+void write(std::list<stateb> solution, std::string filename)
 {
     // file pointer
     std::fstream fout;
@@ -87,7 +87,7 @@ void write(std::list<state> solution, std::string filename)
 
     // Iterate over the list using the iterator
     // Read the input
-    for (std::list<state>::iterator it = solution.begin(); it != solution.end(); ++it) {
+    for (std::list<stateb>::iterator it = solution.begin(); it != solution.end(); ++it) {
         std::vector<std::vector<double>> rho  = (*it).get(0);        
         std::vector<std::vector<double>> Momx = (*it).get(1);
         std::vector<std::vector<double>> Momy = (*it).get(2);
@@ -115,7 +115,7 @@ void write(std::list<state> solution, std::string filename)
 
 }
 
-void write_each(std::list<state> solution, std::string filename, int n)
+void write_each(std::list<stateb> solution, std::string filename, int n)
 {
     // file pointer
     std::fstream fout;
@@ -127,7 +127,7 @@ void write_each(std::list<state> solution, std::string filename, int n)
 
     // Iterate over the list using the iterator
     // Read the input
-    for (std::list<state>::iterator it = solution.begin(); it != solution.end(); ++it) {
+    for (std::list<stateb>::iterator it = solution.begin(); it != solution.end(); ++it) {
         std::vector<std::vector<double>> v  = (*it).get(n);        
 
         int N = v.size();
