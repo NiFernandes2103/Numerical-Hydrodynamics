@@ -9,3 +9,10 @@ NonRelativisticISWithShock.npy
 NonRelativisticISHeuns.npy
 KT_ISshear/C++/Results/NonrelativisticISwithsmoothIC.csv
 NonRelativisticISRotatingbumpfunction.npy
+KT_ISshear/C++/density_solution.csv
+KT_ISshear/C++/momentx_solution.csv
+KT_ISshear/C++/momenty_solution.csv
+KT_ISshear/C++/Pixx_solution.csv
+KT_ISshear/C++/Pixy_solution.csv
+KT_ISshear/C++/Piyx_solution.csv
+KT_ISshear/C++/Piyy_solution.csv

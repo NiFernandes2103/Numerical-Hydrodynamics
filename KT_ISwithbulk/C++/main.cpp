@@ -5,12 +5,12 @@
 #include <list>
 #include <iostream>
 #include <string>
-#include "fileFunc.h"
-#include "fileFunc.cpp"
-#include "KTmethods2d.h"
-#include "KTmethods2d.cpp"
-#include "nonRelativisticISwithShear.h"
-#include "nonRelativisticISwithShear.cpp"
+#include "file_handler.h"
+#include "file_handler.cpp"
+#include "KTmethods2dBulk.h"
+#include "KTmethods2dBulk.cpp"
+#include "nonRelativisticISBulk.h"
+#include "nonRelativisticISBulk.cpp"
 
 
 int main() {
@@ -23,7 +23,6 @@ int main() {
     double boxsize = 4.0;  // in some unit system l
     double gamma = 1;  // adiabatic index
     double zeta = 1.0;  // bulk viscosity coefficient
-    double eta = 1.0;  // shear viscosity coefficient
     double tau_nu = 1.0;  // relaxation time
     double theta = 1.0;  // flux limiter parameter
     double dx = boxsize / N;  // box size
@@ -32,7 +31,7 @@ int main() {
     double a = 0.5*(0.5 * dx - boxsize); 
     double b = 0.5*(boxsize - 0.5 * dx);
 
-    parameters_csv(t,tEnd,tOut,N,boxsize,a,b,gamma,zeta,eta,tau_nu,theta,"parameters.csv");
+    parameters_csv(t,tEnd,tOut,N,boxsize,a,b,gamma,zeta,tau_nu,theta,"parameters.csv");
 
     std::vector<double> xlin(N);
     for (int i = 0; i < N; i++) {
@@ -65,10 +64,8 @@ int main() {
     std::vector<std::vector<double>> vy(s, std::vector<double>(s, 0.0));
     std::vector<std::vector<double>> Momx(s, std::vector<double>(s, 0.0));
     std::vector<std::vector<double>> Momy(s, std::vector<double>(s, 0.0));
-    std::vector<std::vector<double>> Pixx(s, std::vector<double>(s, 0.0));
-    std::vector<std::vector<double>> Pixy(s, std::vector<double>(s, 0.0));
-    std::vector<std::vector<double>> Piyx(s, std::vector<double>(s, 0.0));
-    std::vector<std::vector<double>> Piyy(s, std::vector<double>(s, 0.0));
+    std::vector<std::vector<double>> Pi(s, std::vector<double>(s, 0.0));
+
 
     for (int i = 0; i < s; i++) {
         for (int j = 0; j < s; j++) {
@@ -79,13 +76,13 @@ int main() {
         }
     }
 
-    state IC = {rho, Momx, Momy, Pixx, Pixy, Piyx, Piyy};
+    stateb IC = {rho, Momx, Momy, Pi};
 
     create(IC, "initial_state.csv");
 
-    std::list<state> initial_state = {IC};
+    std::list<stateb> initial_state = {IC};
 
-std::list<state> solution = integrator(KTschemeNonRelativisticIS, std::make_tuple(t, tEnd), initial_state, tOut, std::make_tuple(dx, dy, N, gamma, zeta, tau_nu, eta, theta), "Heuns");
+std::list<stateb> solution = integrator(KTschemeNonRelativisticIS, std::make_tuple(t, tEnd), initial_state, tOut, std::make_tuple(dx, dy, N, gamma, zeta, tau_nu, theta), "Heuns");
 
     //write(solution, "NonrelativisticISwithsmoothIC.csv");
     

@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
 
+plt.rcParams['text.usetex'] = True
+
+
 def plot_ic_csv(file, parameters_file):
 
     parameters = pd.read_csv(parameters_file)
@@ -90,7 +93,7 @@ def plot_solution_csv(file, parameters_file):
 
 
 
-
+'''
 def plot_each_csv(file, parameters_file):
     
     parameters = pd.read_csv(parameters_file)
@@ -134,7 +137,7 @@ def plot_each_csv(file, parameters_file):
         outputcount += 1
         print(outputcount)
         s += 10
-
+'''
 def plot_image(v, ax, fontsize=12, hide_labels=False):
         pc = ax.pcolormesh(v, vmin=1, vmax=2)
         if not hide_labels:
@@ -143,7 +146,8 @@ def plot_image(v, ax, fontsize=12, hide_labels=False):
             ax.set_title('density', fontsize=fontsize)
         return pc
 
-def plot_each_csv_static(file, parameters_file, s, nameOfFigure, fontsize, hide_labels = False):
+
+def plot_csv_static(file1, file2, file3, file4, file5, file6, file7, parameters_file, s, nameOfFigure, hide_labels = False):
     
     parameters = pd.read_csv(parameters_file)
     N = 300 #int(parameters['N'])
@@ -156,76 +160,119 @@ def plot_each_csv_static(file, parameters_file, s, nameOfFigure, fontsize, hide_
     Y, X = np.meshgrid( xlin, xlin ) # define the mesh grid
     S = X.shape
 
-    init = np.zeros(S)
-    v    = np.zeros(S)
-    
+    init1 = np.zeros(S)
+    v1    = np.zeros(S)
+    init2 = np.zeros(S)
+    v2    = np.zeros(S)
+    init3 = np.zeros(S)
+    v3    = np.zeros(S)
+    init4 = np.zeros(S)
+    v4    = np.zeros(S)
+    init5 = np.zeros(S)
+    v5    = np.zeros(S)
+    init6 = np.zeros(S)
+    v6    = np.zeros(S)
+    init7 = np.zeros(S)
+    v7    = np.zeros(S)
+
     print("starting...")
-    solution = pd.read_csv(file, header=None)
+    solution1 = pd.read_csv(file1, header=None)
+    solution2 = pd.read_csv(file2, header=None)
+    solution3 = pd.read_csv(file3, header=None)
+    solution4 = pd.read_csv(file4, header=None)
+    solution5 = pd.read_csv(file5, header=None)
+    solution6 = pd.read_csv(file6, header=None)
+    solution7 = pd.read_csv(file7, header=None)
     print("solution Dataframe created")
 
-    sol = solution.to_numpy()
-    print("solution format:{}".format(sol.shape))
+    sol1 = solution1.to_numpy()
+    sol2 = solution2.to_numpy()
+    sol3 = solution3.to_numpy()
+    sol4 = solution4.to_numpy()
+    sol5 = solution5.to_numpy()
+    sol6 = solution6.to_numpy()
+    sol7 = solution7.to_numpy()
+
+    print("solution format:{}".format(sol1.shape))
 
     print("reading solution...")
     for i in range(N):
         for j in range(N):
-            init[i][j] = float(sol[0][N*i + j])
-            v[i][j]  = float(sol[s][N*i + j])
+            init1[i][j] = float(sol1[0][N*i + j])
+            v1[i][j]  = float(sol1[s][N*i + j])
+            init2[i][j] = float(sol2[0][N*i + j])
+            v2[i][j]  = float(sol2[s][N*i + j])
+            init3[i][j] = float(sol3[0][N*i + j])
+            v3[i][j]  = float(sol3[s][N*i + j])
+            init4[i][j] = float(sol4[0][N*i + j])
+            v4[i][j]  = float(sol4[s][N*i + j])
+            init5[i][j] = float(sol5[0][N*i + j])
+            v5[i][j]  = float(sol5[s][N*i + j])
+            init6[i][j] = float(sol6[0][N*i + j])
+            v6[i][j]  = float(sol6[s][N*i + j])
+            init7[i][j] = float(sol7[0][N*i + j])
+            v7[i][j]  = float(sol7[s][N*i + j])
+            
             
     print('finished reading')
 
-    fig, axs = plt.subplots(2, 2, figsize=(10, 4))
+    fig, axs = plt.subplots(2, 4, figsize=(10, 6))
     gridspec = axs[0, 0].get_subplotspec().get_gridspec()
     print("created the figure")
 
     # clear the left column for the subfigure:
-    for a in axs[:, 0]:
-        a.remove()
 
     # plot data in remaining axes:
     count = 0
     print("plotting subfigures")
-    for a in axs[:, 1:].flat:
+    for a in axs[:, :].flat:
         if count == 0:
-            a.plot(xlin, init[int(N/2)]) 
-            a.yaxis.set_label_position("right")
-            a.yaxis.tick_right()
-            a.set_ylabel("rho/rho_0" )
+            a.plot(xlin, init1[int(N/2)]) 
+            a.plot(xlin, v1[int(N/2)])
+            a.set_title("$rho$")
             count += 1
         elif count == 1:
-            a.plot(xlin, v[int(N/2)])
-            a.yaxis.set_label_position("right")
-            a.yaxis.tick_right()
-            a.set_ylabel("rho/rho_0" )
-            a.set_xlabel("r/x_0")
+            a.plot(xlin, init2[int(N/2)]) 
+            a.plot(xlin, v2[int(N/2)])
+            a.set_title("$vx$" )
             count += 1
-        
-
-    # make the subfigure in the empty gridspec slots:
-    subfig = fig.add_subfigure(gridspec[:, 0])
-
-    axsLeft = subfig.subplots(1, 2, sharey=True)
-    subfig.set_facecolor('0.75')
-    count = 0
-    for ax in axsLeft:
-        if count == 0:
-            pc = plot_image(init,ax)
+        elif count == 2:
+            a.plot(xlin, init3[int(N/2)])
+            a.plot(xlin, v3[int(N/2)])
+            a.set_title("$vy$" )
             count += 1
-        elif count == 1:
-            pc = plot_image(v,ax)
+        elif count == 3:
+            a.plot(xlin, init4[int(N/2)])
+            a.plot(xlin, v4[int(N/2)])
+            a.set_title("$Pixx$" )
             count += 1
-    subfig.suptitle('2d plots', fontsize='x-large')
-    subfig.colorbar(pc, shrink=0.6, ax=axsLeft, location='bottom')
+        elif count == 4:
+            a.plot(xlin, init5[int(N/2)])
+            a.plot(xlin, v5[int(N/2)])
+            a.set_title("$Pixy$" )
+            count += 1
+        elif count == 5:
+            a.plot(xlin, init6[int(N/2)])
+            a.plot(xlin, v6[int(N/2)])
+            a.set_title("$Piyx$" )
+            count += 1
+        elif count == 6:
+            a.plot(xlin, init7[int(N/2)])
+            a.plot(xlin, v7[int(N/2)])
+            a.set_title("$Piyy$" )
+            count += 1
+    
     print("Done")
     fig.suptitle('Nonrelativistic Israel-Stewart', fontsize='xx-large')
+    plt.tight_layout()
+    plt.savefig(nameOfFigure + ".png")
     plt.show()
 
 
-#plot_ic_csv('KT_ISshear\C++\initial_state.csv','KT_ISshear\C++\parameters.csv')
-#plot_each_csv('KT_ISshear\C++\density_solution.csv','KT_ISshear\C++\parameters.csv')
-#plot_each_csv('KT_ISshear\C++\Pixy_solution.csv','KT_ISshear\C++\parameters.csv')
-
-plot_each_csv_static('KT_ISshear\C++\density_solution.csv','KT_ISshear\C++\parameters.csv', 50 ,"density", 12)
+plot_csv_static('KT_ISshear\C++\density_solution.csv', 'KT_ISshear\C++\momentx_solution.csv', 
+'KT_ISshear\C++\momenty_solution.csv', 'KT_ISshear\C++\Pixx_solution.csv', 'KT_ISshear\C++\Pixy_solution.csv',
+ 'KT_ISshear\C++\Piyx_solution.csv', 'KT_ISshear\C++\Piyy_solution.csv',
+  'KT_ISshear\C++\parameters.csv', 50 ,"NonRelativisticIS")
 
 def show_2dsolution_static(file,parameters_file,i,n):
 
