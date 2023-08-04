@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
 
-plt.rcParams['text.usetex'] = True
+#plt.rcParams['text.usetex'] = True
 
 
 def plot_ic_csv(file, parameters_file):
@@ -150,14 +150,21 @@ def plot_image(v, ax, fontsize=12, hide_labels=False):
 def plot_csv_static(file1, file2, file3, file4, file5, file6, file7, parameters_file, s, nameOfFigure, hide_labels = False):
     
     parameters = pd.read_csv(parameters_file)
-    N = 300 #int(parameters['N'])
+    N = int(parameters['N'])
     boxsize = int(parameters['boxsize'])
     a = float(parameters['a'])
     b = float(parameters['b'])
     dx = boxsize/N
     xlin = np.linspace(a,b,N)
 
+    gamma = float(parameters['gamma'])
+    zeta = float(parameters['zeta'])
+    eta = float(parameters['eta'])
+    tau_nu = float(parameters['tau_nu'])
+    theta = float(parameters['theta'])
+
     Y, X = np.meshgrid( xlin, xlin ) # define the mesh grid
+    R = np.sqrt(X*X+Y*Y)
     S = X.shape
 
     init1 = np.zeros(S)
@@ -227,43 +234,50 @@ def plot_csv_static(file1, file2, file3, file4, file5, file6, file7, parameters_
     print("plotting subfigures")
     for a in axs[:, :].flat:
         if count == 0:
-            a.plot(xlin, init1[int(N/2)]) 
-            a.plot(xlin, v1[int(N/2)])
-            a.set_title("$rho$")
+            a.plot(xlin, init1.T[int(N/2)]) 
+            a.plot(xlin, v1.T[int(N/2)])
+            a.set_title("Density")
             count += 1
         elif count == 1:
-            a.plot(xlin, init2[int(N/2)]) 
-            a.plot(xlin, v2[int(N/2)])
-            a.set_title("$vx$" )
+
+            urinit = np.sqrt((init3.T[int(N/2)] / init1.T[int(N/2)])**2 + (init2.T[int(N/2)] / init1.T[int(N/2)])**2)
+            ur = np.sqrt((v3.T[int(N/2)] / v1.T[int(N/2)])**2 + (v2.T[int(N/2)] / v1.T[int(N/2)])**2)
+
+            a.plot(xlin, urinit) 
+            a.plot(xlin, ur)
+            a.set_title("Radial Velocity" )
             count += 1
         elif count == 2:
-            a.plot(xlin, init3[int(N/2)])
-            a.plot(xlin, v3[int(N/2)])
-            a.set_title("$vy$" )
+            uphyinit = (X[:][int(N/2)]*init3.T[int(N/2)]/ init1.T[int(N/2)] - Y[:][int(N/2)]*init3.T[int(N/2)] / init1.T[int(N/2)])/(R[:][int(N/2)])
+            uphy = (X[:][int(N/2)]*v3.T[int(N/2)] / v1.T[int(N/2)] - Y[:][int(N/2)]*v3.T[int(N/2)]/ v1.T[int(N/2)])/(R[:][int(N/2)])
+            a.plot(xlin, uphyinit)
+            a.plot(xlin, uphy)
+            a.set_title("Angular Velocity" )
             count += 1
         elif count == 3:
-            a.plot(xlin, init4[int(N/2)])
-            a.plot(xlin, v4[int(N/2)])
+            a.plot(xlin, init4.T[int(N/2)])
+            a.plot(xlin, v4.T[int(N/2)])
             a.set_title("$Pixx$" )
             count += 1
         elif count == 4:
-            a.plot(xlin, init5[int(N/2)])
-            a.plot(xlin, v5[int(N/2)])
+            a.plot(xlin, init5.T[int(N/2)])
+            a.plot(xlin, v5.T[int(N/2)])
             a.set_title("$Pixy$" )
             count += 1
         elif count == 5:
-            a.plot(xlin, init6[int(N/2)])
-            a.plot(xlin, v6[int(N/2)])
+            a.plot(xlin, init6.T[int(N/2)])
+            a.plot(xlin, v6.T[int(N/2)])
             a.set_title("$Piyx$" )
             count += 1
         elif count == 6:
-            a.plot(xlin, init7[int(N/2)])
-            a.plot(xlin, v7[int(N/2)])
+            a.plot(xlin, init7.T[int(N/2)])
+            a.plot(xlin, v7.T[int(N/2)])
             a.set_title("$Piyy$" )
             count += 1
-    
+
     print("Done")
-    fig.suptitle('Nonrelativistic Israel-Stewart', fontsize='xx-large')
+    fig.delaxes(axs[-1,-1])
+    fig.suptitle('NonrelativisticShearIS(N={}, gamma = {:.2f}, zeta = {:.2f}, eta = {:.2f}, tau_nu = {:.2f}, theta = {:.2f})'.format(N,gamma,zeta,eta,tau_nu,theta), fontsize='xx-large')
     plt.tight_layout()
     plt.savefig(nameOfFigure + ".png")
     plt.show()

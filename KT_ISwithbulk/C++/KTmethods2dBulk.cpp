@@ -167,8 +167,8 @@ std::vector<std::vector<double>> local_propagation_speed (std::vector<std::vecto
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
             if (rho[i][j] != 0) {
-                C1[i][j] = std::abs(vx) +  sqrt(cs[i][j]*cs[i][j] + zeta/tau_nu);
-                C2[i][j] = std::abs(vy) +  sqrt(cs[i][j]*cs[i][j] + zeta/tau_nu);
+                C1[i][j] = std::abs(vx[i][j]) +  sqrt(cs[i][j]*cs[i][j] + zeta/tau_nu);
+                C2[i][j] = std::abs(vy[i][j]) +  sqrt(cs[i][j]*cs[i][j] + zeta/tau_nu);
             }
         }
     }

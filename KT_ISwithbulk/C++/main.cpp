@@ -19,9 +19,9 @@ int main() {
     double tEnd = 1;  // time at the end
     double tOut = 0.01;  // time of each output
 
-    int N = 500;  // resolution
+    int N = 200;  // resolution
     double boxsize = 4.0;  // in some unit system l
-    double gamma = 1;  // adiabatic index
+    double gamma = 2;  // adiabatic index
     double zeta = 1.0;  // bulk viscosity coefficient
     double tau_nu = 1.0;  // relaxation time
     double theta = 1.0;  // flux limiter parameter
@@ -65,13 +65,12 @@ int main() {
     std::vector<std::vector<double>> Momx(s, std::vector<double>(s, 0.0));
     std::vector<std::vector<double>> Momy(s, std::vector<double>(s, 0.0));
     std::vector<std::vector<double>> Pi(s, std::vector<double>(s, 0.0));
-
-
+    
     for (int i = 0; i < s; i++) {
         for (int j = 0; j < s; j++) {
             
 
-            rho[i][j] = (pow((1 - (R[i][j])*(R[i][j])),4))*(R[i][j] < 1) + 1; // Mauricio's function advice
+            rho[i][j] = 2*pow((1 - (R[i][j])*(R[i][j]) / 0.25) ,4)*(R[i][j] < 0.5) + 2*pow((1 - (R[i][j])*(R[i][j]) / 0.25) ,4)*(R[i][j] < 0.5) + 1; // Mauricio's function advice
             
         }
     }
@@ -89,10 +88,8 @@ std::list<stateb> solution = integrator(KTschemeNonRelativisticIS, std::make_tup
     write_each(solution, "density_solution.csv", 0);
     write_each(solution, "momentx_solution.csv", 1);
     write_each(solution, "momenty_solution.csv", 2);
-    write_each(solution, "Pixx_solution.csv", 3);
-    write_each(solution, "Pixy_solution.csv", 4);
-    write_each(solution, "Piyx_solution.csv", 5);
-    write_each(solution, "Piyy_solution.csv", 6);
+    write_each(solution, "Pi_solution.csv", 3);
+
     
 }
 

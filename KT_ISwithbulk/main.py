@@ -136,3 +136,6 @@ for i in range(1):
   filename = "nonRelativisticIS{}.gif".format(i)
   plt.save(str(filename))
 
+
+
+

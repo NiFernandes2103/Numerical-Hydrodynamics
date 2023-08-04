@@ -19,9 +19,9 @@ int main() {
     double tEnd = 1;  // time at the end
     double tOut = 0.01;  // time of each output
 
-    int N = 500;  // resolution
+    int N = 400;  // resolution
     double boxsize = 4.0;  // in some unit system l
-    double gamma = 1;  // adiabatic index
+    double gamma = 2;  // adiabatic index
     double zeta = 1.0;  // bulk viscosity coefficient
     double eta = 1.0;  // shear viscosity coefficient
     double tau_nu = 1.0;  // relaxation time
