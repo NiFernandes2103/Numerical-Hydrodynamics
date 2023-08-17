@@ -8,6 +8,9 @@
 
 
 double max_value(const std::vector<std::vector<double>>& value) {
+
+    // Returns the maximum value in a vector<vector<double>>
+
     if (value.empty() || value[0].empty()) {
         // Handle the case when the input matrix is empty
         throw std::runtime_error("Input matrix is empty.");
@@ -23,7 +26,11 @@ double max_value(const std::vector<std::vector<double>>& value) {
 
     return max;
 }
+
 double sign(double value){   
+
+    // Returns the mathematical sign of a double value 
+
     return (value > 0) - (value < 0);
 }
 
@@ -32,6 +39,10 @@ double sign(double value){
 std::tuple<std::vector<std::vector<double>>,std::vector<std::vector<double>>,std::vector<std::vector<double>>> getConserved(std::vector<std::vector<double>>& rho,
  std::vector<std::vector<double>>& vx, std::vector<std::vector<double>>& vy, double vol) {
    
+    // Takes density, x-velocity, y-velocity, volume as inputs
+    // Returns a tuple with the Mass, x-Momentum, y-Momentum
+
+
     std::vector<std::vector<double>> Mass(rho.size(), std::vector<double>(rho[0].size()));
     std::vector<std::vector<double>> Momx(rho.size(), std::vector<double>(rho[0].size()));
     std::vector<std::vector<double>> Momy(rho.size(), std::vector<double>(rho[0].size()));
@@ -50,6 +61,10 @@ std::tuple<std::vector<std::vector<double>>,std::vector<std::vector<double>>,std
 std::tuple<std::vector<std::vector<double>>,std::vector<std::vector<double>>,std::vector<std::vector<double>>,std::vector<std::vector<double>>> getPrimitive(std::vector<std::vector<double>> &Mass,
  std::vector<std::vector<double>>& Momx, std::vector<std::vector<double>>& Momy, double gamma, double vol) {
     
+    // Takes Mass, x-Momentum, y-Momentum, volume as inputs
+    // Returns a tuple with the density, x-velocity, y-velocity, and pressure using the equation of state
+
+
     std::vector<std::vector<double>> rho(Mass.size(), std::vector<double>(Mass[0].size()));
     std::vector<std::vector<double>> vx(Mass.size(), std::vector<double>(Mass[0].size()));
     std::vector<std::vector<double>> vy(Mass.size(), std::vector<double>(Mass[0].size()));
@@ -72,6 +87,8 @@ std::tuple<std::vector<std::vector<double>>,std::vector<std::vector<double>>,std
 
 std::vector<std::vector<double>> getSpeedOfSound(std::vector<std::vector<double>>& rho, double gamma) {
 
+    // get the speed of sound based on the underlying EOS
+
     unsigned int rows,cols;
     rows = rho.size();
     cols = rho[0].size();
@@ -80,7 +97,7 @@ std::vector<std::vector<double>> getSpeedOfSound(std::vector<std::vector<double>
 
     for (unsigned int i=0; i < rows; i++){
         for (unsigned int j=0; j < cols; j++){
-            cs[i][j] = sqrt(gamma * pow(rho[i][j], gamma - 1));
+            cs[i][j] = sqrt(gamma * pow(rho[i][j], gamma - 1)); 
         }
     }
 
@@ -106,10 +123,25 @@ double minmod3(double x, double y, double z) {
 }
 
 double minmod(double x, double y, double z) {
+
+    // minmod function to ensure TVD and therefore the stability of the scheme
+
     return std::max(0.0, std::min({x, y, z}));
 }
 
 std::vector<std::vector<double>> getGradient (std::vector<std::vector<double>>& f, double dx, int axis, double theta = 1) {
+
+
+    // f     is a variable
+    // dx    is the cell size
+    // axis  is the axis over which the gradient is returned
+    // theta is the flux limiter variable
+
+
+    // Returns the gradient of the f variable 
+
+
+
     int n = f.size();
     int m = f[0].size();
 
@@ -140,8 +172,17 @@ std::vector<std::vector<double>> getGradient (std::vector<std::vector<double>>& 
     return df_dx;
 }
 
-std::tuple<std::vector<std::vector<double>>, std::vector<std::vector<double>>, std::vector<std::vector<double>>, std::vector<std::vector<double>>> extrapolateInSpaceToFace (std::vector<std::vector<double>>& q, std::vector<std::vector<double>>& q_dx, double dx, int axis) {
+std::tuple<std::vector<std::vector<double>>, std::vector<std::vector<double>>,
+ std::vector<std::vector<double>>, std::vector<std::vector<double>>> extrapolateInSpaceToFace (std::vector<std::vector<double>>& q,
+  std::vector<std::vector<double>>& q_dx, double dx, int axis) {
     
+    // q     is the variable to be extrapolated
+    // q_dx  is gradient in x-axis
+    // dx    is  cell size
+    // axis  is the axis which the q is extrapolated 
+
+    // Returns the tuple of linear half-steps in space 
+
     int n = q.size();
     int m = q[0].size();
 
@@ -176,6 +217,8 @@ std::tuple<std::vector<std::vector<double>>, std::vector<std::vector<double>>, s
 
 std::vector<std::vector<double>> local_propagation_speed (std::vector<std::vector<double>>& rho, std::vector<std::vector<double>>& vx, std::vector<std::vector<double>>& vy, double eta, double zeta, double tau_nu, std::vector<std::vector<double>>& cs) {
    
+    // Returns the maximum local propagation speed which is the spectral radius of the hyperbolic PDE
+
     int rows = rho.size();
     int cols = rho[0].size();
 

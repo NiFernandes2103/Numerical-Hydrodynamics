@@ -7,8 +7,21 @@
 #include "KTmethods2d.h"
 #include "nonRelativisticISwithShear.h"
 
+
+/*This function takes the state variable which is a struct of current state variables and returns their time derivatives using the KT scheme*/
 state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int N, double gamma, double zeta, double tau_nu, double eta, double theta = 1) {
      
+    // t      is time
+    // IC     is the state variable that contains the current state variables
+    // dx     is the cell size in x
+    // dy     is the cell size in y
+    // N      is the simulation resolution
+    // gamma  is the polytropic index
+    // zeta   is the bulk viscosity coefficient
+    // tau_nu is the relaxation time 
+    // eta    is the shear viscosity coefficient
+    // theta  is the flux limiter variable
+
     /* Finite Volume simulation */
 
     // Generate Initial Conditions
@@ -96,6 +109,8 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
     std::vector<std::vector<double>> cs = getSpeedOfSound(rho, gamma);
 
     // calculate gradients
+
+    // x axis
     std::vector<std::vector<double>> rho_dx = getGradient(rho, dx, 0, theta);
     std::vector<std::vector<double>> vx_dx = getGradient(vx, dx, 0, theta);
     std::vector<std::vector<double>> vy_dx = getGradient(vy, dx, 0, theta);
@@ -105,6 +120,7 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
     std::vector<std::vector<double>> Piyx_dx = getGradient(Piyx, dx, 0, theta);
     std::vector<std::vector<double>> Piyy_dx = getGradient(Piyy, dx, 0, theta);
 
+    // y axis
     std::vector<std::vector<double>> rho_dy = getGradient(rho, dy, 1, theta);
     std::vector<std::vector<double>> vx_dy = getGradient(vx, dy, 1, theta);
     std::vector<std::vector<double>> vy_dy = getGradient(vy, dy, 1, theta);
@@ -115,7 +131,7 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
     std::vector<std::vector<double>> Piyy_dy = getGradient(Piyy, dy, 1, theta);
     
 
-    // extrapolate fluxes
+    // extrapolate fluxes linearly
 
     std::vector<std::vector<double>> rhoM_XL, rhoP_XL, rhoM_XR, rhoP_XR;
     std::tie(rhoM_XL, rhoP_XL, rhoM_XR, rhoP_XR) = extrapolateInSpaceToFace(rho, rho_dx, dx, 0);
@@ -151,8 +167,7 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
     std::vector<std::vector<double>> PiyyM_YL,  PiyyP_YL,  PiyyM_YR,  PiyyP_YR;   
     std::tie(PiyyM_YL,  PiyyP_YL,  PiyyM_YR,  PiyyP_YR)  = extrapolateInSpaceToFace(Piyy,  Piyy_dy,  dy, 1);
 
-    // Compute fluxes
-
+    // Compute fluxes 
     std::vector<std::vector<double>> flux_Mass_XR, flux_Momx_XR, flux_Momy_XR, flux_Pixx_vxR, flux_Pixy_vxR, flux_Piyx_vxR, flux_Piyy_vxR;
     std::tie(flux_Mass_XR, flux_Momx_XR, flux_Momy_XR, flux_Pixx_vxR, flux_Pixy_vxR, flux_Piyx_vxR, flux_Piyy_vxR) = getXFlux(rhoP_XR, rhoM_XR, vxP_XR, vxM_XR,
                                             vyP_XR, vyM_XR, PixxP_XR, PixxM_XR,
@@ -183,7 +198,7 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
     
     
     
-    // Update conservative variables
+    // Forcing terms
 
     std::vector<std::vector<double>> J(N,std::vector<double>(N,0.0));
     std::vector<std::vector<double>>  Jxx(N,std::vector<double>(N,0.0)),Jxy(N,std::vector<double>(N,0.0)),Jyx(N,std::vector<double>(N,0.0)),Jyy(N,std::vector<double>(N,0.0));
@@ -199,6 +214,8 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
     std::vector<std::vector<double>> timederivative_rho, timederivative_Momx, timederivative_Momy;
     std::vector<std::vector<double>> timederivative_Pixx, timederivative_Pixy, timederivative_Piyx, timederivative_Piyy;
 
+
+    // Calculate time derivatives
     timederivative_rho = applyFluxes( flux_Mass_XR,   flux_Mass_XL, flux_Mass_YR,   flux_Mass_YL,  dx, dy, J);
     timederivative_Momx = applyFluxes( flux_Momx_XR,   flux_Momx_XL, flux_Momx_YR,   flux_Momx_YL, dx, dy, J); 
     timederivative_Momy = applyFluxes( flux_Momy_XR,   flux_Momy_XL, flux_Momy_YR,   flux_Momy_YL, dx, dy, J);
@@ -208,9 +225,6 @@ state KTschemeNonRelativisticIS(double t,  state& IC, double dx, double dy, int 
     timederivative_Piyy  = applyFluxes( flux_Piyy_vxR,    flux_Piyy_vxL, flux_Piyy_vyR,    flux_Piyy_vyL, dx, dy, Jyy);
 
 
-    
-
-   
     
     return {timederivative_rho,timederivative_Momx,timederivative_Momy,timederivative_Pixx,timederivative_Pixy,timederivative_Piyx,timederivative_Piyy};
     
@@ -231,19 +245,27 @@ std::list<state> integrator(state (*scheme)(double, state&, double, double, int,
     args       are additional arguments for scheme
     */
 
+
+    // set the precision of printing outputs
     std::cout.precision(2);
 
+    // get initial time and end time 
     double t = std::get<0>(time);
     double tEnd = std::get<1>(time);
+
+    // start output count
     int outCount = 1;
 
+    // get initial state q
+    // initialize updated state as qprime
     state q = Q.back();
     state qprime;
 
-    int N;
-    double dx, dy, gamma, zeta, tau_nu, eta, theta;
+    int N; // resolution
+    double dx, dy, gamma, zeta, tau_nu, eta, theta; // initialize other simulation and physical parameters
     std::tie(dx, dy, N, gamma, zeta, tau_nu, eta, theta) = args;
 
+    // initialize variables to use to calculate CFL condition
     std::vector<std::vector<double>> rho(N,std::vector<double>(N,0.0));
     std::vector<std::vector<double>> vx(N, std::vector<double>(N,0.0));
     std::vector<std::vector<double>> vy(N, std::vector<double>(N,0.0));
@@ -251,6 +273,7 @@ std::list<state> integrator(state (*scheme)(double, state&, double, double, int,
     std::vector<std::vector<double>> Momy(N, std::vector<double>(N,0.0));
     std::vector<std::vector<double>> cs(N, std::vector<double>(N,0.0));
 
+    // scheme function with the pre specified parameters taking (t,y)
     auto C = [&](double t, state y) {return scheme(t, y, dx, dy, N, gamma, zeta, tau_nu, eta, theta);};
 
     while (t < tEnd) {
@@ -265,37 +288,33 @@ std::list<state> integrator(state (*scheme)(double, state&, double, double, int,
             vx[i][j] = Momx[i][j] / rho[i][j];
             vy[i][j] = Momy[i][j] / rho[i][j];
 
-
-
         }
     }        
 
-        // condition to ensure that the time steps are small enough so that
+        // CFL condition to ensure that the time steps are small enough so that
         // waves do not interfere with each other
         std::vector<std::vector<double>> propagation_speed = local_propagation_speed(rho, vx, vy, eta, zeta, tau_nu, cs);
         double courant_number;
 
         
         courant_number = dx / max_value(propagation_speed);
-            
 
-
+        // get time step    
         double dt = std::min(dtmax, 0.4 * (courant_number));
 
-        
-
+        // condition to choose your time integrator 
         if (method == "Heuns") {
             qprime = heuns(q, C, dt, t);
         } if (method == "RK4") {
             qprime = rK4(q, C, dt, t);
         } 
 
-        
-        
-        //cout << dt << endl;
+
+        //cout << dt << endl; // if needed
         t = t + dt;
         q = qprime;
 
+        // save solution only if sufficiently and after  close to (max output time) * (output count)
         if (t > outCount*dtmax) {
             Q.push_back(qprime);
             std::cout << t << '/' << tEnd << std::endl;

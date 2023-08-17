@@ -12,7 +12,7 @@ def minmod3(x,y,z):
   return minmod2(x,minmod2(y,z))
 
 
-def local_propagation_speed(rho, vx, Pi, gamma, B): 
+def local_propagation_speed(rho, vx, gamma, B): 
   
    '''
     Get the local propagation speeds using the eigenvalues 
@@ -23,7 +23,7 @@ def local_propagation_speed(rho, vx, Pi, gamma, B):
     cs           is the speed of sound
     '''
 
-  
+   cs = getSpeedOfSound(rho,gamma)  
    C = np.abs(vx) + np.sqrt((cs**2 + (B)/rho)/gamma)
 
    return C
@@ -148,7 +148,7 @@ def KTschemeNonRelativisticIS(t,IC, dx, xlin, gamma, zeta, tau_nu, BC = None, th
     rho = IC[0:N]
 
     ''' Initial conditions for v'''
-    vx = np.divide(IC[N:2*N] , rho, out=np.zeros_like(IC[N:2*N]), where=rho!=0)
+    vx = IC[N:2*N] / rho
 
     ''' Pressure due to equation of state '''
     P = (np.abs(rho))**gamma
