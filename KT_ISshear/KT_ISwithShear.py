@@ -139,7 +139,7 @@ def KTschemeNonRelativisticIS(t,IC, dx, dy, N, gamma, zeta, tau_nu, eta, P0, the
     return np.vstack((timederivative_rho,timederivative_Momx,timederivative_Momy,timederivative_Pixx,timederivative_Pixy,timederivative_Piyx,timederivative_Piyy))
   
 
-def integrator(scheme, time, q0, dtmax, method = "Heuns", args=None):
+def integrator(scheme, time, q0, dtmax, BC, method = "Heuns", args=None):
 
   '''
   This is an integrator that evolves a
@@ -191,7 +191,7 @@ def integrator(scheme, time, q0, dtmax, method = "Heuns", args=None):
     rho = q[0:N]
 
     #get speed of sound
-    cs = getSpeedOfSound(rho,gamma, P0)
+    cs = getSpeedOfSound(rho,gamma,P0)
 
     # condition to ensure that the time steps are small enough so that
     # waves do not interfere with each other 
@@ -208,11 +208,12 @@ def integrator(scheme, time, q0, dtmax, method = "Heuns", args=None):
       q = Heuns(q,C,dt,t)
     if method == "RK4":
       q = RK4(q,C,dt,t)
-    
+    if method == "Modified_RK":
+      q = explicit_modified_RK(q,C,dt,t)
 
     #Apply Boundary conditions
 
-    # BC(q)
+    BC(q)
 
 
     t = t+dt
@@ -227,19 +228,61 @@ def integrator(scheme, time, q0, dtmax, method = "Heuns", args=None):
   return Q
 
 
+def BC(q):
+  rho = q[0:N]
+  Momx = q[N:2*N]
+  Momy = q[2*N:3*N]
+  Pixx = q[3*N:4*N]
+  Pixy = q[4*N:5*N]
+  Piyx = q[5*N:6*N]
+  Piyy = q[6*N:7*N]
+
+  rho[0]    = rho[1]
+  rho[-1]   = rho[-2]
+  rho[:,0]  = rho[:,1]
+  rho[:,-1] = rho[:,-2]
 
 
+  #Momx[0]    = -Momx[1]
+  #Momx[-1]   = -Momx[-2]
+  #Momx[:,0]  = 0
+  #Momx[:,-1] = 0
+
+  #Momy[0]    = 0
+  #Momy[-1]   = 0
+  Momy[:,0]  = -Momy[:,1]
+  Momy[:,-1] = -Momy[:,-2]
+
+  Pixx[0]    = 0
+  Pixx[-1]   = 0
+  Pixx[:,0]  = 0
+  Pixx[:,-1] = 0
+
+  Pixy[0]    = 0
+  Pixy[-1]   = 0
+  Pixy[:,0]  = 0
+  Pixy[:,-1] = 0
+
+  Piyx[0]    = 0
+  Piyx[-1]   = 0
+  Piyx[:,0]  = 0
+  Piyx[:,-1] = 0
+
+  Piyy[0]    = 0
+  Piyy[-1]   = 0
+  Piyy[:,0]  = 0
+  Piyy[:,-1] = 0
+  
 
 t                      = 0    # s 
-tEnd                   = 1  # time at the end
+tEnd                   = 2    # time at the end
 tOut                   = 0.01 # time of each output
-
-N                      = 200  # resolution
-boxsize                = 1.   # in some unit system l
+N                      = 2**8 # resolution
+boxsize                = 10.  # in some unit system l
 gamma                  = 1.4  # adiabatic index
 P0                     = 1    # pressure constant
-zeta                   = 100  # bulk viscosity coefficient
-eta                    = 10   # shear viscosity coefficient
+zeta                   = 10    # bulk viscosity coefficient
+eta                    = 1    # shear viscosity coefficient
 tau_nu                 = 1    # relaxation time
 theta                  = 1    # flux limiter parameter
 
@@ -248,8 +291,8 @@ theta                  = 1    # flux limiter parameter
 dx = boxsize / N   # box size
 dy = dx
 vol = dx**2        # volume of each box
-a = (0.5*dx)
-b = (boxsize-0.5*dx)
+a = (0.5*dx  - boxsize)*0.5
+b = (boxsize - 0.5*dx)*0.5
 xlin = np.linspace(a, b, N)# simulation limits
 
 parameters = [t,tEnd,tOut,N,boxsize,gamma,zeta,eta,tau_nu,theta,a,b]
@@ -257,34 +300,37 @@ parameters = [t,tEnd,tOut,N,boxsize,gamma,zeta,eta,tau_nu,theta,a,b]
 Y, X = np.meshgrid( xlin, xlin ) # define the mesh grid
 s = X.shape
 R = np.sqrt(X**2 + Y**2)
+R1 = np.sqrt((X+np.ones(s))**2 + Y**2)
 Theta = np.arctan(Y/X)*(X>=0)*(Y>=0) + (np.pi/2 + np.arctan(Y/np.abs(X)))*(X<0)*(Y>=0) + (np.pi + np.arctan(Y/X))*(X<=0)*(Y<0) + (3*np.pi/2 + np.arctan(np.abs(Y)/X))*(X>0)*(Y<0)
 
 ''' initial condition of density'''
 
-#rho = (1.5*(R <= 1) + 1*(R > 1))
+rho = (2*(R1 <= 1) + 0.5*(R1 > 1))
 #rho = ((1 - ((R)**2) )**4 )*(R < 1) + 1*np.ones(s) # Mauricio`s funtion advice 
 #rho = (1/(R))*(R>0)*(R<1) + 0.1*np.ones(s)
-#rho = 1*(X < 0) + 0.125*(X >= 0)
+#rho = 1*(Y >= 0) + 0.5*( Y < 0)
 
 ''' initial condition of velocity '''
 #vx = np.zeros(s)
-#vx = -0.1*np.sin(Theta)*(R < 1)
-#vx = 0.5*np.ones(xlin.shape)
-#vx = 3*(Y < 0) - 0*(Y >= 0)
+#vx = -1*np.sin(Theta)*(R < 1)
+vx = 2*np.ones(s)*(R1 < 1)
+#vx = -10*(Y < 0) + 10*(Y >= 0)
 #vx = np.abs((xlin - (boxsize-0.5*dx)*0.5)/16)
 
-#vy = np.zeros(s)
-#vy = 0.1*np.cos(Theta)*(X < 1)
+vy = np.zeros(s)
+#vy = 1*np.cos(Theta)*(R < 1)
 #vy = 0.5*np.ones(xlin.shape)
 
+#sigma = 0.05/np.sqrt(2.)
+#vy = 0.1*np.sin(4*np.pi*X)*(np.exp(-(Y)**2/(2 * sigma**2)) + np.exp(-(Y)**2/(2*sigma**2)))
 
+'''
 w0 = 0.1
 sigma = 0.05/np.sqrt(2.)
 rho = 1. + (np.abs(Y-0.5) < 0.25)
 vx = -0.5 + (np.abs(Y-0.5) < 0.25)
 vy = w0*np.sin(4*np.pi*X) * ( np.exp(-(Y-0.25)**2/(2 * sigma**2)) + np.exp(-(Y-0.75)**2/(2*sigma**2)) )
-
-
+'''
 
 ''' initial condition of Pi tensor '''
 Pixx = np.zeros(s)
@@ -297,7 +343,7 @@ IC = np.vstack((rho,rho*vx,rho*vy,Pixx,Pixy,Piyx,Piyy)) # here the initial condi
 
 # input (dx, dy, xlin, gamma, zeta, tau_nu, BC, theta=1)
 # output solution list of arrays that are 7N x N in the order (rho,rho*vx,rho*vy,Pixx,Pixy,Piyx,Piyy)
-solution = integrator(KTschemeNonRelativisticIS, (t, tEnd), IC, 0.01, method="RK4", args=(dx, dy, N, gamma, zeta, tau_nu, eta, P0, theta))
+solution = integrator(KTschemeNonRelativisticIS, (t, tEnd), IC, 0.01, BC, method="RK4", args=(dx, dy, N, gamma, zeta, tau_nu, eta, P0, theta))
 
-np.savetxt('NonRelativisticIS2FlowingRegions_parameters',parameters)
-np.save('NonRelativisticIS2FlowingRegions',solution)
+np.savetxt('NonRelativisticISFlowingBall_parameters',parameters)
+np.save('NonRelativisticISFlowingBall',solution)

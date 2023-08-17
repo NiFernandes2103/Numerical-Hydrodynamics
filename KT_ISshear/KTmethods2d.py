@@ -319,7 +319,14 @@ def Heuns(q,f,dt,t):
 
   return q + 0.5 * (k1 + k2)
 
+def Euler_step(q,f,t,dt):
+   return q + dt*f(t,q)
 
+def explicit_modified_RK(q,f,dt,t):
+   q1 = Euler_step(q,f,t,dt)
+   q2 = 1/2 * q1 + 1/2 * (Euler_step(q1,f,t,dt))
+
+   return q2
 
 def RK4(y0,f,h,t):
   

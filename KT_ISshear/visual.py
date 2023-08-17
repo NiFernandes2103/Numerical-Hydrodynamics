@@ -282,11 +282,12 @@ def plot_csv_static(file1, file2, file3, file4, file5, file6, file7, parameters_
     plt.savefig(nameOfFigure + ".png")
     plt.show()
 
-
+'''
 plot_csv_static('KT_ISshear\C++\density_solution.csv', 'KT_ISshear\C++\momentx_solution.csv', 
 'KT_ISshear\C++\momenty_solution.csv', 'KT_ISshear\C++\Pixx_solution.csv', 'KT_ISshear\C++\Pixy_solution.csv',
  'KT_ISshear\C++\Piyx_solution.csv', 'KT_ISshear\C++\Piyy_solution.csv',
   'KT_ISshear\C++\parameters.csv', 50 ,"NonRelativisticIS")
+'''
 
 def show_2dsolution_static(file,parameters_file,i,n):
 
@@ -496,14 +497,15 @@ ani = animation.FuncAnimation(fig, animate, init_func=init,
 ani.save("NonRelativisticISC++.gif",fps=30)
 '''
 
-'''
-sol = np.load("NonRelativisticISRotatingbumpfunction.npy")
 
-t,tEnd,tOut,N,boxsize,gamma,zeta,eta,tau_nu,theta,a,b = np.loadtxt("NonRelativisticISRotatingbumpfunction_parameters",delimiter=',',unpack=True)
+sol = np.load("NonRelativisticISFlowingBall.npy")
 
-xlin = np.linspace(float(a),float(b),int(N))
+t,tEnd,tOut,N,boxsize,gamma,zeta,eta,tau_nu,theta,a,b = np.loadtxt("NonRelativisticISFlowingBall_parameters",delimiter=',',unpack=True)
+
+N = int(N)
+xlin = np.linspace(float(a),float(b),N)
 print(sol.shape)
-
+'''
 i=10
 rho = sol[i][:200].T
 vx = sol[i][200:2*200].T
@@ -521,54 +523,50 @@ plt.imshow(vy)
 plt.show()
 plt.plot(vy[int(200/2)])
 plt.show()
-
+'''
 
 
 # First set up the figure, the axis, and the plot element we want to animate
 fig = plt.figure()
 ax = plt.axes()
 #line, = ax.plot([], [], lw=2)
-im=plt.imshow(sol[0][:200].T,interpolation='none')
+
+im=plt.imshow(sol[0][:N].T,interpolation='none')
 
 # initialization function: plot the background of each frame
 def init():
-    im.set_data(sol[0][:00].T)
+    im.set_data(sol[0][:N].T)
     return [im]
 
 # animation function.  This is called sequentially
 def animate(i):
-    im.set_array(sol[i][:200].T)
+    im.set_array(sol[i][:N].T)
     return [im]
 
 
 anim = animation.FuncAnimation(fig, animate, init_func=init,
-                               frames=100, interval=20, blit=True)
+                               frames=200, interval=20, blit=True)
 
-
-anim.save('NonRelativisticISRotatingbumpfunction.gif', fps=30)
-
+anim.save('NonRelativisticISFlowingBall.gif', fps=60)
 
 # First set up the figure, the axis, and the plot element we want to animate
 fig_slice = plt.figure()
 ax_slice = plt.axes()
-ax_slice.set_xlim((-2,2))
-ax_slice.set_ylim((0, 2))
+ax_slice.set_xlim((float(a),float(b)))
+ax_slice.set_ylim((float(a), float(b)))
 line, = ax_slice.plot([], [], lw=2)
-
 
 # initialization function: plot the background of each frame
 def init_slice():
-    line.set_data(xlin,sol[0][150].T)
+    line.set_data(xlin,sol[0][int(N/2)].T)
     return (line,)
 
 # animation function.  This is called sequentially
 def animate_slice(i):
-    line.set_data(xlin,sol[i][150].T)
+    line.set_data(xlin,sol[i][int(N/2)].T)
     return (line,)
 
-
 anim_slice = animation.FuncAnimation(fig_slice, animate_slice, init_func=init_slice,
-                            frames=100, interval=20, blit=True)
+                            frames=200, interval=20, blit=True)
 
-anim_slice.save('NonRelativisticISRotatingbumpfunction_density_slice.gif', fps=30)
-'''
+anim_slice.save('NonRelativisticISFlowingBall_density_slice.gif', fps=60)
