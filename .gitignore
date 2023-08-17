@@ -23,4 +23,5 @@ NonRelativisticISKelvinHelmholtz1.npy
 NonRelativisticISRotating.npy
 NonRelativisticISRotatingStep.npy
 NonRelativisticISShockMoving.npy
+NonRelativisticISFlowingBall.npy
 my_venv_
