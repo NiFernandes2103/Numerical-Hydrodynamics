@@ -17,3 +17,10 @@ Pixy_solution.csv
 Piyx_solution.csv
 Piyy_solution.csv
 Pi_solution.csv
+NonRelativisticIS2FlowingRegions.npy
+NonRelativisticISKelvinHelmholtz.npy
+NonRelativisticISKelvinHelmholtz1.npy
+NonRelativisticISRotating.npy
+NonRelativisticISRotatingStep.npy
+NonRelativisticISShockMoving.npy
+my_venv_
