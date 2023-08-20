@@ -498,39 +498,20 @@ ani.save("NonRelativisticISC++.gif",fps=30)
 '''
 
 
-sol = np.load("NonRelativisticISFlowingBall.npy")
+sol = np.load("NonRelativisticISRotatingStep.npy")
 
-t,tEnd,tOut,N,boxsize,gamma,zeta,eta,tau_nu,theta,a,b = np.loadtxt("NonRelativisticISFlowingBall_parameters",delimiter=',',unpack=True)
+t,tEnd,tOut,N,boxsize,gamma,zeta,eta,tau_nu,theta,a,b = np.loadtxt("NonRelativisticISRotatingStep_parameters",delimiter=',',unpack=True)
 
 N = int(N)
 xlin = np.linspace(float(a),float(b),N)
 print(sol.shape)
-'''
-i=10
-rho = sol[i][:200].T
-vx = sol[i][200:2*200].T
-vy = sol[i][2*200:3*200].T
-
-plt.imshow(rho)
-plt.show()
-plt.plot(rho[int(200/2)])
-plt.show()
-plt.imshow(vx)
-plt.show()
-plt.plot(vx[int(200/2)])
-plt.show()
-plt.imshow(vy)
-plt.show()
-plt.plot(vy[int(200/2)])
-plt.show()
-'''
-
 
 # First set up the figure, the axis, and the plot element we want to animate
 fig = plt.figure()
 ax = plt.axes()
 #line, = ax.plot([], [], lw=2)
-
+ax.get_xaxis().set_visible(False)
+ax.get_yaxis().set_visible(False)
 im=plt.imshow(sol[0][:N].T,interpolation='none')
 
 # initialization function: plot the background of each frame
@@ -545,9 +526,11 @@ def animate(i):
 
 
 anim = animation.FuncAnimation(fig, animate, init_func=init,
-                               frames=200, interval=20, blit=True)
+                               frames=100, interval=20, blit=True)
 
-anim.save('NonRelativisticISFlowingBall.gif', fps=60)
+anim.save('NonRelativisticISRotatingStep.gif', fps=60)
+
+nameOfFigure = 'NonRelativisticISRotatingStep'
 
 # First set up the figure, the axis, and the plot element we want to animate
 fig_slice = plt.figure()
@@ -559,6 +542,7 @@ line, = ax_slice.plot([], [], lw=2)
 # initialization function: plot the background of each frame
 def init_slice():
     line.set_data(xlin,sol[0][int(N/2)].T)
+    
     return (line,)
 
 # animation function.  This is called sequentially
@@ -567,6 +551,68 @@ def animate_slice(i):
     return (line,)
 
 anim_slice = animation.FuncAnimation(fig_slice, animate_slice, init_func=init_slice,
-                            frames=200, interval=20, blit=True)
+                            frames=100, interval=20, blit=True)
 
-anim_slice.save('NonRelativisticISFlowingBall_density_slice.gif', fps=60)
+anim_slice.save('NonRelativisticISRotatingStep_density_slice.gif', fps=60)
+
+fig, axs = plt.subplots(2, 4, figsize=(10, 6))
+gridspec = axs[0, 0].get_subplotspec().get_gridspec()
+print("created the figure")
+
+# clear the left column for the subfigure:
+
+# plot data in remaining axes:
+i = 50
+count = 0
+print("plotting subfigures")
+for a in axs[:, :].flat:
+    if count == 0:
+        a.imshow(sol[i][0:N].T)
+        a.get_xaxis().set_visible(False)
+        a.get_yaxis().set_visible(False)
+        a.set_title("Density")
+        count += 1
+    elif count == 1:
+        ux  = (sol[i][N:2*N].T/ sol[-1][0:N].T) 
+        a.imshow(ux)
+        a.get_xaxis().set_visible(False)
+        a.get_yaxis().set_visible(False)
+        a.set_title("x Velocity" )
+        count += 1
+    elif count == 2:
+        uy  = (sol[i][2*N:3*N].T / sol[-1][0:N].T) 
+        a.imshow(uy)
+        a.get_xaxis().set_visible(False)
+        a.get_yaxis().set_visible(False)
+        a.set_title("y Velocity" )
+        count += 1
+    elif count == 3:
+        a.imshow(sol[i][3*N:4*N].T)
+        a.get_xaxis().set_visible(False)
+        a.get_yaxis().set_visible(False)
+        a.set_title("$Pixx$" )
+        count += 1
+    elif count == 4:
+        a.imshow(sol[i][4*N:5*N].T)
+        a.get_xaxis().set_visible(False)
+        a.get_yaxis().set_visible(False)
+        a.set_title("$Pixy$" )
+        count += 1
+    elif count == 5:
+        a.imshow(sol[i][5*N:6*N].T)
+        a.get_xaxis().set_visible(False)
+        a.get_yaxis().set_visible(False)
+        a.set_title("$Piyx$" )
+        count += 1
+    elif count == 6:
+        a.imshow(sol[i][6*N:7*N].T)
+        a.get_xaxis().set_visible(False)
+        a.get_yaxis().set_visible(False)
+        a.set_title("$Piyy$" )
+        count += 1
+
+print("Done")
+fig.delaxes(axs[-1,-1])
+fig.suptitle('NonrelativisticShearIS(N={}, gamma = {:.2f}, zeta = {:.2f}, eta = {:.2f}, tau_nu = {:.2f}, theta = {:.2f})'.format(N,gamma,zeta,eta,tau_nu,theta), fontsize='xx-large')
+plt.tight_layout()
+plt.savefig(nameOfFigure +'_t:' + str(i*tOut) + ".png")

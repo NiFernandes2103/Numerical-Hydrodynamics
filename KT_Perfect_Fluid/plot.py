@@ -5,7 +5,6 @@ import numpy as np
 
 sol = np.load("PerfectFluidRelativistic.npy")
 
-print(np.sqrt(1-0.99*2))
 t,tEnd,tOut,N,boxsize,gamma,theta,a,b = np.loadtxt("PerfectFluidRelativistic_parameters",delimiter=',',unpack=True)
 
 N = int(N)
@@ -24,7 +23,6 @@ plt.plot(xlin,Dic,label='t = 0.0', linestyle='dashed')
 plt.plot(xlin, D,label='t = {:.2f}'.format(float(i*tOut)))
 plt.title('rest-mass density')
 plt.xlim((float(a),float(b)))
-plt.ylim(0,10)
 plt.xlabel('x/x_0')
 plt.ylabel('m/m_0')
 plt.legend()
@@ -54,13 +52,13 @@ plt.savefig('PerfectFluidRestEnergyDensity.png')
 figure, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
 
 # set ax boundaries
-ax1.set_ylim(0,10)
+ax1.set_ylim(0,0.6)
 ax1.set_xlim((float(a),float(b)))
 line1, = ax1.plot([], [], lw=2)
 ax1.set_ylabel('D/D_0')
 ax1.set_title('Rest-mass density')
 
-ax2.set_ylim(-10,500)
+ax2.set_ylim(-2,2)
 ax2.set_xlim((float(a),float(b)))
 line2, = ax2.plot([], [], lw=2)
 ax2.set_title('x-Momentum density')

@@ -2,9 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def Lorentz_factor(vx):
-   #if vx.any() == 0.9:
-   #   print(1/np.sqrt(1-pow(vx,2)))
-   return pow((1-pow(vx,2)),-0.5)
+  return np.sqrt(1/(1-np.abs(vx)**2))
+
 
 def polytrope(rho, gamma, P0):
    return P0*pow(rho,gamma)
@@ -42,6 +41,7 @@ def getConserved( rho, vx, eps, gamma, P0, Eos = polytrope):
     return (D, Sx, tau)
 
 def getPrimitive( D, Sx, tau, gamma, P0, P, n, Eos=polytrope):
+  
   """
   Calculate the primitive variable from the conservative
   Mass     is matrix of mass in cells
@@ -51,15 +51,15 @@ def getPrimitive( D, Sx, tau, gamma, P0, P, n, Eos=polytrope):
   vx       is the matrix of cell x-velocity
   P        is the matrix of cell pressures
   """
-  omega = 10**6
+
   Pnew = P
   for i in range(n):
        vx = Sx/(tau + D + Pnew)
        W  = Lorentz_factor(vx)
-       rho = D / (vx + omega)
-       eps = (tau + D*(1-W) + Pnew*(1-W**2))/(D*W + omega) 
+       rho = D / np.where(vx == 0, 1, vx)       
+       eps = (tau + D*(1-W) + Pnew*(1-W**2))/(D*W) 
        cs = getSpeedOfSound(rho,Pnew,gamma)
-       Pnew = Pnew - f(rho,gamma,P0,P,Eos)/(fprime(vx,cs) + omega)
+       Pnew = Pnew - f(rho,gamma,P0,P,Eos) / fprime(vx,cs)
 
   return (rho, vx, eps)
 
@@ -174,8 +174,8 @@ def getXFlux(D_P, D_M, Sx_P, Sx_M, tau_P, tau_M, gamma, P0, Eos=polytrope):
 
     # compute conserved quatities
 
-    rho_P,vx_P,eps_P = getPrimitive(D_P,Sx_P,tau_P, gamma, P0, 1*np.ones(D_P.shape), 100, Eos)
-    rho_M,vx_M,eps_M = getPrimitive(D_M,Sx_M,tau_M, gamma, P0, 1*np.ones(D_P.shape), 100, Eos)
+    rho_P,vx_P,eps_P = getPrimitive(D_P,Sx_P,tau_P, gamma, P0, 0.5*np.ones(D_P.shape), 100, Eos)
+    rho_M,vx_M,eps_M = getPrimitive(D_M,Sx_M,tau_M, gamma, P0, 0.5*np.ones(D_P.shape), 100, Eos)
 
     P_P = Eos(rho_P,gamma,P0)
     P_M = Eos(rho_M,gamma,P0)

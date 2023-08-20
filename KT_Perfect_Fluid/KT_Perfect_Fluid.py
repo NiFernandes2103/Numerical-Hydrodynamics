@@ -126,7 +126,7 @@ def integrator(scheme, time, q0, dtmax, BC, Eos=polytrope, method = "Heuns", arg
     
     
     # recover primitive variables
-    rho,vx,eps = getPrimitive(q[0:N],q[N:2*N],q[2*N:3*N],gamma,P0,1*np.ones(N),100,Eos)
+    rho,vx,eps = getPrimitive(q[0:N],q[N:2*N],q[2*N:3*N],gamma,P0,0.5*np.ones(N),100,Eos)
     P = Eos(rho,gamma,P0)
     p = np.vstack((rho,vx,P))
 
@@ -173,7 +173,7 @@ def BC(q):
 t                      = 0    # s 
 tEnd                   = 1    # time at the end
 tOut                   = 0.01 # time of each output
-N                      = 1000  # resolution
+N                      = 1000 # resolution
 boxsize                = 4.   # in some unit system l
 gamma                  = 1.4  # adiabatic index
 P0                     = 1    # pressure constant
@@ -193,15 +193,15 @@ parameters = [t,tEnd,tOut,N,boxsize,gamma,theta,a,b]
 """ initial condition of density""" # max = 1, min = 0
 
 #rho = (1.5*(R1 <= 1) + 1*(R1 > 1))
-#rho = ((1 - ((R)**2) )**4 )*(R < 1) + 1*np.ones(s) # Mauricio`s funtion advice 
+rho = 0.5*(((1 - ((xlin)**2) )**4 )*(np.abs(xlin) < 1) + 0.1*np.ones(xlin.shape))# Mauricio`s funtion advice 
 #rho = (1/(R))*(R>0)*(R<1) + 0.1*np.ones(s)
-rho = 0.1*(xlin >= 0) + 0.5*( xlin < 0)
+#rho = 0.1*(xlin >= 0) + 0.5*( xlin < 0)
 #rho = np.ones(N) 
 
 """ initial condition of velocity""" # max magnitude of 1
-#vx = np.zeros(N)
+vx = np.zeros(N)
 #vx = -1*np.sin(Theta)*(R < 1)
-vx = 0.99*(xlin < 0)
+#vx = 0.9*(xlin < 0)
 
 #vx = -0.99*(xlin < 0) + 0.99*(xlin >= 0)
 #vx = np.abs((xlin - (boxsize-0.5*dx)*0.5)/16)
@@ -219,10 +219,10 @@ IC = np.hstack((D,Sx,tau)) # here the initial conditions are stacked in a vector
 
 # input (dx, dy, xlin, gamma, BC, theta=1)
 # output solution list of arrays that are 3N x N in the order (rho,vx,P)
-solution = integrator(KTschemeRelativisticFluid, (t, tEnd), IC, 0.01, BC, polytrope, method="RK4", args=(dx, N, gamma, P0, theta))
+solution = integrator(KTschemeRelativisticFluid, (t, tEnd), IC, 0.01, BC, polytrope, method="Modified_RK", args=(dx, N, gamma, P0, theta))
 
 np.savetxt('PerfectFluidRelativistic_parameters',parameters)
 np.save('PerfectFluidRelativistic',solution)
 
 
-print(solution[1])
+print(solution[-1])
