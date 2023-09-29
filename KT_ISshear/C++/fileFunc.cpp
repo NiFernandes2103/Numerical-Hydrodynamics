@@ -6,7 +6,8 @@
 #include <string>
 
 void parameters_csv(double t, double tEnd, double tOut, int N, double boxsize, double a, double b, double gamma, double zeta, double eta, double tau_nu, double theta, std::string filename ) {
-    
+    // creates and writes a csv file for the parameters of the simulation
+
     // file pointer
     std::fstream fout;
   
@@ -46,6 +47,9 @@ void parameters_csv(double t, double tEnd, double tOut, int N, double boxsize, d
 
 
 void create(state initial,std::string filename) {
+    // creates a csv file for storing the initial conditions of the simulation
+    // solutions are usually too large to be stored and managed this way
+    // bin or other file types might be better
     
     // file pointer
     std::fstream fout;
@@ -53,7 +57,7 @@ void create(state initial,std::string filename) {
     // opens an existing csv file or creates a new file.
     fout.open(filename, std::ios::out | std::ios::trunc);
 
-
+    // create the matrices for initial conditions form initial state
     std::vector<std::vector<double>> rhoIC  = initial.get(0);        
     std::vector<std::vector<double>> MomxIC = initial.get(1);
     std::vector<std::vector<double>> MomyIC = initial.get(2);
@@ -62,9 +66,9 @@ void create(state initial,std::string filename) {
     std::vector<std::vector<double>> PiyxIC = initial.get(5);
     std::vector<std::vector<double>> PiyyIC = initial.get(6);
 
-    int A = rhoIC.size();
+    int A = rhoIC.size(); // size of matrices , assumes they are square
 
-    // Read the input
+    // for loop to write IC in the file
     for (int i = 0; i < A; i++) {
         for (int j = 0; j < A; j++) {
             fout << rhoIC[i][j]  <<',';
@@ -84,7 +88,11 @@ void create(state initial,std::string filename) {
 
 void write(std::list<state> solution, std::string filename)
 {
+    // creates a csv file for storing the solution of the simulation
+    // solutions are usually too large to be stored and managed this way
+    // bin or other file types might be better
     // file pointer
+
     std::fstream fout;
 
   
@@ -129,6 +137,11 @@ void write(std::list<state> solution, std::string filename)
 
 void write_each(std::list<state> solution, std::string filename, int n)
 {
+    // creates a csv file for storing the one variable of the simulation
+    // better to read
+    // bin or other file types might be better
+    // file pointer
+
     // file pointer
     std::fstream fout;
 
@@ -156,9 +169,5 @@ void write_each(std::list<state> solution, std::string filename, int n)
     }
 
     fout.close();
-
-
-
-    
-    
+   
 }

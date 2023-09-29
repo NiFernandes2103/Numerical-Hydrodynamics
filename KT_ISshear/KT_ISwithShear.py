@@ -183,6 +183,7 @@ def integrator(scheme, time, q0, dtmax, BC, method = "Heuns", args=None):
   eta     = args[6]
   P0      = args[7]
 
+  t0 = t
   while t < tEnd: 
 
     C = scheme
@@ -201,7 +202,7 @@ def integrator(scheme, time, q0, dtmax, BC, method = "Heuns", args=None):
     if (np.finfo(float).eps > courant_number):
       print("slow update")
 
-    dt  =  np.minimum(dtmax, 0.4*courant_number) 
+    dt  =  np.minimum(dtmax, 0.1*courant_number) 
 
     # choose the scheme to integrate(evolve over time) the system 
     if method == "Heuns":
@@ -218,7 +219,7 @@ def integrator(scheme, time, q0, dtmax, BC, method = "Heuns", args=None):
 
     t = t+dt
     
-    if t >= dtmax*outputCount:
+    if t >= dtmax*outputCount + t0:
       Q.append(q)
       #M.append(np.sum(rho*args[0]*args[0]))
       print('{:.2f}/{:.2f}'.format(t,tEnd))
@@ -237,52 +238,52 @@ def BC(q):
   Piyx = q[5*N:6*N]
   Piyy = q[6*N:7*N]
 
-  rho[0]    = rho[1]
-  rho[-1]   = rho[-2]
+  #rho[0]    = rho[1]
+  #rho[-1]   = rho[-2]
   rho[:,0]  = rho[:,1]
   rho[:,-1] = rho[:,-2]
 
 
   #Momx[0]    = -Momx[1]
   #Momx[-1]   = -Momx[-2]
-  #Momx[:,0]  = 0
-  #Momx[:,-1] = 0
+  Momx[:,0]  = Momx[:,1]
+  Momx[:,-1] = Momx[:,-1]
 
   #Momy[0]    = 0
   #Momy[-1]   = 0
   Momy[:,0]  = -Momy[:,1]
   Momy[:,-1] = -Momy[:,-2]
 
-  Pixx[0]    = 0
-  Pixx[-1]   = 0
-  Pixx[:,0]  = 0
-  Pixx[:,-1] = 0
+  #Pixx[0]    = 0
+  #Pixx[-1]   = 0
+  Pixx[:,0]  = Pixx[:,1]
+  Pixx[:,-1] = Pixx[:,-2]
 
-  Pixy[0]    = 0
-  Pixy[-1]   = 0
-  Pixy[:,0]  = 0
-  Pixy[:,-1] = 0
+  #Pixy[0]    = 0
+  #Pixy[-1]   = 0
+  Pixy[:,0]  = Pixy[:,1]
+  Pixy[:,-1] = Piyx[:,-2]
 
-  Piyx[0]    = 0
-  Piyx[-1]   = 0
-  Piyx[:,0]  = 0
-  Piyx[:,-1] = 0
+  #Piyx[0]    = 0
+  #Piyx[-1]   = 0
+  Piyx[:,0]  = Piyx[:,1]
+  Piyx[:,-1] = Piyx[:,-2]
 
-  Piyy[0]    = 0
-  Piyy[-1]   = 0
-  Piyy[:,0]  = 0
-  Piyy[:,-1] = 0
+  #Piyy[0]    = 0
+  #Piyy[-1]   = 0
+  Piyy[:,0]  = Piyy[:,1]
+  Piyy[:,-1] = Piyy[:,-2]
   
 
 t                      = 0    # s 
-tEnd                   = 2    # time at the end
+tEnd                   = 1    # time at the end
 tOut                   = 0.01 # time of each output
-N                      = 2**8 # resolution
-boxsize                = 10.  # in some unit system l
+N                      = 2**9 # resolution
+boxsize                = 1.   # in some unit system l
 gamma                  = 1.4  # adiabatic index
 P0                     = 1    # pressure constant
-zeta                   = 10    # bulk viscosity coefficient
-eta                    = 1    # shear viscosity coefficient
+zeta                   = 2    # bulk viscosity coefficient
+eta                    = 2    # shear viscosity coefficient
 tau_nu                 = 1    # relaxation time
 theta                  = 1    # flux limiter parameter
 
@@ -291,8 +292,8 @@ theta                  = 1    # flux limiter parameter
 dx = boxsize / N   # box size
 dy = dx
 vol = dx**2        # volume of each box
-a = (0.5*dx  - boxsize)*0.5
-b = (boxsize - 0.5*dx)*0.5
+a = dx*0.5
+b = (boxsize - 0.5*dx)
 xlin = np.linspace(a, b, N)# simulation limits
 
 parameters = [t,tEnd,tOut,N,boxsize,gamma,zeta,eta,tau_nu,theta,a,b]
@@ -305,7 +306,7 @@ Theta = np.arctan(Y/X)*(X>=0)*(Y>=0) + (np.pi/2 + np.arctan(Y/np.abs(X)))*(X<0)*
 
 ''' initial condition of density'''
 
-rho = (2*(R1 <= 1) + 0.5*(R1 > 1))
+#rho = (2*(R1 <= 1) + 0.5*(R1 > 1))
 #rho = ((1 - ((R)**2) )**4 )*(R < 1) + 1*np.ones(s) # Mauricio`s funtion advice 
 #rho = (1/(R))*(R>0)*(R<1) + 0.1*np.ones(s)
 #rho = 1*(Y >= 0) + 0.5*( Y < 0)
@@ -313,16 +314,23 @@ rho = (2*(R1 <= 1) + 0.5*(R1 > 1))
 ''' initial condition of velocity '''
 #vx = np.zeros(s)
 #vx = -1*np.sin(Theta)*(R < 1)
-vx = 2*np.ones(s)*(R1 < 1)
-#vx = -10*(Y < 0) + 10*(Y >= 0)
+#vx = 2*np.ones(s)*(R1 < 1)
+#vx = -2*(Y < 0) + 2*(Y >= 0)
 #vx = np.abs((xlin - (boxsize-0.5*dx)*0.5)/16)
 
-vy = np.zeros(s)
+#vy = np.zeros(s)
 #vy = 1*np.cos(Theta)*(R < 1)
 #vy = 0.5*np.ones(xlin.shape)
 
 #sigma = 0.05/np.sqrt(2.)
-#vy = 0.1*np.sin(4*np.pi*X)*(np.exp(-(Y)**2/(2 * sigma**2)) + np.exp(-(Y)**2/(2*sigma**2)))
+#vy = 0.01*np.sin(4*np.pi*X)*(np.exp(-(Y)**2/(2 * sigma**2)) + np.exp(-(Y)**2/(2*sigma**2)))
+
+''' Kelvin Helmholtz'''
+w0 = 0.1
+sigma = 0.05/np.sqrt(2.)
+rho = 1. + (np.abs(Y-0.5) < 0.25)
+vx = -0.5 + (np.abs(Y-0.5) < 0.25)
+vy = w0*np.sin(4*np.pi*X) * ( np.exp(-(Y-0.25)**2/(2 * sigma**2)) + np.exp(-(Y-0.75)**2/(2*sigma**2)) )
 
 '''
 w0 = 0.1
@@ -338,12 +346,29 @@ Pixy = np.zeros(s)
 Piyx = np.zeros(s)
 Piyy = np.zeros(s)
 
+
 IC = np.vstack((rho,rho*vx,rho*vy,Pixx,Pixy,Piyx,Piyy)) # here the initial conditions are stacked in a vector 
                             # rho is IC[0:N] for example
 
+sol = np.load("NonRelativisticISKelvinHelmholtz.npy")
+t,tEnd,tOut,N,boxsize,gamma,zeta,eta,tau_nu,theta,a,b = np.loadtxt("NonRelativisticISKelvinHelmholtz_parameters",delimiter=',',unpack=True)
+t=float(t) 
+tEnd = float(t) + 2
+tOut = float(tOut)
+N = int(N)
+boxsize = float(boxsize)
+gamma = float(gamma)
+zeta = float(zeta)
+eta = float(eta)
+tau_nu = float(tau_nu)
+theta = float(theta)
+a = float(a)
+b = float(b)
+IC = sol[0]
+
 # input (dx, dy, xlin, gamma, zeta, tau_nu, BC, theta=1)
 # output solution list of arrays that are 7N x N in the order (rho,rho*vx,rho*vy,Pixx,Pixy,Piyx,Piyy)
-solution = integrator(KTschemeNonRelativisticIS, (t, tEnd), IC, 0.01, BC, method="RK4", args=(dx, dy, N, gamma, zeta, tau_nu, eta, P0, theta))
+solution = integrator(KTschemeNonRelativisticIS, (t, tEnd), IC, 0.01, BC, method="Modified_RK", args=(dx, dy, N, gamma, zeta, tau_nu, eta, P0, theta))
 
-np.savetxt('NonRelativisticISFlowingBall_parameters',parameters)
-np.save('NonRelativisticISFlowingBall',solution)
+np.savetxt('NonRelativisticISKH1_parameters',parameters)
+np.save('NonRelativisticISKH1',solution)

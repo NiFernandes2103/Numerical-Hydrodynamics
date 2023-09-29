@@ -108,4 +108,4 @@ def plot_csv_static(file1, file2, file3, file4, parameters_file, s, nameOfFigure
 
 plot_csv_static('KT_ISwithbulk\C++\density_solution.csv', 'KT_ISwithbulk\C++\momentx_solution.csv', 
 'KT_ISwithbulk\C++\momenty_solution.csv', 'KT_ISwithbulk\C++\Pi_solution.csv',
-  'KT_ISwithbulk\C++\parameters.csv', 50 ,"NonRelativisticIS")
+  'KT_ISwithbulk\C++\parameters.csv', 5 ,"NonRelativisticIS")

@@ -126,7 +126,7 @@ def integrator(scheme, time, q0, dtmax, BC, Eos=polytrope, method = "Heuns", arg
     
     
     # recover primitive variables
-    rho,vx,eps = getPrimitive(q[0:N],q[N:2*N],q[2*N:3*N],gamma,P0,0.5*np.ones(N),100,Eos)
+    rho,vx,eps = getPrimitive(q[0:N],q[N:2*N],q[2*N:3*N],gamma,P0,0.1*np.ones(N),100,Eos)
     P = Eos(rho,gamma,P0)
     p = np.vstack((rho,vx,P))
 

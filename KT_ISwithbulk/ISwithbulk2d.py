@@ -107,24 +107,6 @@ def KTschemeNonRelativisticIS(t, IC, dx, dy, xlin, gamma, zeta, tau_nu, theta=1)
     
     return np.vstack((timederivative_rho, timederivative_Momx, timederivative_Momy, timederivative_Pi))
 
-def Heuns(q,f,dt,t):
-
-  k1 = dt*f(t,q)
-  k2 = dt*f(t + dt,q + k1)
-
-  return q + 1/2 * (k1 + k2)
-
-
-def RK4(y0,f,h,t):
-  
-  k1 = h * (f(t, y0))
-  k2 = h * (f((t+h/2), (y0+k1/2)))
-  k3 = h * (f((t+h/2), (y0+k2/2)))
-  k4 = h * (f((t+h), (y0+k3)))
-  k = (k1+2*k2+2*k3+k4)/6
-  yn = y0 + k
-
-  return yn
 
 
 
@@ -161,6 +143,8 @@ def integrator(scheme, time, y0, dtmax, BC, method = "Heuns", args=None):
   Y = [y0]
   y = y0
   N = int(args[2].shape[0])  
+  outputCount = 1
+
   while t < tEnd: 
 
     C = scheme
@@ -193,45 +177,60 @@ def integrator(scheme, time, y0, dtmax, BC, method = "Heuns", args=None):
     else:
       dt = dtmax
 
-    dt = max(dt,10**6)
 
 
     if method == "Heuns":
       y = Heuns(y,C,dt,t)
     if method == "RK4":
       y = RK4(y,C,dt,t)
+    if method == "Modified_RK":
+      q = explicit_modified_RK(q,C,dt,t)
     
 
     #Apply Boundary conditions
 
     BC(y)
 
-    Y.append(y)
+  
     t = t + dt
+
+    if t >= dtmax*outputCount:
+      Y.append(y)
+      #M.append(np.sum(rho*args[0]*args[0]))
+      print('{:.2f}/{:.2f}'.format(t,tEnd))
+      outputCount += 1
     
   return Y
 
+def BC(q):
+  rho = q[0:N]
+  Momx = q[N:2*N]
+  Momy = q[2*N:3*N]
+  Pi = q[3*N:4*N]
 
-
-
-def applyBC(y):
-
-  rho = y[0:N] 
-  vx = y[N:2*N]/rho 
-  Pi = y[2*N:] 
-
-  #Absorbing boundary conditions
-  
-  
   rho[0]    = rho[1]
   rho[-1]   = rho[-2]
+  rho[:,0]  = rho[:,1]
+  rho[:,-1] = rho[:,-2]
 
 
-  vx[0]     = vx[1]
-  vx[1]     = vx[-2]      
+  #Momx[0]    = -Momx[1]
+  #Momx[-1]   = -Momx[-2]
+  #Momx[:,0]  = 0
+  #Momx[:,-1] = 0
 
-  Pi[0]     = 0   
-  Pi[-1]    = 0
+  #Momy[0]    = 0
+  #Momy[-1]   = 0
+  Momy[:,0]  = -Momy[:,1]
+  Momy[:,-1] = -Momy[:,-2]
+
+  Pi[0]    = 0
+  Pi[-1]   = 0
+  Pi[:,0]  = 0
+  Pi[:,-1] = 0
+
+
+
 
 
 
@@ -240,7 +239,7 @@ t                      = 0   # s
 tEnd                   = 0.1   # time at the end
 tOut                   = 0.01 # time of each output
 
-N                      = 300 # resolution
+N                      = 500 # resolution
 boxsize                = 1.  # in some unit system l
 gamma                  = 1 # adiabatic index
 zeta                   = 1 # bulk viscosity coefficient
@@ -260,17 +259,23 @@ R = np.sqrt(X**2 + Y**2)
 
 # initial condition of density
 
-rho = (1*(R <= 1*0.25) + 0.25*(R > 1*0.25))
+#rho = (1*(R <= 1*0.25) + 0.25*(R > 1*0.25))
 #rho = 1*(X < boxsize*0.5) + 0.125*(X >= boxsize*0.5)
+rho = 1*(Y >= 0) + 0.5*( Y < 0)
+
 
 # initial condition of velocity
-vx = np.zeros(s)
+#vx = np.zeros(s)
+vx = -10*(Y < 0) + 10*(Y >= 0)
 #vx = 0.5*np.ones(xlin.shape)
 #vx = 1*(X < boxsize*0.5) + 0*(X >= boxsize*0.5)
 #vx = np.abs((xlin - (boxsize-0.5*dx)*0.5)/16)
 
-vy = np.zeros(s)
+#vy = np.zeros(s)
 #vy = 0.5*np.ones(xlin.shape)
+sigma = 0.05/np.sqrt(2.)
+vy = 0.1*np.sin(4*np.pi*X)*(np.exp(-(Y)**2/(2 * sigma**2)) + np.exp(-(Y)**2/(2*sigma**2)))
+
 
 # initial condition of Pi scalar
 Pi = np.zeros(s)
@@ -281,10 +286,8 @@ IC = np.vstack((rho, rho*vx, rho*vy, Pi)) # here the initial conditions are stac
 
 # dx, dy, xlin, gamma, zeta, tau_nu, BC, theta=1
 
-# solution = integrator(KTschemeNonRelativisticIS, (t, tEnd), IC, 0.01, method="RK4", args=(dx, dy, xlin, gamma, zeta, tau_nu, eta, theta))
+# solution = integrator(KTschemeNonRelativisticIS, (t, tEnd), IC, 0.01, Boundary conditions, method="RK4", args=(dx, dy, xlin, gamma, zeta, tau_nu, eta, theta))
 
-
-solution = integrator(KTschemeNonRelativisticIS, (t,tEnd), IC, tOut, applyBC, args=(dx, dy, xlin, gamma, zeta, tau_nu, theta))
-
+solution = integrator(KTschemeNonRelativisticIS, (t,tEnd), IC, tOut, BC, args=(dx, dy, xlin, gamma, zeta, tau_nu, theta))
 
 

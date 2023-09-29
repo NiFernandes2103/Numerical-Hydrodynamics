@@ -88,6 +88,7 @@ std::tuple<std::vector<std::vector<double>>,std::vector<std::vector<double>>,std
 std::vector<std::vector<double>> getSpeedOfSound(std::vector<std::vector<double>>& rho, double gamma) {
 
     // get the speed of sound based on the underlying EOS
+    // EOS is assumed to be isentropic polytropic eos
 
     unsigned int rows,cols;
     rows = rho.size();
@@ -106,6 +107,8 @@ std::vector<std::vector<double>> getSpeedOfSound(std::vector<std::vector<double>
 
 double minmod2(double x, double y) {
     
+    // two input mimod function
+    // used in conjunction with minmod3
 
     double sign1 = sign(x);
     double sign2 = sign(y);
@@ -119,12 +122,14 @@ double minmod2(double x, double y) {
 }
 
 double minmod3(double x, double y, double z) {
+
+    // three input mimod function
     return minmod2(x,minmod2(y,z));
 }
 
 double minmod(double x, double y, double z) {
 
-    // minmod function to ensure TVD and therefore the stability of the scheme
+    // minmod function to ensure total variation diminishing (TVD) and therefore the stability of the scheme
 
     return std::max(0.0, std::min({x, y, z}));
 }
@@ -254,6 +259,9 @@ std::tuple<std::vector<std::vector<double>>, std::vector<std::vector<double>>, s
    std::vector<std::vector<double>>& Piyy_M, std::vector<std::vector<double>>& P_P, std::vector<std::vector<double>>& P_M, double gamma, 
   double eta, double zeta, double tau_nu) {
 
+    // Returns the x flux as defined in the Kurganov-Tadmor scheme 
+
+
     int rows = rho_P.size();
     int cols = rho_P[0].size();
 
@@ -339,6 +347,9 @@ std::tuple<std::vector<std::vector<double>>, std::vector<std::vector<double>>, s
              double gamma, double eta,
              double zeta, double tau_nu){
 
+    // Returns the y flux as defined in the Kurganov-Tadmor scheme 
+
+
     int rows = rho_P.size();
     int cols = rho_P[0].size();
 
@@ -387,6 +398,7 @@ std::tuple<std::vector<std::vector<double>>, std::vector<std::vector<double>>, s
             P_av = 0.5 * (P_P[i][j] + P_M[i][j]);
 
 
+            // flux values
             flux_Mass[i][j] = momy_av;
             flux_Momx[i][j] = 0.5 * (rho_P[i][j] * vx_P[i][j] * vy_P[i][j] + rho_M[i][j] * vx_M[i][j] * vy_M[i][j]) + Pixy_av / gamma;
             flux_Momy[i][j] = 0.5 * (rho_P[i][j] * vy_P[i][j] * vy_P[i][j] + rho_M[i][j] * vy_M[i][j] * vy_M[i][j]) + ((P_av)  + (Piyy_av)) / gamma;
@@ -396,7 +408,8 @@ std::tuple<std::vector<std::vector<double>>, std::vector<std::vector<double>>, s
             flux_Piyy_vy[i][j] = Piyy_vy_av + 2 * B * (vy_av) + (A - 2.0 / 3.0 * B) * (vy_av);
 
             C = std::max(C_M[i][j], C_P[i][j]);
-
+            
+            //subtract dissipative term 
             flux_Mass[i][j] -= C * 0.5 * (rho_P[i][j] - rho_M[i][j]);
             flux_Momx[i][j] -= C * 0.5 * (rho_P[i][j] * vx_P[i][j] - rho_M[i][j] * vx_M[i][j]);
             flux_Momy[i][j] -= C * 0.5 * (rho_P[i][j] * vy_P[i][j] - rho_M[i][j] * vy_M[i][j]);
@@ -411,11 +424,12 @@ std::tuple<std::vector<std::vector<double>>, std::vector<std::vector<double>>, s
     return make_tuple(flux_Mass, flux_Momx, flux_Momy, flux_Pixx_vy, flux_Pixy_vy, flux_Piyx_vy, flux_Piyy_vy);
         
 }
-// Apply fluxes to conserved variables
 
 std::vector<std::vector<double>> applyFluxes(std::vector<std::vector<double>>& flux_H1_X, std::vector<std::vector<double>>& flux_H2_X,
   std::vector<std::vector<double>>& flux_H1_Y, std::vector<std::vector<double>>& flux_H2_Y,
    double dx, double dy, std::vector<std::vector<double>>& J){
+
+    // Apply x (flux_H1_X) ,y (flux_H2_X) fluxes and sources (J) to conserved variables 
 
     int rows = flux_H1_X.size();
     int cols = flux_H1_X[0].size();
@@ -437,6 +451,9 @@ std::vector<std::vector<double>> applyFluxes(std::vector<std::vector<double>>& f
 // Heun's method
 state heuns (state& q, std::function<state(double,state)> f, double dt, double t) {
     
+    // returns the time update of the state q by using the derivative f = dq/dt from t to t + dt
+    // is an explicit foward in time method (Second order Runge-Kutta)
+
     int rows = (q.get(0)).size();
     int cols = (q.get(0))[0].size();
 
@@ -486,6 +503,9 @@ state heuns (state& q, std::function<state(double,state)> f, double dt, double t
 
 
 state rK4 (state& q, std::function<state(double,state)> f, double dt, double t) {
+
+    // returns the time update of the state q by using the derivative f = dq/dt from t to t + dt
+    // is an explicit foward in time method (4 order Runge-Kutta)
     
     int rows = (q.get(0)).size();
     int cols = (q.get(0))[0].size();

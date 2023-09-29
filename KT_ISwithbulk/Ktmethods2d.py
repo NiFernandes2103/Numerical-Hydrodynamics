@@ -134,7 +134,7 @@ def extrapolateInSpaceToFace(q, q_dx, dx, axis=0):
     return qM_XL, qP_XL, qM_XR, qP_XR
 
 
-def local_propagation_speed(rho, vx, vy, gamma, B): 
+def local_propagation_speed(rho, vx, Pi, gamma, B): 
   
     '''
     Get the local propagation speeds using the eigenvalues 
@@ -148,19 +148,13 @@ def local_propagation_speed(rho, vx, vy, gamma, B):
 
     '''
 
-    C1 = np.abs(vx)
     cs = getSpeedOfSound(rho, gamma)
 
-    try:
-      C2 = np.abs(vx - np.emath.sqrt(cs**2/gamma + np.divide((Pi+B)*np.ones(rho.shape)/gamma,rho,out=(np.zeros_like(rho.shape)),where=rho!=0))) 
-    except:
-      C2 = np.zeros(vx.shape)
-    try:
-      C3 = np.abs(vx + np.emath.sqrt(cs**2/gamma + np.divide((Pi+B)*np.ones(rho.shape)/gamma,rho,out=(np.zeros_like(rho.shape)),where=rho!=0)))
-    except:
-      C3 = np.zeros(vx.shape)
+   
+    C = np.abs(vx) + np.sqrt((cs**2 + (Pi+B)/rho)/gamma)
+ 
 
-    return np.maximum(C1,C2,C3)
+    return C
 
 def getXFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pi_P, Pi_M, P_P, P_M, gamma, B):
 
@@ -186,7 +180,6 @@ def getXFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pi_P, Pi_M, P_P, P_M, gamma, 
   
 
   # compute (averaged) states over the left and right states
-  rho_av   = 0.5*(rho_P + rho_M)
   momx_av  = 0.5*(rho_P * vx_P + rho_M * vx_M)
   Pi_av    = 0.5*(Pi_P + Pi_M)
   Pi_vx_av = 0.5*(Pi_P * vx_P + Pi_M * vx_M)
@@ -239,7 +232,6 @@ def getYFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pi_P, Pi_M, P_P, P_M, gamma, 
   
 
   # compute (averaged) states over the left and right states
-  rho_av   = 0.5*(rho_P + rho_M)
   momy_av  = 0.5*(rho_P * vy_P + rho_M * vy_M)
   Pi_av    = 0.5*(Pi_P + Pi_M)
   Pi_vy_av = 0.5*(Pi_P * vy_P + Pi_M * vy_M)
@@ -250,7 +242,7 @@ def getYFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pi_P, Pi_M, P_P, P_M, gamma, 
   flux_Mass   = momy_av
   flux_Momx   = 0.5*(rho_P*(vx_P)*(vy_P) + rho_M*(vx_M)*(vy_M)) 
   flux_Momy   = 0.5*(rho_P*(vy_P)**2 + rho_M*(vy_M)**2) + (P_av + Pi_av)/gamma
-  flux_Pi_v   = Pi_vy_av + B * (vy_P + vy_M)*0.5 
+  flux_Pi_v   = Pi_vy_av + B * (vy_P + vy_M) * 0.5 
   
   # find wavespeeds
 
@@ -287,3 +279,47 @@ def applyFluxes(flux_H1_X, flux_H2_X, flux_H1_Y, flux_H2_Y, dx, dy, J = 0):
     C += J
     
     return C
+
+
+def Heuns(q,f,dt,t):
+
+  '''
+  Explicit Heuns method 
+  Modified Euler method
+  Runge-Kutta of second order
+  '''
+
+  k1 = dt*f(t,q)
+  k2 = dt*f(t + dt,q + k1)
+
+  return q + 0.5 * (k1 + k2)
+
+def Euler_step(q,f,t,dt):
+   '''
+   Euler method 
+   '''
+   return q + dt*f(t,q)
+
+def explicit_modified_RK(q,f,dt,t):
+   '''
+   Heuns method using Euler method
+   for foward time
+   '''
+   q1 = Euler_step(q,f,t,dt)
+   q2 = 1/2 * q1 + 1/2 * (Euler_step(q1,f,t,dt))
+
+   return q2
+
+def RK4(y0,f,h,t):
+  '''
+  Explicit fourth order Runge-Kutta method
+  '''
+  
+  k1 = h * (f(t, y0))
+  k2 = h * (f((t+h/2), (y0+k1/2)))
+  k3 = h * (f((t+h/2), (y0+k2/2)))
+  k4 = h * (f((t+h), (y0+k3)))
+  k = (k1+2*k2+2*k3+k4)/6
+  yn = y0 + k
+
+  return yn

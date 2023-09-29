@@ -4,14 +4,14 @@ import matplotlib.pyplot as plt
 def getConserved( rho, vx, vy, gamma, vol ):
     """
     Calculate the conserved variable from the primitive
-    rho      is matrix of cell densities
-    vx       is matrix of cell x-velocity
-    vy       is matrix of cell y-velocity
-    gamma    is ideal gas gamma
-    vol      is cell volume
-    Mass     is matrix of mass in cells
-    Momx     is matrix of x-momentum in cells
-    Momy     is matrix of y-momentum in cells
+    rho      is the matrix of cell densities
+    vx       is the matrix of cell x-velocity
+    vy       is the matrix of cell y-velocity
+    gamma    is the ideal gas gamma
+    vol      is the cell volume
+    Mass     is the matrix of mass in cells
+    Momx     is the matrix of x-momentum in cells
+    Momy     is the matrix of y-momentum in cells
     """
     Mass   = rho * vol
     Momx   = rho * vx
@@ -22,15 +22,15 @@ def getConserved( rho, vx, vy, gamma, vol ):
 def getPrimitive( Mass, Momx, Momy, gamma, P0, vol):
   """
   Calculate the primitive variable from the conservative
-  Mass     is matrix of mass in cells
-  Momx     is matrix of x-momentum in cells
-  Momy     is matrix of y-momentum in cells
-  gamma    is ideal gas gamma
-  vol      is cell volume
-  rho      is matrix of cell densities
-  vx       is matrix of cell x-velocity
-  vy       is matrix of cell y-velocity
-  P        is matrix of cell pressures
+  Mass     is the matrix of mass in cells
+  Momx     is the matrix of x-momentum in cells
+  Momy     is the matrix of y-momentum in cells
+  gamma    is the ideal gas gamma
+  vol      is the cell volume
+  rho      is the matrix of cell densities
+  vx       is the matrix of cell x-velocity
+  vy       is the matrix of cell y-velocity
+  P        is the matrix of cell pressures
   """
   rho = Mass / vol
   vx  = Momx / rho
@@ -42,12 +42,12 @@ def getPrimitive( Mass, Momx, Momy, gamma, P0, vol):
 def getSpeedOfSound(rho, gamma, P0):
   '''
   find the speed of sound in the fluid
-  rho
-
+  rho based on the equation of state
   '''
   cs = np.sqrt(P0*(gamma)*(rho)**(gamma-1))
 
   return cs
+
 '''
 These are auxiliary functions in for the gradient 
 '''
@@ -91,6 +91,7 @@ def extrapolateInSpaceToFace(q, q_dx, dx, axis=0):
     q        is a matrix of the field
     q_dx     is a matrix of the field x-derivatives
     dx       is the cell size
+    axis     is the axis of x-direction
     q_XL     is a matrix of spatial-extrapolated values on `left' face along x-axis 
     q_XR     is a matrix of spatial-extrapolated values on `right' face along x-axis 
     """
@@ -127,17 +128,14 @@ def local_propagation_speed(rho, eta, zeta, tau_nu, cs):
   
    '''
     Get the local propagation speeds using the eigenvalues 
-    of the flux matrix of the non relativistic IS equations
+    of the flux matrix of the nonrelativistic IS equations
 
     rho          is a matrix of density
-    eta
-    zeta
-    tau_nu
+    eta          is the shear viscosity
+    zeta         is the bulk viscosity
+    tau_nu       is the relaxation time
     cs           is the speed of sound
     '''
-
-  
-
 
    C1 = np.sqrt(eta*tau_nu/rho)
 
@@ -173,7 +171,6 @@ def getXFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pixx_P, Pixx_M, Pixy_P,
 
     # x fluxes
     
-    rho_av   = 0.5*(rho_P + rho_M)
     momx_av  = 0.5*(rho_P * vx_P + rho_M * vx_M)
     Pixx_av  = 0.5*(Pixx_P + Pixx_M)    
     Piyx_av  = 0.5*(Piyx_P + Piyx_M)
@@ -244,7 +241,6 @@ def getYFlux(rho_P, rho_M, vx_P, vx_M, vy_P, vy_M, Pixx_P, Pixx_M, Pixy_P,
 
   # y fluxes
   
-  rho_av   = 0.5*(rho_P + rho_M)
   momy_av  = 0.5*(rho_P * vy_P + rho_M * vy_M)
   Piyy_av  = 0.5*(Piyy_P + Piyy_M)
   Pixy_av  = 0.5*(Pixy_P + Pixy_M)
@@ -314,21 +310,37 @@ def applyFluxes(flux_H1_X, flux_H2_X, flux_H1_Y, flux_H2_Y, dx, dy, J = 0):
 
 def Heuns(q,f,dt,t):
 
+  '''
+  Explicit Heuns method 
+  Modified Euler method
+  Runge-Kutta of second order
+  '''
+
   k1 = dt*f(t,q)
   k2 = dt*f(t + dt,q + k1)
 
   return q + 0.5 * (k1 + k2)
 
 def Euler_step(q,f,t,dt):
+   '''
+   Euler method 
+   '''
    return q + dt*f(t,q)
 
 def explicit_modified_RK(q,f,dt,t):
+   '''
+   Heuns method using Euler method
+   for foward time
+   '''
    q1 = Euler_step(q,f,t,dt)
    q2 = 1/2 * q1 + 1/2 * (Euler_step(q1,f,t,dt))
 
    return q2
 
 def RK4(y0,f,h,t):
+  '''
+  Explicit fourth order Runge-Kutta method
+  '''
   
   k1 = h * (f(t, y0))
   k2 = h * (f((t+h/2), (y0+k1/2)))
